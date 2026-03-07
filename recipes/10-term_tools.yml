@@ -1,0 +1,21 @@
+modules:
+  - type: dnf
+    install:
+      packages:
+        - bat
+        - btop
+        - delta
+        - fd
+        - fzf
+        - git
+        - gum
+        # - jq
+        - lsd
+        - mise
+        - neovim
+        # - openssh
+        - ripgrep
+        - stow
+        # - tar
+        - yq
+        - zoxide

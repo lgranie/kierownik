@@ -1,0 +1,7 @@
+modules:
+- type: fonts
+    fonts:
+      nerd-fonts:
+        - CascadiaMono
+        - DejaVuSansMono
+        - JetBrainsMono
