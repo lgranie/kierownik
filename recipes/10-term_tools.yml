@@ -6,12 +6,11 @@ modules:
         - btop
         - delta
         - fd
-        - fzf
+        # - fzf
         - git
         - gum
         # - jq
         - lsd
-        - mise
         - neovim
         # - openssh
         - ripgrep
@@ -19,3 +18,11 @@ modules:
         # - tar
         - yq
         - zoxide
+
+  - type: dnf
+    repos:
+      copr:
+        - jdxcode/mise
+    install:
+      packages:
+        - mise
