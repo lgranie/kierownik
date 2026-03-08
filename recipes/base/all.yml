@@ -6,3 +6,11 @@ modules:
     files:
       - source: base/system
         destination: / # copies files/base/* (* means everything inside it) into your image's root folder /
+  
+  - type: kargs
+    arch: x86_64
+    kargs:
+      - console=ttyS0,114800n8
+      - quiet splash
+      - amd_iommu=on iommu=pt
+  

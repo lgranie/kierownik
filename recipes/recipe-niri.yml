@@ -15,4 +15,5 @@ modules:
   - from-file: base/all.yml
   - from-file: wm/niri.yml
 
-  - type: signing # this sets up the proper policy & signing files for signed images to work fully
+  # finalize
+  - from-file: common/finalize.yml
