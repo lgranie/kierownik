@@ -1,0 +1,22 @@
+[tools]
+"cargo:blue-build" = "latest"
+
+[tasks.build_oci]
+usage = '''
+arg "target" help="target" {
+ choices "base" "niri"
+}
+'''
+run = '''
+bluebuild build recipes/recipe-{{ usage.target }}.yml
+'''
+
+[tasks.build_iso]
+usage = '''
+arg "target" help="target" {
+ choices "base" "niri"
+}
+'''
+run = '''
+bluebuild generate-iso --iso-name base.iso recipe recipes/recipe-{{ usage.target }}.yml
+'''

@@ -1,0 +1,26 @@
+modules:
+  - from-file: wm/common/all.yml
+
+  - type: dnf
+    install:
+      packages:
+        - cava
+        - matugen
+        - niri
+        - swayidle
+        - wl-copy
+        - wlsunset
+
+  - type: dnf
+    repos:
+      copr:
+        - zhangyi6324/noctalia-shell
+    install:
+      packages:
+        - noctalia-qs
+        - noctalia-shell
+
+  - type: files
+    files:
+      - source: wm/niri
+        destination: /

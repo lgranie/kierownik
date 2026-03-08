@@ -1,0 +1,8 @@
+modules:
+  - from-file: base/fish.yml
+  - from-file: base/tools.yml
+
+  - type: files
+    files:
+      - source: base/system
+        destination: / # copies files/base/* (* means everything inside it) into your image's root folder /

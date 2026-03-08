@@ -1,21 +1,17 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 # image will be published to ghcr.io/<user>/<name>
-name: kierownik
+name: kierownik-niri
 # description will be included in the image's metadata
 description: This is my personal OS image.
 
 # the base image to build on top of (FROM) and the version tag to use
-base-image: ghcr.io/blue-build/base-images/fedora-base
+base-image: ghcr.io/lgranie/kierownik-base
 image-version: latest # latest is also supported if you want new updates ASAP
 
 # module configuration, executed in order
 # you can include multiple instances of the same module
 modules:
-  - from-file: 10-term_tools.yml
-  - type: files
-    files:
-      - source: system
-        destination: / # copies files/system/* (* means everything inside it) into your image's root folder /
+  - from-file: wm/niri.yml
 
   - type: signing # this sets up the proper policy & signing files for signed images to work fully

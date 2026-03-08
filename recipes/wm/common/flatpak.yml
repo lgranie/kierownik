@@ -1,4 +1,9 @@
 modules:
+  - type: files
+    files:
+      - source: wm/common/flatpak
+        destination: /
+
   - type: default-flatpaks
     configurations:
       - notify: true # Send notification after install/uninstall is finished (true/false)
@@ -6,6 +11,6 @@ modules:
         # If no repo information is specified, Flathub will be used by default
         install: # system flatpaks we want all users to have and not remove
           - io.github.kolunmi.Bazaar
-          - com.brave.Browser
-          - com.vscodium.codium
+          # - com.brave.Browser
+          # - com.vscodium.codium
       - scope: user # Also add Flathub user repo, but no user packages
