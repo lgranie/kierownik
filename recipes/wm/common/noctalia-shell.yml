@@ -1,0 +1,10 @@
+modules:
+  - type: dnf
+    repos:
+      copr:
+        - zhangyi6324/noctalia-shell
+    install:
+      install-weak-deps: false
+      packages:
+        - noctalia-qs
+        - noctalia-shell

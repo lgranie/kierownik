@@ -3,22 +3,14 @@ modules:
 
   - type: dnf
     install:
+      install-weak-deps: false
       packages:
         - cava
-        - matugen
+        # - matugen
         - niri
         - swayidle
         - wl-copy
         - wlsunset
-
-  - type: dnf
-    repos:
-      copr:
-        - zhangyi6324/noctalia-shell
-    install:
-      packages:
-        - noctalia-qs
-        - noctalia-shell
 
   - type: files
     files:

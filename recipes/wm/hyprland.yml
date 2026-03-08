@@ -1,0 +1,10 @@
+modules:
+  - type: dnf
+    repos:
+      copr:
+        - ashbuk/Hyprland-Fedora
+    install:
+      install-weak-deps: false
+      packages:
+        - hyprland
+        - xdg-desktop-portal-hyprland
