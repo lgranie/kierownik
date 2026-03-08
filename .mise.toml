@@ -1,6 +1,14 @@
 [tools]
 "cargo:blue-build" = "latest"
 
+[settings]
+windows_default_inline_shell_args = "pwsh -c"
+
+[env]
+BASE_IMAGE = 'quay.io/fedora/fedora-bootc:43'
+BIB_IMAGE  = 'ghcr.io/osbuild/bootc-image-builder:latest'
+ROOTFS     = 'btrfs'
+
 [tasks.build_oci]
 usage = '''
 arg "target" help="target" {
@@ -18,5 +26,55 @@ arg "target" help="target" {
 }
 '''
 run = '''
-bluebuild generate-iso --iso-name base.iso recipe recipes/recipe-{{ usage.target }}.yml
+bluebuild generate-iso --iso-name kier-{{ usage.target }}.iso recipe recipes/recipe-{{ usage.target }}.yml
+'''
+
+[tasks.build_qcow2]
+usage = '''
+arg "target" help="target" {
+ choices "base" "niri"
+}
+'''
+run = '''
+mkdir -p /tmp/output
+
+sudo podman pull ghcr.io/lgranie/kierownik-{{ usage.target }}:latest
+
+sudo podman run --rm --privileged --pull=newer \
+    --security-opt label=type:unconfined_t \
+    -v ./bib/config/qcow2.toml:/config.toml:ro \
+    -v ./bib/defs/kierownik-43.yaml:/usr/share/bootc-image-builder/defs/kierownik-43.yaml:ro \
+    -v /tmp/output:/output \
+    -v /var/lib/containers/storage:/var/lib/containers/storage \
+    -v /boot:/boot \
+    {{ env.BIB_IMAGE }} \
+    --progress term \
+    --target-arch amd64 \
+    --type qcow2 \
+    --rootfs {{ env.ROOTFS }} \
+    --installer-payload-ref {{ env.BASE_IMAGE }} \
+    ghcr.io/lgranie/kierownik-{{ usage.target }}:latest
+'''
+
+[tasks.vm]
+usage = '''
+arg "target" help="Target environment" {
+  choices "base" "niri"
+}
+'''
+run = '''
+set -xeuo pipefail
+
+sudo virt-install \
+    --name kier-{{ usage.target }} \
+    --boot uefi,firmware.feature0.name=secure-boot,firmware.feature0.enabled=no \
+    --memory 8192 \
+    --vcpus 8 \
+    --disk path=/tmp/output/qcow2/disk-{{ usage.target }}.qcow2,size=8 \
+    --os-variant fedora41 \
+    --network bridge=virbr0 \
+    --graphics spice,gl=on \
+    --video virtio,accel3d=on \
+    --xml './devices/graphics/listen/@type=none' \
+    --noautoconsole
 '''
