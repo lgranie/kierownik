@@ -1,4 +1,5 @@
 modules:
   - from-file: wm/common/flatpak.yml
   - from-file: wm/common/fonts.yml
+  - from-file: wm/common/foot.yml
   - from-file: wm/common/noctalia-shell.yml

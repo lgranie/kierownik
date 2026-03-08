@@ -1,0 +1,11 @@
+modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - foot
+
+  - type: systemd
+    user:
+      enabled:
+        - foot-server.service
