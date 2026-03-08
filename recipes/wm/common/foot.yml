@@ -4,8 +4,14 @@ modules:
       install-weak-deps: false
       packages:
         - foot
+        - xdg-terminal-exec
 
   - type: systemd
     user:
       enabled:
         - foot-server.service
+
+  - type: files
+    files:
+      - source: wm/common/foot
+        destination: /
