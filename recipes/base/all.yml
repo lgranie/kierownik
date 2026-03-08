@@ -1,5 +1,6 @@
 modules:
   - from-file: base/fish.yml
+  - from-file: base/plymouth.yml
   - from-file: base/tools.yml
 
   - type: files

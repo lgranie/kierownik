@@ -1,0 +1,17 @@
+modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - plymouth
+        - plymouth-core-libs
+        - plymouth-plugin-script
+
+  - type: files
+    files:
+      - source: base/plymouth
+        destination: /
+
+  - type: script
+    snippets:
+      - "plymouth-set-default-theme kierownik"
