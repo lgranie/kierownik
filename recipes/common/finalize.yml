@@ -7,3 +7,7 @@ modules:
       ID_LIKE: fedora
       NAME: Kierownik
       PRETTY_NAME: Kierownik Image
+      DEFAULT_HOSTNAME: kierownik
+      HOME_URL: https://github.com/lgranie/kierownik
+      DOCUMENTATION_URL: https://github.com/lgranie/kierownik
+      BUG_REPORT_URL: https://github.com/lgranie/kierownik/issues
