@@ -1,4 +1,5 @@
 modules:
+  - from-file: base/dotfiles.yml
   - from-file: base/fish.yml
   - from-file: base/plymouth.yml
   - from-file: base/tools.yml

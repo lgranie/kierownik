@@ -1,0 +1,15 @@
+[Unit]
+Description=Kier Dotfiles Update
+ConditionPathExists=%h/.dots
+After=dotfiles-init.service
+Requires=dotfiles-init.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/.dots
+ExecStart=git fetch
+ExecStart=git pull --rebase
+ExecStart=mise run update
+
+[Install]
+WantedBy=default.target

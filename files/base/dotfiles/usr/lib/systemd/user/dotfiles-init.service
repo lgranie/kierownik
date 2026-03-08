@@ -1,0 +1,13 @@
+[Unit]
+Description=Kier Dotfiles Setup
+ConditionPathExists=!%h/.dots
+After=home.mount systemd-homed.service
+
+[Service]
+Type=oneshot
+ExecStart=git clone ${DOTSREPO} %h/.dots
+ExecStart=mise -C %h/.dots trust
+ExecStart=mise -C %h/.dots run install_all
+
+[Install]
+WantedBy=default.target
