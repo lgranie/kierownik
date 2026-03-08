@@ -8,6 +8,11 @@ modules:
       - source: base/system
         destination: / # copies files/base/* (* means everything inside it) into your image's root folder /
   
+  - type: systemd
+    system:
+      enabled:
+        - systemd-homed
+
   - type: kargs
     arch: x86_64
     kargs:
