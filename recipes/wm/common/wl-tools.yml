@@ -6,5 +6,5 @@ modules:
       packages:
         - swayidle
         - swaylock
-        - wl-copy
+        # - wl-copy
         - wlsunset

@@ -10,3 +10,7 @@ modules:
     files:
       - source: wm/niri
         destination: /
+  
+  - type: script
+    snippets:
+      - "chmod +x /usr/bin/startniri"

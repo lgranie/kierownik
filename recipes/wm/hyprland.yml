@@ -14,4 +14,9 @@ modules:
     files:
       - source: wm/hyprland
         destination: /
+  
+  - type: script
+    snippets:
+      - "chmod +x /usr/bin/starthyprland"
+
 
