@@ -10,7 +10,7 @@ modules:
   - type: systemd
     user:
       enabled:
-        - foot-server.service
+        - foot-server.socket
 
   - type: files
     files:
