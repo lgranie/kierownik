@@ -13,8 +13,9 @@ modules:
 
   - type: script
     snippets:
-      - "rm -f /etc/skel/.{bash,mozilla}*"
+      - "rm -rf /etc/skel/.{bash,mozilla}*"
 
   - type: initramfs
 
   - type: signing # this sets up the proper policy & signing files for signed images to work fully
+
