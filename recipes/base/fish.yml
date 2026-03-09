@@ -10,3 +10,7 @@ modules:
     files:
       - source: base/fish
         destination: /
+
+  - type: script
+    snippets:
+      - "sed -i 's|^SHELL=.*|SHELL=/usr/bin/fish|' /etc/default/useradd"
