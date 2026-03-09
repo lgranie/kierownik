@@ -28,9 +28,9 @@ jobs:
       matrix:
         recipe:
           # !! Add your recipes here
-          - recipe-base.yml
+          # - recipe-base.yml
           - recipe-hyprland.yml
-          - recipe-niri.yml
+          # - recipe-niri.yml
     steps:
       # the build is fully handled by the reusable github action
       - name: Build Custom Image
