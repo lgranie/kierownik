@@ -1,9 +1,10 @@
+---
 modules:
   - type: dnf
     install:
       install-weak-deps: false
       packages:
-        - cava
         - swayidle
+        - swaylock
         - wl-copy
         - wlsunset

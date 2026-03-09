@@ -1,3 +1,4 @@
+---
 modules:
   - from-file: base/dotfiles.yml
   - from-file: base/fish.yml
