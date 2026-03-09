@@ -9,3 +9,9 @@ modules:
       packages:
         - hyprland
         - xdg-desktop-portal-hyprland
+
+  - type: files
+    files:
+      - source: wm/hyprland
+        destination: /
+
