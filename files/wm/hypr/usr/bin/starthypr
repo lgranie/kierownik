@@ -5,4 +5,4 @@
 # builds actually ran successfully without any errors!
 set -oue pipefail
 
-Hyprland -c "/usr/share/hypr/hyprland.conf"
+start-hyprland -- -c "/usr/share/hypr/hyprland.conf"

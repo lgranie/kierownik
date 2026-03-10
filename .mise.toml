@@ -13,7 +13,7 @@ ROOTFS     = 'btrfs'
 [tasks.build_oci]
 usage = '''
 arg "target" help="target" {
- choices "base" "hyprland" "niri"
+ choices "base" "hypr" "niri"
 }
 '''
 run = '''
@@ -23,7 +23,7 @@ bluebuild build recipes/recipe-{{ usage.target }}.yml
 [tasks.build_iso]
 usage = '''
 arg "target" help="target" {
- choices "base" "hyprland" "niri"
+ choices "base" "hypr" "niri"
 }
 '''
 run = '''
@@ -33,7 +33,7 @@ bluebuild generate-iso --iso-name kier-{{ usage.target }}.iso recipe recipes/rec
 [tasks.build_qcow2]
 usage = '''
 arg "target" help="target" {
- choices "base" "hyprland" "niri"
+ choices "base" "hypr" "niri"
 }
 '''
 run = '''
@@ -60,7 +60,7 @@ sudo podman run --rm --privileged --pull=newer \
 [tasks.vm]
 usage = '''
 arg "target" help="Target environment" {
-  choices "base" "hyprland" "niri"
+  choices "base" "hypr" "niri"
 }
 '''
 run = '''
