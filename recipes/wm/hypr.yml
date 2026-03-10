@@ -12,7 +12,7 @@ modules:
 
   - type: files
     files:
-      - source: wm/hyprland
+      - source: wm/hypr
         destination: /
   
   - type: script
