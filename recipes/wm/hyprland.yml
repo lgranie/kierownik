@@ -17,6 +17,6 @@ modules:
   
   - type: script
     snippets:
-      - "chmod +x /usr/bin/starthyprland"
+      - "chmod +x /usr/bin/starthypr"
 
 

@@ -5,5 +5,4 @@
 # builds actually ran successfully without any errors!
 set -oue pipefail
 
-default_conf="/usr/share/hyprland/hyprland.conf"
-Hyprland -c "$default_conf"
+Hyprland -c "/usr/share/hypr/hyprland.conf"
