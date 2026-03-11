@@ -1,0 +1,17 @@
+[Unit]
+Description=Kier Setup
+ConditionPathExists=!/var/lib/firstboot.done
+Before=greetd.service getty@tty1.service
+After=home.mount systemd-homed.service
+
+[Service]
+Type=oneshot
+StandardInput=tty
+StandardOutput=tty
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+ExecStart=/usr/bin/firstboot.sh
+
+[Install]
+WantedBy=default.target

@@ -15,6 +15,7 @@ modules:
   - type: systemd
     system:
       enabled:
+        - firstboot
         - systemd-homed
 
   - type: kargs
