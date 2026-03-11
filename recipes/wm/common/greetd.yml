@@ -4,15 +4,18 @@ modules:
     install:
       install-weak-deps: false
       packages:
-        - foot
-        - xdg-terminal-exec
-
+        - greetd
+        - tuigreet
+  
   - type: files
     files:
-      - source: wm/common/foot
+      - source: wm/common/greetd
         destination: /
 
   - type: systemd
-    user:
+    system:
       enabled:
-        - foot-server.socket
+        - greetd.service
+      disabled:
+        - display-manager
+        
