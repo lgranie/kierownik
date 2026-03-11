@@ -15,5 +15,6 @@ modules:
   - type: systemd
     system:
       enabled:
+        - display-manager.service
         - greetd.service
         
