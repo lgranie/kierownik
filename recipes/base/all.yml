@@ -3,6 +3,7 @@ modules:
   - from-file: common/clean.yml
   - from-file: base/dotfiles.yml
   - from-file: base/fish.yml
+  - from-file: base/kmscon.yml
   - from-file: base/plymouth.yml
   - from-file: base/tools.yml
 
@@ -10,7 +11,7 @@ modules:
     files:
       - source: base/system
         destination: / # copies files/base/* (* means everything inside it) into your image's root folder /
-  
+
   - type: systemd
     system:
       enabled:
@@ -22,4 +23,4 @@ modules:
       - console=ttyS0,114800n8
       - quiet splash
       - amd_iommu=on iommu=pt
-  
+

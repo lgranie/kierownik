@@ -1,0 +1,12 @@
+---
+modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - kmscon
+        - kmscon-gl
+
+  - type: script
+    snippets:
+      - "ln -s /usr/lib/systemd/system/kmsconvt@.service /etc/systemd/system/autovt@.service"
