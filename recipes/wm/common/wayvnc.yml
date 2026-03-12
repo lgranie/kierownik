@@ -16,7 +16,7 @@ modules:
       enabled:
         - wayvnc.socket
 
-  - type: script
-    snippets:
-      - "firewall-cmd --add-port=5900-5910/tcp"
-      - "firewall-cmd --runtime-to-permanent"
+#  - type: script
+#    snippets:
+#      - "firewall-cmd --add-port=5900-5910/tcp"
+#      - "firewall-cmd --runtime-to-permanent"
