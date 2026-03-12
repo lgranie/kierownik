@@ -5,4 +5,4 @@ Requires=wayvnc.socket
 [Service]
 Type=simple
 Environment='WAYLAND_DISPLAY=wayland-1'
-ExecStart=-wayvnc -Ltrace --unix-socket --config=/etc/wayvnc/config
+ExecStart=-wayvnc --config=/etc/wayvnc/config
