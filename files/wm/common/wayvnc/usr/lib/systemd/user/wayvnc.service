@@ -1,0 +1,8 @@
+[Unit]
+After=network.target
+Requires=wayvnc.socket
+
+[Service]
+Type=simple
+Environment='WAYLAND_DISPLAY=wayland-0'
+ExecStart=wayvnc -Ltrace --unix-socket
