@@ -6,6 +6,7 @@ modules:
       packages:
         - kmscon
         - kmscon-gl
+        - kmscon-pango
 
   - type: files
     files:
