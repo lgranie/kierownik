@@ -13,6 +13,7 @@ modules:
         - gum
         # - jq
         - lsd
+        - make
         - neovim
         # - openssh
         - ripgrep
