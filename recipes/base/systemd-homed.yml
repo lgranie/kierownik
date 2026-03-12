@@ -1,0 +1,11 @@
+---
+modules:
+  - type: systemd
+    system:
+      enabled:
+        - systemd-homed
+  
+  - type: script
+    snippets:
+      - "authselect enable-feature with-systemd-homed"
+      - "sed -i 's|^# minlen = 8|minlen = 6|' /etc/security/pwquality.conf"
