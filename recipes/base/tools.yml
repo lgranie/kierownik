@@ -9,6 +9,7 @@ modules:
         - delta
         - fd
         # - fzf
+        - gcc
         - git
         - gum
         # - jq
