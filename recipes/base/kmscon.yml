@@ -7,6 +7,11 @@ modules:
         - kmscon
         - kmscon-gl
 
+  - type: files
+    files:
+      - source: base/kmscon
+        destination: /
+
   - type: script
     snippets:
       - "ln -s /usr/lib/systemd/system/kmsconvt@.service /etc/systemd/system/autovt@.service"

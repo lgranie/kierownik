@@ -3,6 +3,7 @@ modules:
   - from-file: common/clean.yml
   - from-file: base/dotfiles.yml
   - from-file: base/fish.yml
+  - from-file: base/nerd-fonts.yml
   - from-file: base/kmscon.yml
   - from-file: base/plymouth.yml
   - from-file: base/systemd-homed.yml
