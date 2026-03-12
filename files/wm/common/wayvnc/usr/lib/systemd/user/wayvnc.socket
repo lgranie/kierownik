@@ -2,7 +2,7 @@
 Description=WayVNC socket
 
 [Socket]
-ListenStream=0.0.0.0:5901
+ListenStream=0.0.0.0:5900
 
 [Install]
 WantedBy=sockets.target
