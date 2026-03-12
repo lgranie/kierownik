@@ -12,6 +12,10 @@ modules:
       - source: base/system
         destination: / # copies files/base/* (* means everything inside it) into your image's root folder /
 
+  - type: script
+    snippets:
+      - "chmod +x /usr/bin/firstboot.sh"
+
   - type: systemd
     system:
       enabled:
