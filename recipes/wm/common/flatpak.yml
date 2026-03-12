@@ -23,8 +23,3 @@ modules:
           url: https://flathub.org/repo/flathub.flatpakrepo
           name: flathub
           title: Flathub
-        install: # system flatpaks we want all users to have and not remove
-          # - io.github.kolunmi.Bazaar
-          - com.brave.Browser
-          - com.vscodium.codium
-          # - com.bitwarden.desktop
