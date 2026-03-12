@@ -8,7 +8,6 @@ modules:
         - btop
         - delta
         - fd
-        - firewall-config
         # - fzf
         - gcc
         - git

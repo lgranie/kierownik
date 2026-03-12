@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>Wayvnc</short>
+  <description>Wayvnc</description>
+  <port protocol="tcp" port="5900-5910"/>
+</service>
