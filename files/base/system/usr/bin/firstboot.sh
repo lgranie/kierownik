@@ -170,7 +170,7 @@ EOF
     --password-change-now=false \
     --storage=directory \
     --fs-type=btrfs \
-    --shell=/usr/bin/zsh \
+    --shell=/usr/bin/fish \
     --member-of=wheel,users \
     --real-name="$FULLNAME"
   
