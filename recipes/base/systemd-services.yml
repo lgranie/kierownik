@@ -1,0 +1,12 @@
+---
+modules:
+  - type: systemd
+    system:
+      enabled:
+        - podman.socket
+      disabled:
+        - rpm-ostree-countme.service
+        - rpm-ostree-countme.timer
+    user:
+      enabled:
+        - podman.socket
