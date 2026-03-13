@@ -2,5 +2,7 @@ type: dnf
 remove:
   auto-remove: true
   packages:
+    - nano
     - firefox
     - firefox-langpacks
+    - vim-minimal
