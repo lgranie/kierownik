@@ -29,4 +29,3 @@ modules:
       # - console=ttyS0,114800n8
       - quiet splash
       - amd_iommu=on iommu=pt
-
