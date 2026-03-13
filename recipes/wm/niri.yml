@@ -13,4 +13,4 @@ modules:
   
   - type: script
     snippets:
-      - "chmod +x /usr/bin/startniri"
+      - "chmod +x /usr/bin/start-niri-session"

@@ -5,7 +5,7 @@ Kierownik is an operating system built with bluebuild. It is immutable and conta
   * fish as default interactive shell
   * a collection of terminal tools ( lsd, zoxide, bat, fzf, ... )
   * mise for dev
-* 2 graphical flavors : Niri ( kierownik-niri ) and Hyprland with scrolling layout as default ( kierownik-hypr )
+* 2 graphical flavors ( kierownik-wm ) : Niri and Hyprland with scrolling layout as default
   * noctalia-shell
   * flatpak / flathub / bazaar
   * foot terminal
@@ -26,7 +26,7 @@ To rebase an existing atomic Fedora installation to the latest build:
 
 - First rebase to the unsigned image, to get the proper signing keys and policies installed:
   ```bash
-  rpm-ostree rebase ostree-unverified-registry:ghcr.io/lgranie/kierownik-hypr:latest
+  rpm-ostree rebase ostree-unverified-registry:ghcr.io/lgranie/kierownik-wm:latest
   ```
 - Reboot to complete the rebase:
   ```bash
@@ -34,7 +34,7 @@ To rebase an existing atomic Fedora installation to the latest build:
   ```
 - Then rebase to the signed image, like so:
   ```bash
-  rpm-ostree rebase ostree-image-signed:docker://ghcr.io/lgranie/kierownik-hypr:latest
+  rpm-ostree rebase ostree-image-signed:docker://ghcr.io/lgranie/kierownik-wm:latest
   ```
 - Reboot again to complete the installation
   ```bash
@@ -47,12 +47,12 @@ If build on Fedora Atomic, you can generate an offline ISO with the instructions
 
 #### From a recipe
 ```bash
-bluebuild generate-iso --iso-name kier-hypr.iso receipe recipes/recipe-hypr.yml
+bluebuild generate-iso --iso-name kier-wm.iso receipe recipes/recipe-wm.yml
 ```
 
 #### From a image
 ```bash
-bluebuild generate-iso --iso-name kier-hypr.iso image ghcr.io/lgranie/kierownik-hypr:latest
+bluebuild generate-iso --iso-name kier-wm.iso image ghcr.io/lgranie/kierownik-wm:latest
 ```
 
 ## Verification

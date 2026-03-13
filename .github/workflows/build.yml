@@ -29,8 +29,7 @@ jobs:
         recipe:
           # !! Add your recipes here
           # - recipe-base.yml
-          - recipe-hypr.yml
-          # - recipe-niri.yml
+          - recipe-wm.yml
     steps:
       # the build is fully handled by the reusable github action
       - name: Build Custom Image
