@@ -17,7 +17,7 @@ trap '/usr/libexec/kier/firstboot.sh;' SIGINT
 
 FULLNAME="Laurent Granie"
 USERNAME="lgranie"
-PASSWORD="liliop"
+PASSWORD="changeme"
 DOTSREPO="https://codeberg.org/lgranie/mise-dots.git"
 TIMEZONE="Europe/Paris"
 HOSTNAME="kier-vm"
