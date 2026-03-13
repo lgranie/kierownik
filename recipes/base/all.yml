@@ -28,7 +28,7 @@ modules:
     arch: x86_64
     kargs:
       # - console=ttyS0,114800n8
-      - splash
+      - quiet splash
       - amd_iommu=on iommu=pt
   
   - type: script
