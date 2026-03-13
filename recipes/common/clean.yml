@@ -5,4 +5,6 @@ remove:
     - nano
     - firefox
     - firefox-langpacks
+    - vim-common
+    - vim-data
     - vim-minimal
