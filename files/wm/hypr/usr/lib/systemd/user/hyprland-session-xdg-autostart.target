@@ -4,4 +4,4 @@ Documentation=man:systemd.special(7)
 BindsTo=hyprland-session.target
 Conflicts=hyprland-session-shutdown.target
 Before=hyprland-session-shutdown.target
-StopWhenUnneeded=yes 
+StopWhenUnneeded=yes

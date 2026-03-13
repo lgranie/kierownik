@@ -29,7 +29,7 @@ main_menu() {
       "Username:  $USERNAME" \
       "dotfiles:  $DOTSREPO" \
       "Timezone:  $TIMEZONE" \
-      "Hostname:  $HOSTNAME" 
+      "Hostname:  $HOSTNAME"
 
     choice=$(gum choose \
       "Setup" \

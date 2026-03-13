@@ -25,4 +25,4 @@ systemctl --user import-environment
 # Start the Hyprland session
 # This will trigger the entire dependency chain:
 # hyprland-session.target -> hyprland.service + hyprland-session-pre.target -> hyprland-env.service
-exec systemctl --user start --wait hyprland-session.target 
+exec systemctl --user start --wait hyprland-session.target
