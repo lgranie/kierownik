@@ -2,5 +2,5 @@
 vt = 1
 
 [default_session]
-command = "tuigreet --remember-session --cmd start-hyprland-session"
+command = "tuigreet --remember-session --cmd start-niri-session"
 user = "greetd"
