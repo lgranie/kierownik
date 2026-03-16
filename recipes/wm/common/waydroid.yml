@@ -1,0 +1,17 @@
+---
+modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - waydroid
+
+  - type: files
+    files:
+      - source: wm/common/wayvnc
+        destination: /
+
+  - type: systemd
+    system:
+      enabled:
+        - waydroid-container

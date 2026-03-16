@@ -1,6 +1,7 @@
 ---
 modules:
   - from-file: common/clean.yml
+  
   - from-file: base/dotfiles.yml
   - from-file: base/fish.yml
   - from-file: base/nerd-fonts.yml
