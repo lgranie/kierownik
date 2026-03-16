@@ -1,0 +1,24 @@
+[Unit]
+Description=Niri - A dynamic tiling Wayland compositor
+Documentation=man:niri(1)
+BindsTo=niri-session.target
+Before=niri-session.target graphical-session.target
+PropagatesStopTo=niri-session.target graphical-session.target
+After=graphical-session-pre.target
+OnSuccess=niri-session-shutdown.target
+OnSuccessJobMode=replace-irreversibly
+OnFailure=niri-session-shutdown.target
+OnFailureJobMode=replace-irreversibly
+Conflicts=niri-session-shutdown.target
+Before=niri-session-shutdown.target
+CollectMode=inactive-or-failed
+
+[Service]
+Type=notify
+NotifyAccess=all
+ExecStart=niri-session
+Restart=no
+TimeoutStartSec=60
+TimeoutStopSec=30
+SyslogIdentifier=niri
+Slice=session.slice

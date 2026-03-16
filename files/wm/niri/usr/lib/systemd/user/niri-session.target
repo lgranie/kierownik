@@ -1,0 +1,18 @@
+[Unit]
+Description=Niri Wayland compositor session
+Documentation=man:systemd.special(7)
+Requires=niri.service
+Wants=niri-session-xdg-autostart.target
+After=graphical-session-pre.target
+BindsTo=graphical-session.target
+Before=graphical-session.target
+PropagatesStopTo=graphical-session.target
+Conflicts=niri-session-shutdown.target
+Before=niri-session-shutdown.target
+StopWhenUnneeded=yes
+
+[Install]
+# WantedBy=default.target
+# Comment out the above line to prevent auto-start on login
+# Enable manually with: systemctl --user enable niri-session.target
+# Or start from shell with the start-niri-session script
