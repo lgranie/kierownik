@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=Niri
+Name=Niri Session
 Comment=A scrollable-tiling Wayland compositor
 DesktopNames=niri
 Exec=/usr/bin/start-niri-session

@@ -1,0 +1,7 @@
+// Add lines like this to spawn processes at startup.
+// Note that running niri as a session supports xdg-desktop-autostart,
+// which may be more convenient to use.
+// See the binds section below for more spawn examples.
+
+spawn-at-startup "qs" "-c" "noctalia-shell"
+spawn-at-startup "wayvnc" "0.0.0.0"
