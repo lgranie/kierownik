@@ -180,6 +180,22 @@ EOF
 
   rm -rf /tmp/skel/$USERNAME
 
+  # Set autologin
+  systemctl edit --stdin getty@tty1 <<EOF
+[Unit]
+Description=Getty on %I
+After=systemd-user-sessions.service plymouth-quit-wait.service getty-pre.target
+After=rc-local.service
+
+
+[Service]
+ExecStart=
+ExecStart=-/usr/sbin/agetty --autologin $USERNAME --noclear %I \$TERM
+
+[Install]
+WantedBy=getty.target
+EOF
+
   unset NEWPASSWORD
   unset PASSWORD
 

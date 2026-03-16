@@ -1,13 +1,13 @@
 [Unit]
 Description=Kier Dotfiles Update
 ConditionPathExists=%h/.dots
-After=dotfiles-init.service
-Requires=dotfiles-init.service
+After=dotfiles-init.service gpg-agent-ssh.socket
+Requires=dotfiles-init.service gpg-agent-ssh.socket
 
 [Service]
 Type=oneshot
 WorkingDirectory=%h/.dots
-ExecStart=git fetch
+ExecStart=/bin/sh -c 'XDG_RUNTIME_DIR=/run/user/$(id -u) exec git fetch'
 ExecStart=git pull --rebase
 ExecStart=mise run update
 
