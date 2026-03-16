@@ -16,7 +16,7 @@ CollectMode=inactive-or-failed
 [Service]
 Type=notify
 NotifyAccess=all
-ExecStart=/usr/bin/start-hyprland -- -c "/usr/share/hypr/hyprland.conf"
+ExecStart=/usr/bin/start-hyprland
 Restart=no
 TimeoutStartSec=60
 TimeoutStopSec=30
