@@ -4,7 +4,7 @@
 // https://yalter.github.io/niri/Configuration:-Introduction
 
 include "autostart.kdl"
-include "binding.kdl"
+include "bindings.kdl"
 include "layout.kdl"
 include "windows.kdl"
 
