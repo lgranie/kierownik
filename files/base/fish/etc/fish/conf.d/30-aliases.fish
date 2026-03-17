@@ -1,3 +1,5 @@
+#!/usr/bin/env fish
+
 # Delete dead links in current dir
 alias rmdl 'find . -xtype l -delete'
 
