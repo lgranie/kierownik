@@ -18,3 +18,4 @@ modules:
   - type: script
     snippets:
       - "chmod +x /usr/bin/start-hyprland-session"
+      - "rm -f /usr/share/wayland-sessions/hyprland-uwsm.desktop"
