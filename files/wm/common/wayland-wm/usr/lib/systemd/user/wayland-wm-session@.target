@@ -1,0 +1,15 @@
+[Unit]
+Description=Wayland compositor session for %i
+Documentation=man:systemd.special(7)
+Requires=wayland-wm@%i.service
+Wants=wayland-wm-session-xdg-autostart@%i.target
+After=graphical-session-pre.target
+BindsTo=graphical-session.target
+Before=graphical-session.target
+PropagatesStopTo=graphical-session.target
+Conflicts=wayland-wm-session-shutdown@%i.target
+Before=wayland-wm-session-shutdown@%i.target
+StopWhenUnneeded=yes
+
+[Install]
+# WantedBy=default.target

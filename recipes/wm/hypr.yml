@@ -14,7 +14,7 @@ modules:
     files:
       - source: wm/hypr
         destination: /
-  
+
   - type: script
     snippets:
       - "chmod +x /usr/bin/start-hyprland-session"

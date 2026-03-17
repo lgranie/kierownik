@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=%i
+Comment=A dynamic scrolling tiling Wayland compositor
+Exec=/usr/bin/start-%i-session
+Type=Application
+DesktopNames=%i

@@ -1,0 +1,11 @@
+---
+modules:
+
+  - type: files
+    files:
+      - source: wm/common/wayland-wm
+        destination: /
+
+  - type: script
+    snippets:
+      - "chmod +x /usr/bin/start-wm-session"

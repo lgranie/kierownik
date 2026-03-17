@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+WM=${1:?Usage: start-wm-session <wm-name>}
+
+if [[ "$(tty)" != "/dev/tty1" ]]; then
+    echo "$WM session should only be started from tty1"
+    exit 1
+fi
+
+if systemctl --user is-active --quiet graphical-session.target; then
+    echo "A graphical session is already running"
+    exit 1
+fi
+
+echo "Starting $WM session..."
+
+systemctl --user import-environment
+
+exec systemctl --user start --wait wayland-wm-session@$WM.target

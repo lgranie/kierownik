@@ -1,28 +1,2 @@
 #!/usr/bin/env bash
-
-set -oue pipefail
-
-exec niri-session
-
-# Check if we're on tty1
-if [[ "$(tty)" != "/dev/tty1" ]]; then
-    echo "Niri session should only be started from tty1"
-    exit 1
-fi
-
-# Check if a graphical session is already running
-if systemctl --user is-active --quiet graphical-session.target; then
-    echo "A graphical session is already running"
-    exit 1
-fi
-
-echo "Starting Niri session..."
-
-# Import current environment into systemd user manager
-# This ensures variables from login shell are available to services
-systemctl --user import-environment
-
-# Start the Niri session
-# This will trigger the entire dependency chain:
-# niri-session.target -> niri.service + niri-session-pre.target -> niri-env.service
-exec systemctl --user start --wait niri-session.target
+exec /usr/bin/start-wm-session niri "$@"

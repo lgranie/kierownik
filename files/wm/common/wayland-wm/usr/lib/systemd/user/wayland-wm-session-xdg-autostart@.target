@@ -1,0 +1,7 @@
+[Unit]
+Description=XDG Autostart for %i Wayland compositor session
+Documentation=man:systemd.special(7)
+BindsTo=wayland-wm-session@%i.target
+Conflicts=wayland-wm-session-shutdown@%i.target
+Before=wayland-wm-session-shutdown@%i.target
+StopWhenUnneeded=yes
