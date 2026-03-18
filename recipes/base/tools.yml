@@ -31,8 +31,3 @@ modules:
       install-weak-deps: false
       packages:
         - mise
-
-  - type: script
-    snippets:
-      - "cargo install --root /usr/local bluetui"
-      - "cargo install --root /usr/local impala"
