@@ -2,5 +2,6 @@
 <service>
   <short>localsend</short>
   <description>Localsend</description>
+  <port protocol="tcp" port="53317"/>
   <port protocol="udp" port="53317"/>
 </service>
