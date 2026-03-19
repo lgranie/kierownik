@@ -16,3 +16,7 @@ modules:
     user:
       enabled:
         - foot-server.socket
+
+  - type: script
+    snippets:
+      - "echo 'NoDisplay=true' >> /usr/share/applications/foot-server.desktop"
