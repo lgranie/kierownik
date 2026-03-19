@@ -2,7 +2,7 @@
 modules:
   - type: files
     files:
-      - source: wm/common/firewall
+      - source: base/firewall
         destination: /
 
   - type: script
