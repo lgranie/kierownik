@@ -9,4 +9,4 @@ modules:
     user:
       enabled:
         - dotfiles-init.service
-        - dotfiles-update.service
+        # - dotfiles-update.service

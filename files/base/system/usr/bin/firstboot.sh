@@ -202,10 +202,11 @@ EOF
   trap '' EXIT
   trap '' SIGINT
   touch /var/lib/kier-firstboot.done
+  systemctl disable firstboot.service
+  systemctl mask firstboot.service
   exit 0
 }
 
 sleep 5
-# flatpak install --reinstall -y io.github.kolunmi.Bazaar &
 clear
 main_menu
