@@ -1,0 +1,11 @@
+---
+modules:
+  - type: files
+    files:
+      - source: wm/common/firewall
+        destination: /
+
+  - type: script
+    snippets:
+      - "chmod 644 /etc/firewalld/zones/Kierownik-wm.xml"
+      - "sed -i 's/^DefaultZone=public/DefaultZone=Kierownik-wm/' /etc/firewalld/firewalld.conf"

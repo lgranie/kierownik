@@ -7,5 +7,5 @@ modules:
 
   - type: script
     snippets:
-      - "chmod 644 /etc/firewalld/zones/Kierownik.xml"
-      - "sed -i 's/^DefaultZone=public/DefaultZone=Kierownik/' /etc/firewalld/firewalld.conf"
+      - "chmod 644 /etc/firewalld/zones/Kierownik-base.xml"
+      - "sed -i 's/^DefaultZone=public/DefaultZone=Kierownik-base/' /etc/firewalld/firewalld.conf"

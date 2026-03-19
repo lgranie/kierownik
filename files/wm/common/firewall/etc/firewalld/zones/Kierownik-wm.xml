@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zone>
+  <short>Kierownik WM</short>
+  <description>Kierownik wm default config</description>
+  <service name="localsend"/>
+  <service name="wayvnc"/>
+  <forward/>
+</zone>
