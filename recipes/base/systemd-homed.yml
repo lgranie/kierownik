@@ -7,5 +7,6 @@ modules:
   
   - type: script
     snippets:
-      - "authselect enable-feature with-systemd-homed"
+      - "authselect select local with-systemd-homed with-faillock without-nullok"
+      - "authselect apply-changes"
       - "sed -i 's|^# minlen = 8|minlen = 6|' /etc/security/pwquality.conf"
