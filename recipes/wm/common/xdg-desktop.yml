@@ -1,0 +1,15 @@
+---
+modules:
+  - type: files
+    files:
+      - source: wm/common/xdg-desktop
+        destination: /
+
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - gnome-keyring
+        - xdg-desktop-portal-gnome
+        - xdg-desktop-portal-gtk
+        - xdg-desktop-portal-hyprland

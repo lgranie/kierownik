@@ -4,6 +4,10 @@
 alias rmdl 'find . -xtype l -delete'
 
 # nvim
-alias vim nvim
-alias vi nvim
 alias v nvim
+alias vi nvim
+alias vim nvim
+
+# Utils
+abbr df 'df -h'
+abbr du 'du -h -d 1'
