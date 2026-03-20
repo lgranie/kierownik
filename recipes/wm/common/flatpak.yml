@@ -26,7 +26,7 @@ modules:
           name: flathub
           title: Flathub
 
-    - type: systemd
-      system:
-        enabled:
-          - flatpak-update.timer
+  - type: systemd
+    system:
+      enabled:
+        - flatpak-update.timer
