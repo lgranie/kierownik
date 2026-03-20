@@ -8,7 +8,7 @@ modules:
   - type: default-flatpaks
     configurations:
       - scope: system
-        notify: true # Send notification after install/uninstall is finished (true/false)
+        notify: false # Send notification after install/uninstall is finished (true/false)
         repo:
           url: https://flathub.org/repo/flathub.flatpakrepo
           name: flathub
@@ -20,7 +20,13 @@ modules:
           - io.github.kolunmi.Bazaar
           - org.localsend.localsend_app
       - scope: user # Also add Flathub user repo, but no user packages
+        notify: false
         repo:
           url: https://flathub.org/repo/flathub.flatpakrepo
           name: flathub
           title: Flathub
+
+    - type: systemd
+      system:
+        enabled:
+          - flatpak-update.timer

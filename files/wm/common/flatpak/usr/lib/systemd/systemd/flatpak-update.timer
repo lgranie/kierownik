@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily Flatpak updates
+Requires=flatpak-update.service
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+
+[Install]
+WantedBy=timers.target
