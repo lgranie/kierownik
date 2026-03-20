@@ -13,3 +13,8 @@ modules:
         - xdg-desktop-portal-gnome
         - xdg-desktop-portal-gtk
         - xdg-desktop-portal-hyprland
+
+  - type: systemd
+    user:
+      enabled:
+        - gnome-keyring-daemon
