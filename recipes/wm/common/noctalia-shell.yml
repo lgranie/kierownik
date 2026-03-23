@@ -9,3 +9,8 @@ modules:
       packages:
         - noctalia-qs
         - noctalia-shell
+
+  - type: files
+    files:
+      - source: wm/common/noctalia-shell
+        destination: /
