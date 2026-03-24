@@ -9,6 +9,7 @@ modules:
   - from-file: base/plymouth.yml
   - from-file: base/systemd-homed.yml
   - from-file: base/systemd-services.yml
+  - from-file: base/tmux.yml
   - from-file: base/tools.yml
 
   - type: files
