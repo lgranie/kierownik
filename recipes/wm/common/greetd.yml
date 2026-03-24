@@ -18,6 +18,6 @@ modules:
         - greetd
 
   - type: script
-    snippets:
-      - "mkdir -p /var/cache/tuigreet"
-      - "chown -R greetd:greetd /var/cache/tuigreet"
+    scripts:
+      - wm/greetd.sh
+
