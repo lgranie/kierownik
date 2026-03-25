@@ -18,7 +18,7 @@
 // (This example rule is commented out with a "/-" in front.)
 // https://docs.noctalia.dev/getting-started/compositor-settings/niri/
 window-rule {
-    geometry-corner-radius 2
+    geometry-corner-radius 4
     clip-to-geometry true
 }
 
@@ -43,8 +43,13 @@ overview {
   }
 }
 
-// Make inactive windows semitransparent
 window-rule {
     match is-active=false
     opacity 0.9
+}
+
+// Active windows 97% opaque
+window-rule {
+    match is-active=true
+    opacity 1.0
 }
