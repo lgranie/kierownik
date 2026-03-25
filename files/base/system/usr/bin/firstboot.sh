@@ -201,9 +201,7 @@ EOF
 
   trap '' EXIT
   trap '' SIGINT
-  touch /var/lib/kier-firstboot.done
-  systemctl disable firstboot.service
-  systemctl mask firstboot.service
+  touch /var/lib/firstboot.done
   exit 0
 }
 
