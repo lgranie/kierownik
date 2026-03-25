@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# global
+flatpak override --system --filesystem=home
+flatpak override --system --socket=wayland
+flatpak override --system --nosocket=x11
+
+# com.brave.Browser
+flatpak override --system --device=dri com.brave.Browser
+
+# com.vscodium.codium
+flatpak override --system --filesystem=/usr/bin com.vscodium.codium
+flatpak override --filesystem=xdg-run/podman com.vscodium.codium
+flatpak override --system --socket=ssh-auth com.vscodium.codium
+flatpak override --system --socket=gpg-agent com.vscodium.codium
+
+# org.localsend.localsend_app
+flatpak override --system --filesystem=xdg-download org.localsend.localsend_app

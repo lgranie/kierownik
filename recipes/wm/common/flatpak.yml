@@ -29,4 +29,5 @@ modules:
   - type: systemd
     system:
       enabled:
+        - flatpak-default_config.service
         - flatpak-update.timer

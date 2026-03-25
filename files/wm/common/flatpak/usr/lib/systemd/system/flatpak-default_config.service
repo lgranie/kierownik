@@ -1,0 +1,12 @@
+[Unit]
+Description=Init Flatpak global overrides
+ConditionPathExists=!/var/lib/flatpak/overrides/global
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/flatpak-default_config.sh
+
+[Install]
+WantedBy=multi-user.target

@@ -1,3 +1,0 @@
-[Context]
-filesystems=/usr/bin;~/.config/git;
-sockets=gpg-agent;ssh-agent
