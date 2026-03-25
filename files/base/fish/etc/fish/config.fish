@@ -1,9 +1,5 @@
 #!/usr/bin/env fish
 
-# Env
-set -gx EDITOR nvim
-set -gx VISUAL nvim
-
 # Remove greeting
 set -U fish_greeting ""
 
