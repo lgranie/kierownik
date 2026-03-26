@@ -1,5 +1,6 @@
 [Unit]
 Description=Kier Dotfiles Setup
+ConditionEnvironment=DOTSREPO
 ConditionPathExists=!%h/.dots
 After=home.mount systemd-homed.service
 
