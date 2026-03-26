@@ -30,8 +30,8 @@ binds {
     // Swap active window with the one next to it with SUPER + SHIFT + arrow keys
     Mod+Shift+Left  { consume-or-expel-window-left; }
     Mod+Shift+Right { consume-or-expel-window-right; }
-    Mod+Shift+Up    { move-column-up; }
-    Mod+Shift+Down  { move-column-down; }
+    //Mod+Shift+Up    { move-column-up; }
+    //Mod+Shift+Down  { move-column-down; }
 
     // Resize active window
     Mod+Minus { set-column-width "-10%"; }
