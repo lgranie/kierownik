@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Tmux
+GenericName=Terminal Multiplexer
+TryExec=tmux
+Exec=tmux %F
+Terminal=true
+Type=Application
+Keywords=Terminal;Multiplexer;
+Icon=tmux
+Categories=Utility;System;Terminal;
+StartupNotify=false
+X-Desktop-File-Install-Version=0.28
