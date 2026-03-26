@@ -16,5 +16,3 @@ modules:
     system:
       enabled:
         - greetd
-
-

@@ -11,6 +11,17 @@ image-version: latest # latest is also supported if you want new updates ASAP
 # base-image: quay.io/fedora/fedora-bootc
 # image-version: 43
 
+stages:
+  - name: rust_builder
+    from: docker.io/library/rust:latest
+    modules:
+      - type: script
+        no-cache: true
+        snippets:
+          - curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+          - cargo binstall bluetui --disable-telemetry --install-path /tmp/rust_builder
+          - cargo binstall impala  --disable-telemetry --install-path /tmp/rust_builder
+
 # module configuration, executed in order
 # you can include multiple instances of the same module
 modules:
@@ -19,6 +30,11 @@ modules:
   - from-file: wm/common/all.yml
   - from-file: wm/hypr.yml
   - from-file: wm/niri.yml
+
+  - type: copy
+    from: rust_builder
+    src: /tmp/rust_builder 
+    dest: /usr/bin
 
   # finalize
   - from-file: common/finalize.yml
