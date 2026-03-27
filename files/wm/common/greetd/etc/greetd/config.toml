@@ -4,3 +4,15 @@ vt = 1
 [default_session]
 command = "tuigreet --remember-session --cmd start-niri-session"
 user = "greetd"
+
+[theme]
+border = "magenta"
+text = "green"
+time = "blue"
+container = "black"
+title = "cyan"
+greet = "yellow"
+prompt = "magenta"
+input = "white"
+action = "bright-blue"
+button = "bright-red"
