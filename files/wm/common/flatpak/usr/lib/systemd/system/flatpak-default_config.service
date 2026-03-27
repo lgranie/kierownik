@@ -6,7 +6,7 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/flatpak-default_config.sh
+ExecStart=/usr/bin/flatpak-default_config
 
 [Install]
 WantedBy=multi-user.target

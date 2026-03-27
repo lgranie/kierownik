@@ -19,7 +19,7 @@ modules:
   
   - type: script
     snippets:
-      - "chmod +x /usr/bin/firstboot.sh"
+      - "chmod +x /usr/bin/firstboot"
 
   - type: systemd
     system:
@@ -35,4 +35,4 @@ modules:
   
   - type: script
     scripts:
-      - base/bootc-update.sh
+      - base/bootc-update

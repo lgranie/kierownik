@@ -11,7 +11,7 @@ StandardOutput=tty
 TTYPath=/dev/tty1
 TTYReset=yes
 TTYVHangup=yes
-ExecStart=/usr/bin/firstboot.sh
+ExecStart=/usr/bin/firstboot
 
 [Install]
 WantedBy=default.target
