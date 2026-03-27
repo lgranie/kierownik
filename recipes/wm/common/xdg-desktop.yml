@@ -1,10 +1,5 @@
 ---
 modules:
-  - type: files
-    files:
-      - source: wm/common/xdg-desktop
-        destination: /
-
   - type: dnf
     install:
       install-weak-deps: false
