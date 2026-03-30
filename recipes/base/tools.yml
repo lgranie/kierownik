@@ -31,3 +31,13 @@ modules:
       install-weak-deps: false
       packages:
         - mise
+
+  - type: script
+    snippets:
+      - "fzf --fish > /etc/fish/conf.d/90-fzf.fish"
+      - "mise activate fish > /etc/fish/conf.d/90-mise.fish"
+      - "zoxide init --cmd cd fish > /etc/fish/conf.d/90-zoxide.fish"
+      - "bat --completion fish > /etc/fish/completions/bat.fish"
+      - "delta --generate-completion fish > /etc/fish/completions/delta.fish"
+      - "gum completion fish > /etc/fish/completions/gum.fish"
+      - "yq completion fish > /etc/fish/completions/yq.fish"

@@ -14,3 +14,5 @@ alias env 'env | sort'
 abbr df 'df -h'
 abbr du 'du -h -d 1'
 
+# sudo
+abbr dmesg 'sudo dmesg'
