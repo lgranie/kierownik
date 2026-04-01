@@ -1,6 +1,7 @@
 ---
 modules:
   - from-file: base/clean.yml
+  - from-file: base/dns.yml
   - from-file: base/dotfiles.yml
   - from-file: base/firewall.yml
   - from-file: base/fish.yml
