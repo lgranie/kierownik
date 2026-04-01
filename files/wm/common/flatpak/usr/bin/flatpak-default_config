@@ -12,7 +12,7 @@ flatpak override --system --device=dri com.brave.Browser
 
 # com.vscodium.codium
 flatpak override --system --filesystem=/usr/bin com.vscodium.codium
-flatpak override --filesystem=xdg-run/podman com.vscodium.codium
+flatpak override --system --filesystem=xdg-run/podman com.vscodium.codium
 flatpak override --system --socket=ssh-auth com.vscodium.codium
 flatpak override --system --socket=gpg-agent com.vscodium.codium
 
