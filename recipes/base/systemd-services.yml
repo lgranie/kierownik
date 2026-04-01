@@ -3,9 +3,14 @@ modules:
   - type: systemd
     system:
       disabled:
+        - dnf-makecache.service
+        - dnf-makecache.timer
+        - raid-check.service
+        - raid-check.timer
         - rpm-ostree-countme.service
         - rpm-ostree-countme.timer
-        - sshd
+        - sshd.service
+        - sshd.socket
     user:
       enabled:
         - podman.socket
