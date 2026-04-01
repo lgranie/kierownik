@@ -11,6 +11,15 @@ image-version: latest # latest is also supported if you want new updates ASAP
 # base-image: quay.io/fedora/fedora-bootc
 # image-version: 43
 
+stages:
+  - name: rust_builder
+    from: docker.io/library/rust:latest
+    modules:
+      - type: script
+        no-cache: true
+        scripts:
+          - rust_builder/build
+
 # module configuration, executed in order
 # you can include multiple instances of the same module
 modules:

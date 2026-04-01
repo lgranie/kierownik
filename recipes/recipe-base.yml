@@ -9,6 +9,15 @@ description: This is my personal OS image.
 base-image: ghcr.io/blue-build/base-images/fedora-base
 image-version: latest # latest is also supported if you want new updates ASAP
 
+stages:
+  - name: rust_builder
+    from: docker.io/library/rust:latest
+    modules:
+      - type: script
+        no-cache: true
+        scripts:
+          - rust_builder/build
+
 # module configuration, executed in order
 # you can include multiple instances of the same module
 modules:

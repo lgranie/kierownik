@@ -1,11 +1,13 @@
-type: dnf
-remove:
-  auto-remove: true
-  packages:
-    - nano
-    - firefox
-    - firefox-langpacks
-    - ModemManager
-    - vim-common
-    - vim-data
-    - vim-minimal
+---
+modules:
+  - type: dnf
+    remove:
+      auto-remove: true
+      packages:
+        - nano
+        - firefox
+        - firefox-langpacks
+        - ModemManager
+        - vim-common
+        - vim-data
+        - vim-minimal
