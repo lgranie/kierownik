@@ -6,5 +6,6 @@ modules:
       packages:
         - swayidle
         - swaylock
-        # - wl-copy
+        - wl-clipboard
+        - cliphist
         - wlsunset

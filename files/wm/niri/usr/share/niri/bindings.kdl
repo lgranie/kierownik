@@ -6,6 +6,12 @@ binds {
     Mod+B hotkey-overlay-title="Open Bookmark" { spawn-sh "qs -c noctalia-shell ipc call plugin:bookmarks toggle"; }
     Mod+Alt+L hotkey-overlay-title="Lock the Screen: swaylock" { spawn "swaylock"; }
 
+    // Unified clipboard (Super+C/V/X works everywhere)
+    Mod+C hotkey-overlay-title="Copy" { spawn-sh "wl-copy"; }
+    Mod+X hotkey-overlay-title="Cut" { spawn-sh "wl-copy"; close-window; }
+    Mod+V hotkey-overlay-title="Paste" { spawn-sh "wl-paste"; }
+    Mod+Ctrl+V hotkey-overlay-title="Clipboard History" { spawn-sh "cliphist decode | wl-paste"; }
+
     // Close windows
     Mod+W repeat=false { close-window; }
 
