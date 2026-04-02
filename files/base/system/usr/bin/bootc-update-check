@@ -6,9 +6,9 @@ check_bootc_updates() {
     local status
     status=$(bootc status --format json 2>/dev/null || echo '{}')
     
-    local staged=$(echo "$status" | jq -r '.staged.version // .staged.image // empty' 2>/dev/null || true)
-    local deployed=$(echo "$status" | jq -r '.booted.version // .booted.image // empty' 2>/dev/null || true)
-    
+    local staged=$(echo "$status" | jq -r '.status.staged.version // .status.staged.image // .staged.version // .staged.image // empty' 2>/dev/null || true)
+    local deployed=$(echo "$status" | jq -r '.status.booted.version // .status.booted.image // .booted.version // .booted.image // empty' 2>/dev/null || true)
+
     if [ -n "$staged" ]; then
         if [ "$staged" != "$deployed" ]; then
             notify_all "Bootc" "Update ready: $staged. Reboot to apply."
@@ -21,7 +21,7 @@ check_bootc_updates() {
         if echo "$check_output" | grep -q "No changes"; then
             return
         else
-            notify_all "Bootc" "Update available: $staged"
+            notify_all "Bootc" "Update available"
         fi
     fi
 }
