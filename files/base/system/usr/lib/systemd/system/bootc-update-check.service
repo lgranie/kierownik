@@ -1,0 +1,11 @@
+[Unit]
+Description=Check for bootc updates and notify users
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/bootc-update-check
+
+[Install]
+WantedBy=multi-user.target

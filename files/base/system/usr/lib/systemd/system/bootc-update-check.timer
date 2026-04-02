@@ -1,0 +1,10 @@
+[Unit]
+Description=Check for bootc updates periodically
+
+[Timer]
+OnBootSec=1h
+OnUnitInactiveSec=1h
+Persistent=true
+
+[Install]
+WantedBy=timers.target

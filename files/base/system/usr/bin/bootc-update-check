@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+check_bootc_updates() {
+    local status
+    status=$(bootc status --format json 2>/dev/null || echo '{}')
+    
+    local staged=$(echo "$status" | jq -r '.staged.version // .staged.image // empty' 2>/dev/null || true)
+    local deployed=$(echo "$status" | jq -r '.booted.version // .booted.image // empty' 2>/dev/null || true)
+    
+    if [ -n "$staged" ]; then
+        if [ "$staged" != "$deployed" ]; then
+            notify_all "Bootc" "Update ready: $staged. Reboot to apply."
+            return
+        fi
+    fi
+    
+    local check_output
+    if check_output=$(bootc update --check 2>&1); then
+        if echo "$check_output" | grep -q "No update"; then
+            return
+        else
+            notify_all "Bootc" "Update available: $staged"
+        fi
+    fi
+}
+
+check_bootc_updates
