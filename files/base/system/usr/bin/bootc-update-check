@@ -18,7 +18,7 @@ check_bootc_updates() {
     
     local check_output
     if check_output=$(bootc update --check 2>&1); then
-        if echo "$check_output" | grep -q "No update"; then
+        if echo "$check_output" | grep -q "No changes"; then
             return
         else
             notify_all "Bootc" "Update available: $staged"

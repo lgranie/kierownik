@@ -4,7 +4,6 @@ set -euo pipefail
 
 for id in $(loginctl list-sessions -j | jq -r '.[] | .session'); do
   if [[ $(loginctl show-session $id --property=Type) =~ (wayland|x11) ]]; then
-    systemd-run --machine=$(loginctl show-session $id --property=Name --value)@.host --user \
-    notify-send '$1' '$2'
+    systemd-run --uid=$(loginctl show-session $id --property=Name --value) --user notify-send "$1" "$2"
   fi
 done
