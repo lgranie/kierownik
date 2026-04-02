@@ -18,3 +18,5 @@ flatpak override --system --socket=gpg-agent com.vscodium.codium
 
 # org.localsend.localsend_app
 flatpak override --system --filesystem=xdg-download org.localsend.localsend_app
+
+notify_all "Flatpak" "System configuration setted"
