@@ -5,7 +5,6 @@ set -euo pipefail
 updates=$(flatpak remote-ls --updates 2>/dev/null || true)
 
 if [ -z "$updates" ]; then
-    notify_all "Flatpak" "No update available"
     exit 0
 fi
 
