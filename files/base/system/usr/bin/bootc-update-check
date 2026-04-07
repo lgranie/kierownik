@@ -11,7 +11,7 @@ check_bootc_updates() {
 
     if [ -n "$staged" ]; then
         if [ "$staged" != "$deployed" ]; then
-            notify_all "Bootc" "Update ready: $staged. Reboot to apply."
+            notify_all "Bootc" "Update ready, reboot to apply."
             return
         fi
     fi
