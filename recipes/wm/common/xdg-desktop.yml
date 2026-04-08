@@ -4,6 +4,7 @@ modules:
     install:
       install-weak-deps: false
       packages:
+        - dbus-broker
         - gnome-keyring
         - xdg-desktop-portal-gnome
         - xdg-desktop-portal-gtk
@@ -12,4 +13,5 @@ modules:
   - type: systemd
     user:
       enabled:
+        - dbus-broker
         - gnome-keyring-daemon
