@@ -2,7 +2,7 @@
 Description=Check for bootc updates periodically
 
 [Timer]
-OnBootSec=1h
+OnBootSec=15min
 OnUnitInactiveSec=1h
 Persistent=true
 

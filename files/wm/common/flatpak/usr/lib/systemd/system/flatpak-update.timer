@@ -3,7 +3,7 @@ Description=Daily Flatpak updates
 Requires=flatpak-update.service
 
 [Timer]
-OnBootSec=1h
+OnBootSec=10min
 OnUnitInactiveSec=4h
 Persistent=true
 
