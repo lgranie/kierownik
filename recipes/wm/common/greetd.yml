@@ -12,6 +12,10 @@ modules:
       - source: wm/common/greetd
         destination: /
 
+  - type: script
+    snippets:
+      - "sed -i 's|pam_u2f.so cue|pam_u2f.so cue authfile=/etc/u2f_mappings|' /etc/pam.d/system-auth"
+  
   - type: systemd
     system:
       enabled:

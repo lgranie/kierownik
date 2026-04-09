@@ -194,7 +194,8 @@ ExecStart=-/usr/sbin/agetty --autologin $USERNAME --noclear %I \$TERM
 [Install]
 WantedBy=getty.target
 EOF
-
+  
+  # Register u2f key
   if command -v pamu2fcfg >/dev/null 2>&1; then
     pamu2fcfg -u $USERNAME -o pam://$HOSTNAME -i pam://$HOSTNAME >> /etc/u2f_mappings   
   fi
