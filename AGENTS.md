@@ -8,17 +8,16 @@ This is a BlueBuild/Fedora bootc OS configuration repository. Agents working her
 ```bash
 # Build OCI image
 mise run build_oci base    # Build base image
-mise run build_oci hypr   # Build Hyprland image  
-mise run build_oci niri   # Build Niri image
+mise run build_oci wm      # Build WM (Hyprland/Niri) image
 
 # Build ISO
-mise run build_iso hypr
+mise run build_iso wm
 
 # Build QCOW2 for VM
-mise run build_qcow2 hypr
+mise run build_qcow2 wm
 
 # Run in VM
-mise run vm hypr
+mise run vm wm
 ```
 
 ### Using bluebuild directly
@@ -31,7 +30,7 @@ bluebuild generate-iso --iso-name kier-wm.iso recipe recipes/recipe-wm.yml
 - GitHub Actions: `.github/workflows/build.yml`
 - Builds run on schedule (Saturday 07:00 UTC) and on push
 - Uses blue-build/github-action@v1.11
-- Recipe matrix in build.yml controls which images get built
+- Currently builds `recipe-wm.yml` (add to matrix in build.yml to build more)
 
 ## Code Style
 
