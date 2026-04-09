@@ -187,7 +187,6 @@ Description=Getty on %I
 After=systemd-user-sessions.service plymouth-quit-wait.service getty-pre.target
 After=rc-local.service
 
-
 [Service]
 ExecStart=
 ExecStart=-/usr/sbin/agetty --autologin $USERNAME --noclear %I \$TERM
@@ -195,6 +194,10 @@ ExecStart=-/usr/sbin/agetty --autologin $USERNAME --noclear %I \$TERM
 [Install]
 WantedBy=getty.target
 EOF
+
+  if command -v pamu2fcfg >/dev/null 2>&1; then
+    pamu2fcfg -u $USERNAME -o pam://$HOSTNAME -i pam://$HOSTNAME >> /etc/u2f_mappings   
+  fi
 
   unset NEWPASSWORD
   unset PASSWORD

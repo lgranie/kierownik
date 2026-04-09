@@ -1,5 +1,12 @@
 ---
 modules:
+  - type: dnf
+    install:
+      packages:
+        - fido2-tools
+        - pam-u2f
+        - pamu2fcfg
+
   - type: systemd
     system:
       enabled:
@@ -7,6 +14,6 @@ modules:
   
   - type: script
     snippets:
-      - "authselect select local with-systemd-homed with-faillock without-nullok"
+      - "authselect select local with-systemd-homed with-faillock without-nullok with-pam-u2f"
       - "authselect apply-changes"
       - "sed -i 's|^# minlen = 8|minlen = 6|' /etc/security/pwquality.conf"
