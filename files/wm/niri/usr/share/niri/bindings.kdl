@@ -1,6 +1,6 @@
 binds {
     // #"Keybind Cheatsheet"
-    Mod+QUESTIONMARK hotkey-overlay-title="Keybind Cheatsheet" { spawn-sh "qs -c noctalia-shell ipc call plugin:keybind-cheatsheet toggle"; }
+    Mod+Slash hotkey-overlay-title="Keybind Cheatsheet" { spawn-sh "qs -c noctalia-shell ipc call plugin:keybind-cheatsheet toggle"; }
 
     // #"Applications"
     Mod+Return hotkey-overlay-title="Open a Terminal: foot client" { spawn "footclient"; }
