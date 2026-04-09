@@ -11,7 +11,7 @@ binds {
 
     // Unified clipboard (Super+C/V/X works everywhere)
     Mod+C hotkey-overlay-title="Copy" { spawn-sh "wl-copy"; }
-    Mod+X hotkey-overlay-title="Cut" { spawn-sh "wl-copy"; close-window; }
+    Mod+X hotkey-overlay-title="Cut" { spawn-sh "wl-copy"; }
     Mod+V hotkey-overlay-title="Paste" { spawn-sh "wl-paste"; }
     Mod+Ctrl+V hotkey-overlay-title="Clipboard History" { spawn-sh "cliphist decode | wl-paste"; }
 
@@ -51,7 +51,6 @@ binds {
     Mod+Comma hotkey-overlay-title="Consume window into column" { consume-window-into-column; }
     Mod+Period hotkey-overlay-title="Expel window from column" { expel-window-from-column; }
     Mod+R hotkey-overlay-title="Switch preset column width" { switch-preset-column-width; }
-    Mod+C hotkey-overlay-title="Center column" { center-column; }
 
     // #"Window Movement"
     Mod+Shift+R hotkey-overlay-title="Switch preset window height" { switch-preset-window-height; }
