@@ -197,7 +197,7 @@ EOF
   
   # Register u2f key
   if command -v pamu2fcfg >/dev/null 2>&1; then
-    pamu2fcfg -u $USERNAME -o pam://$HOSTNAME -i pam://$HOSTNAME >> /etc/u2f_mappings   
+    pamu2fcfg -u $USERNAME --no-user-presence >> /etc/u2f_mappings   
   fi
 
   unset NEWPASSWORD
