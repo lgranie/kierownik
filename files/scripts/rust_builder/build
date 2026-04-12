@@ -7,5 +7,5 @@ curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-
 #apt install -y libdbus-1-dev pkg-config
 #cargo binstall --disable-telemetry --root /output_build --no-symlinks --no-confirm bluetui
 #cargo binstall --disable-telemetry --install-path /output --no-symlinks --no-confirm impala
-#cargo binstall --disable-telemetry --install-path /output --no-symlinks --no-confirm television
+cargo binstall --disable-telemetry --install-path /output --no-symlinks --no-confirm television
 cargo binstall --disable-telemetry --install-path /output --no-symlinks --no-confirm usage-cli
