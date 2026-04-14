@@ -4,15 +4,8 @@ modules:
     install:
       install-weak-deps: false
       packages:
-        - plymouth
-        - plymouth-core-libs
-        - plymouth-plugin-script
-
-  - type: files
-    files:
-      - source: base/plymouth
-        destination: /
+        - plymouth-theme-spinner
 
   - type: script
     snippets:
-      - "plymouth-set-default-theme kierownik"
+      - "plymouth-set-default-theme spinner"
