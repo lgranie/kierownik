@@ -1,8 +1,0 @@
----
-modules:
-  - type: files
-    files:
-      - source: base/system/etc/NetworkManager/conf.d/99-dns.conf
-        destination: /
-      - source: base/system/etc/systemd/resolved.conf.d/99-fallback-dns.conf
-        destination: /
