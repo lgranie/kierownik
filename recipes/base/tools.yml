@@ -8,18 +8,18 @@ modules:
         - btop
         - delta
         - fd
-        # - fzf
+        - fzf
         - gcc
         - git
         - gum
-        # - jq
+        - jq
         - lsd
         - make
         - neovim
-        # - openssh
+        - openssh
         - ripgrep
         - stow
-        # - tar
+        - tar
         - yq
         - zoxide
 
@@ -31,6 +31,10 @@ modules:
       install-weak-deps: false
       packages:
         - mise
+
+  - type: script
+    scripts:
+      - base/missing-tools
 
   - type: script
     snippets:

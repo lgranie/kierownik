@@ -1,5 +1,11 @@
 ---
 modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - firewalld
+  
   - type: files
     files:
       - source: base/network
@@ -9,3 +15,8 @@ modules:
     snippets:
       - "chmod 644 /etc/firewalld/zones/Kierownik-base.xml"
       - "sed -i 's/^DefaultZone=public/DefaultZone=Kierownik-base/' /etc/firewalld/firewalld.conf"
+
+  - type: systemd
+    system:
+      enabled:
+        - firewalld.service

@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+declare -A tgz_bins=(
+    ["sesh"]=https://github.com/joshmedeski/sesh/releases/latest/download/sesh_Linux_x86_64.tar.gz
+    ["usage"]=https://github.com/jdx/usage/releases/latest/download/usage-x86_64-unknown-linux-gnu.tar.gz
+)
+
+for bin in "${!tgz_bins[@]}"; do
+    curl --silent -L --output - ${tgz_bins[$bin]} | tar -xzf - -C /usr/bin/ ${bin}
+    chmod +x /usr/bin/${bin}
+done
+
+declare -A bins=(
+    ["bluetui"]=https://github.com/pythops/bluetui/releases/latest/download/bluetui-x86_64-linux-musl
+    ["impala"]=https://github.com/pythops/impala/releases/latest/download/impala-x86_64-unknown-linux-musl
+)
+
+for bin in "${!bins[@]}"; do
+    curl --silent -L --output /usr/bin/${bin} ${bins[$bin]}
+    chmod +x /usr/bin/${bin}
+done
+
+curl --silent -L --output - https://github.com/alexpasmantier/television/releases/latest/download/tv-0.15.6-x86_64-unknown-linux-gnu.tar.gz \
+     | tar -xzf - --strip-components=1 -C /usr/bin/ tv-0.15.6-x86_64-unknown-linux-gnu/tv
