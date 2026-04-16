@@ -1,8 +1,8 @@
 [tools]
-rust = "latest"
-"cargo:cargo-binstall" = "latest"
 "cargo:blue-build" = "latest"
+"cargo:cargo-binstall" = "latest"
 "opencode" = "latest"
+rust = "latest"
 
 [settings]
 windows_default_inline_shell_args = "pwsh -c"
