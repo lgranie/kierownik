@@ -2,15 +2,18 @@
 modules:
   - type: systemd
     system:
-      disabled:
+      masked:
         - dnf-makecache.service
         - dnf-makecache.timer
         - raid-check.service
         - raid-check.timer
+        - rpm-ostreed-automatic.timer
         - rpm-ostree-countme.service
         - rpm-ostree-countme.timer
         - sshd.service
         - sshd.socket
+      enabled:
+        - bootc-fetch-apply-updates.timer
     user:
       enabled:
         - podman.socket

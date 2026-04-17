@@ -11,6 +11,9 @@ description: This is my personal OS image.
 base-image: quay.io/fedora/fedora-bootc
 image-version: 43
 
+platforms:
+  - linux/amd64
+
 # module configuration, executed in order
 # you can include multiple instances of the same module
 modules:

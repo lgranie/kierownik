@@ -5,6 +5,8 @@ modules:
       install-weak-deps: false
       packages:
         - plymouth-theme-spinner
+      exclude:
+        - fedora-logos
 
   - type: script
     snippets:

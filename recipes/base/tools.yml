@@ -22,9 +22,11 @@ modules:
         - tar
         - yq
         - zoxide
+        - zstd
 
   - type: dnf
     repos:
+      cleanup: true
       copr:
         - jdxcode/mise
     install:
@@ -40,6 +42,7 @@ modules:
     snippets:
       - "fzf --fish > /etc/fish/conf.d/90-fzf.fish"
       - "mise activate fish > /etc/fish/conf.d/90-mise.fish"
+      - "tv init fish > /etc/fish/conf.d/90-tv.fish"
       - "zoxide init --cmd cd fish > /etc/fish/conf.d/90-zoxide.fish"
       - "bat --completion fish > /etc/fish/completions/bat.fish"
       - "delta --generate-completion fish > /etc/fish/completions/delta.fish"

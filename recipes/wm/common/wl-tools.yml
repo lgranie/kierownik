@@ -7,5 +7,5 @@ modules:
         - swayidle
         - swaylock
         - wl-clipboard
-        - cliphist
+        #- cliphist
         - wlsunset
