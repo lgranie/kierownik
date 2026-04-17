@@ -6,7 +6,7 @@ Kierownik is an operating system built with bluebuild. It is immutable and conta
   * fish as default interactive shell
   * a collection of terminal tools ( lsd, zoxide, bat, fzf, ... )
   * mise for dev
-* 2 graphical flavors ( kierownik-wm ) : Niri and Hyprland with scrolling layout as default
+* 2 graphical flavors ( kierownik-hypr, kierownik-niri ) : Hyprland with scrolling layout as default and Niri
   * noctalia-shell
   * flatpak / flathub / bazaar
   * foot terminal
@@ -15,6 +15,7 @@ Kierownik is an operating system built with bluebuild. It is immutable and conta
 ## Inspirations
 
 * <https://github.com/blue-build/template>
+* <https://github.com/secureblue/secureblue>
 * <https://github.com/wayblueorg/wayblue>
 * <https://github.com/zirconium-dev/zirconium>
 * <https://github.com/Zena-Linux/Zena>
@@ -29,7 +30,7 @@ To rebase an existing atomic Fedora installation to the latest build:
 * First rebase to the unsigned image, to get the proper signing keys and policies installed:
 
   ```bash
-  rpm-ostree rebase ostree-unverified-registry:ghcr.io/lgranie/kierownik-wm:latest
+  rpm-ostree rebase ostree-unverified-registry:ghcr.io/lgranie/kierownik-hypr:latest
   ```
 
 * Reboot to complete the rebase:
@@ -41,7 +42,7 @@ To rebase an existing atomic Fedora installation to the latest build:
 * Then rebase to the signed image, like so:
 
   ```bash
-  rpm-ostree rebase ostree-image-signed:docker://ghcr.io/lgranie/kierownik-wm:latest
+  rpm-ostree rebase ostree-image-signed:docker://ghcr.io/lgranie/kierownik-hypr:latest
   ```
 
 * Reboot again to complete the installation
@@ -57,13 +58,13 @@ If build on Fedora Atomic, you can generate an offline ISO with the instructions
 #### From a recipe
 
 ```bash
-bluebuild generate-iso --iso-name kier-wm.iso receipe recipes/recipe-wm.yml
+bluebuild generate-iso --iso-name kier-hypr.iso receipe recipes/recipe-hypr.yml
 ```
 
 #### From a image
 
 ```bash
-bluebuild generate-iso --iso-name kier-wm.iso image ghcr.io/lgranie/kierownik-wm:latest
+bluebuild generate-iso --iso-name kier-hypr.iso image ghcr.io/lgranie/kierownik-hypr:latest
 ```
 
 ## Verification
