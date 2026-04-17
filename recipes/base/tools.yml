@@ -1,5 +1,10 @@
 ---
 modules:
+  - type: files
+    files:
+      - source: base/tools
+        destination: /
+
   - type: dnf
     install:
       install-weak-deps: false
@@ -8,6 +13,7 @@ modules:
         - btop
         - delta
         - fd
+        - fish
         - fzf
         - gcc
         - git
@@ -20,6 +26,7 @@ modules:
         - ripgrep
         - stow
         - tar
+        - tmux
         - yq
         - zoxide
         - zstd
@@ -36,7 +43,11 @@ modules:
 
   - type: script
     scripts:
-      - base/missing-tools
+      - base/non-packaged-tools
+
+  - type: script
+    snippets:
+      - "sed -i 's|^SHELL=.*|SHELL=/usr/bin/fish|' /etc/default/useradd"
 
   - type: script
     snippets:
@@ -47,4 +58,5 @@ modules:
       - "bat --completion fish > /etc/fish/completions/bat.fish"
       - "delta --generate-completion fish > /etc/fish/completions/delta.fish"
       - "gum completion fish > /etc/fish/completions/gum.fish"
+      - "sesh completion fish > /etc/fish/completions/sesh.fish"
       - "yq completion fish > /etc/fish/completions/yq.fish"
