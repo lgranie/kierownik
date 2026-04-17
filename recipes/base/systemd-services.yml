@@ -14,6 +14,9 @@ modules:
         - sshd.socket
       enabled:
         - bootc-fetch-apply-updates.timer
+        - bootc-update-check.timer
+        - firstboot
     user:
       enabled:
+        - dotfiles-init.service
         - podman.socket

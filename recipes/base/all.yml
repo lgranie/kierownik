@@ -1,32 +1,24 @@
 ---
 modules:
   - from-file: base/clean.yml
-  - from-file: base/dotfiles.yml
-  - from-file: base/fish.yml
   - from-file: base/kmscon.yml
   - from-file: base/nerd-fonts.yml
   - from-file: base/network.yml
   - from-file: base/plymouth.yml
   - from-file: base/systemd-homed.yml
-  - from-file: base/systemd-services.yml
-  - from-file: base/tmux.yml
   - from-file: base/tools.yml
 
   - type: files
     files:
       - source: base/system
-        destination: / # copies files/base/* (* means everything inside it) into your image's root folder /
-
+        destination: /
+  
   - type: script
     snippets:
       - "chmod +x /usr/bin/firstboot"
-
-  - type: systemd
-    system:
-      enabled:
-        - bootc-update-check.timer
-        - firstboot
-
+  
+  - from-file: base/systemd-services.yml
+  
   - type: kargs
     arch: x86_64
     kargs:
