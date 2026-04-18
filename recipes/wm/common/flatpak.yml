@@ -1,5 +1,11 @@
 ---
 modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - flatpak
+  
   - type: files
     files:
       - source: wm/common/flatpak
