@@ -5,6 +5,7 @@ modules:
       install-weak-deps: false
       packages:
         - greetd
+        - greetd-selinux
         - tuigreet
   
   - type: files
