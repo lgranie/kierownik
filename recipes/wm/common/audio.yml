@@ -1,0 +1,14 @@
+---
+modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - alsa-firmware
+        - pipewire
+
+  - type: systemd
+    user:
+      mask:
+        - alsa-state.service
+

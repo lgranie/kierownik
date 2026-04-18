@@ -1,5 +1,6 @@
 ---
 modules:
+  - from-file: wm/common/audio.yml
   - from-file: wm/common/firewall.yml
   - from-file: wm/common/flatpak.yml
   - from-file: wm/common/foot.yml
