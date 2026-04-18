@@ -6,10 +6,13 @@ modules:
         - fido2-tools
         - pam-u2f
         - pamu2fcfg
+        - pcsc-lite
 
   - type: systemd
     system:
       enabled:
+        - pcscd.service
+        - pcscd.socket
         - systemd-homed
   
   - type: script
