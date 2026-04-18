@@ -5,6 +5,7 @@ modules:
       install-weak-deps: false
       packages:
         - flatpak
+        - flatpak-spawn
   
   - type: files
     files:
