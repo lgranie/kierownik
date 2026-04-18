@@ -1,0 +1,22 @@
+---
+modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - cups
+        - cups-filters
+        - avahi
+
+  - type: files
+    files:
+      - source: wm/common/printer
+        destination: /
+
+  - type: systemd
+    system:
+      disabled:
+        - avahi-daemon.service
+        - avahi-daemon.socket
+        - cups.service
+        - cups.socket

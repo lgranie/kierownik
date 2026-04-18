@@ -5,9 +5,7 @@ modules:
       auto-remove: true
       packages:
         - nano
-        - firefox
-        - firefox-langpacks
-        - ModemManager
+        - openssh-server
         - vim-common
         - vim-data
         - vim-minimal
