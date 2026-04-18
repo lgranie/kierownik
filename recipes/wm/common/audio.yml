@@ -5,10 +5,8 @@ modules:
       install-weak-deps: false
       packages:
         - alsa-firmware
+        - alsa-lib
         - pipewire
-
-  - type: systemd
-    user:
-      mask:
-        - alsa-state.service
+        - pipewire-alsa
+        - wireplumber
 
