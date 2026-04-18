@@ -6,6 +6,7 @@ modules:
       packages:
         - swayidle
         - swaylock
+        - upower
         - wl-clipboard
         #- cliphist
         - wlsunset
