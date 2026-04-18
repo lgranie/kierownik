@@ -8,5 +8,5 @@ modules:
         - alsa-lib
         - pipewire
         - pipewire-alsa
+        - pipewire-pulseaudio
         - wireplumber
-
