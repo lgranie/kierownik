@@ -1,0 +1,11 @@
+---
+modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - glibc-langpack-en
+
+  - type: script
+    snippets:
+      - "localectl set-locale LANG=en_US.UTF-8"
