@@ -4,6 +4,7 @@ modules:
     install:
       packages:
         - fido2-tools
+        - gnupg2-scdaemon
         - pam-u2f
         - pamu2fcfg
         - pcsc-lite
