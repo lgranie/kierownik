@@ -14,7 +14,6 @@ modules:
         - delta
         - fd
         - fish
-        - fzf
         - gcc
         - git
         - gum
@@ -51,7 +50,6 @@ modules:
 
   - type: script
     snippets:
-      - "fzf --fish > /etc/fish/conf.d/90-fzf.fish"
       - "mise activate fish > /etc/fish/conf.d/90-mise.fish"
       - "tv init fish > /etc/fish/conf.d/90-tv.fish"
       - "zoxide init --cmd cd fish > /etc/fish/conf.d/90-zoxide.fish"
