@@ -23,8 +23,8 @@ modules:
   - type: kargs
     arch: x86_64
     kargs:
-      # - console=ttyS0,114800n8
-      - quiet splash
+      - quiet splash rhgb
+      - plymouth.use-simpledrm=0
       - amd_iommu=on iommu=pt
       - amd_pstate=active
   
