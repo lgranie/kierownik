@@ -14,5 +14,6 @@ alias env 'env | sort'
 abbr df 'df -h'
 abbr du 'du -h -d 1'
 
-# sudo
-abbr dmesg 'sudo dmesg'
+# run0
+abbr --add dmesg 'run0 dmesg'
+abbr --add sudo --set-cursor 'run0 bash -c \'%\'' 

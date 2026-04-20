@@ -44,9 +44,9 @@ arg "target" help="target" {
 run = '''
 mkdir -p /tmp/output
 
-sudo podman pull ghcr.io/lgranie/kierownik-{{ usage.target }}:latest
+run0 podman pull ghcr.io/lgranie/kierownik-{{ usage.target }}:latest
 
-sudo podman run --rm --privileged --pull=newer \
+run0 podman run --rm --privileged --pull=newer \
     --security-opt label=type:unconfined_t \
     -v ./bib/config/qcow2.toml:/config.toml:ro \
     -v ./bib/defs/kierownik-43.yaml:/usr/share/bootc-image-builder/defs/kierownik-43.yaml:ro \
@@ -71,7 +71,7 @@ arg "target" help="Target environment" {
 run = '''
 set -xeuo pipefail
 
-sudo virt-install \
+run0 virt-install \
     --name kier-{{ usage.target }} \
     --boot uefi,firmware.feature0.name=secure-boot,firmware.feature0.enabled=no \
     --memory 8192 \
