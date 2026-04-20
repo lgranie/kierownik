@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-# Install tar.gz github releases
+# Install tar.gz github latest releases
 declare -A tgz_bins=(
     ["sesh"]=https://github.com/joshmedeski/sesh/releases/latest/download/sesh_Linux_x86_64.tar.gz
     ["usage"]=https://github.com/jdx/usage/releases/latest/download/usage-x86_64-unknown-linux-gnu.tar.gz
@@ -23,7 +23,11 @@ for bin in "${!bins[@]}"; do
 done
 
 # Install television
-tv_version=$(curl --silent "https://api.github.com/repos/alexpasmantier/television/releases/latest" | jq -r .tag_name)
-echo ${tv_version}
-curl --silent -L --output - https://github.com/alexpasmantier/television/releases/latest/download/tv-${tv_version}-x86_64-unknown-linux-gnu.tar.gz \
-     | tar -xzf - --strip-components=1 -C /usr/bin/ tv-${tv_version}-x86_64-unknown-linux-gnu/tv
+TV_VERSION=$(curl --silent "https://api.github.com/repos/alexpasmantier/television/releases/latest" | jq -r .tag_name)
+curl --silent -L --output - https://github.com/alexpasmantier/television/releases/latest/download/tv-${TV_VERSION}-x86_64-unknown-linux-gnu.tar.gz \
+     | tar -xzf - --strip-components=1 -C /usr/bin/ tv-${TV_VERSION}-x86_64-unknown-linux-gnu/tv
+
+# Install lazygit
+LAZYGIT_VERSION=$(curl --silent "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | jq -r .tag_name)
+curl --silent -L --output - https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_linux_x86_64.tar.gz \
+     | tar -xzf - -C /usr/bin/ lazygit
