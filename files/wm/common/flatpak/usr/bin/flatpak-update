@@ -4,7 +4,7 @@ set -euo pipefail
 
 updates=$(flatpak remote-ls --updates 2>/dev/null || true)
 
-if [ -z "$updates" ]; then
+if [[ -z "$updates" ]]; then
     exit 0
 fi
 

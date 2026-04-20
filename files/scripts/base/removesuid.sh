@@ -26,7 +26,7 @@ whitelist=(
 is_in_whitelist() {
     local binary="$1"
     for allowed_binary in "${whitelist[@]}"; do
-        if [ "$binary" = "$allowed_binary" ]; then
+        if [[ "$binary" = "$allowed_binary" ]]; then
             return 0
         fi
     done
@@ -60,7 +60,7 @@ rm -f /usr/bin/su
 set_caps_if_present() {
     local caps="$1"
     local binary_path="$2"
-    if [ -f "$binary_path" ]; then
+    if [[ -f "$binary_path" ]]; then
         echo "Setting caps $caps on $binary_path"
         setcap "$caps" "$binary_path"
         echo "Set caps $caps on $binary_path"
