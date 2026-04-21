@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>sunshine</short>
+  <description>Sunshine</description>
+  <!-- HTTPS (Secure Web Interface) -->
+  <port protocol="tcp" port="47984"/>
+  <!-- HTTP (Web Interface & Discovery) -->
+  <port protocol="tcp" port="47989"/>
+  <!-- Web Interface (Alternative/Config) -->
+  <port protocol="tcp" port="47990"/>
+  <!-- RTSP (Streaming) -->
+  <port protocol="tcp" port="48010"/>
+  <!-- Video Stream -->
+  <port protocol="udp" port="47998"/>
+  <!-- Control Input -->
+  <port protocol="udp" port="47999"/>
+  <!-- Audio Stream -->
+  <port protocol="udp" port="48000"/>
+  <!-- Microsoft Input -->
+  <port protocol="udp" port="48002"/>
+</service>

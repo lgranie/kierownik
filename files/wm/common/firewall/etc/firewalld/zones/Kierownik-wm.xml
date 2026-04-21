@@ -3,6 +3,6 @@
   <short>Kierownik WM</short>
   <description>Kierownik wm default config</description>
   <service name="localsend"/>
-  <service name="wayvnc"/>
+  <service name="sunshine"/>
   <forward/>
 </zone>

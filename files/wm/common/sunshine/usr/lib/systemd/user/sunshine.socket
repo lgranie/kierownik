@@ -1,0 +1,10 @@
+[Unit]
+Description=Sunshine Socket
+
+[Socket]
+ListenDatagram=47984
+ListenStream=47984
+# Add other ports as needed (47989, 47998, 47999)
+
+[Install]
+WantedBy=sockets.target

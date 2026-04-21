@@ -1,0 +1,21 @@
+---
+modules:
+  - type: dnf
+    repos:
+      cleanup: true
+      copr:
+        - lizardbyte/beta
+    install:
+      install-weak-deps: false
+      packages:
+        - Sunshine
+
+  - type: files
+    files:
+      - source: wm/common/sunshine
+        destination: /
+
+  - type: systemd
+    user:
+      enabled:
+        - sunshine.socket

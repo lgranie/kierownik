@@ -1,0 +1,11 @@
+[Unit]
+Description=Sunshine Service
+After=network.target
+ConditionEnvironment=XDG_RUNTIME_DIR
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/sunshine
+
+[Install]
+WantedBy=multi-user.target
