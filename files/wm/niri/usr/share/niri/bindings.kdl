@@ -3,7 +3,8 @@ binds {
     Mod+Slash hotkey-overlay-title="Keybind Cheatsheet" { spawn-sh "qs -c noctalia-shell ipc call plugin:keybind-cheatsheet toggle"; }
 
     // #"Applications"
-    Mod+Return hotkey-overlay-title="Open a Terminal: foot client" { spawn "footclient tmux"; }
+    Mod+Return hotkey-overlay-title="Open a Terminal: foot client" { spawn "footclient"; }
+    Mod+Alt+Return hotkey-overlay-title="Open a Terminal: foot client Tmux" { spawn "footclient tmux"; }
     Mod+Shift+Return hotkey-overlay-title="Open a Terminal: foot" { spawn "foot"; }
     Mod+Space hotkey-overlay-title="Run an Application: Menu" { spawn-sh "qs -c noctalia-shell ipc call launcher toggle"; }
     Mod+B hotkey-overlay-title="Open Bookmark" { spawn-sh "qs -c noctalia-shell ipc call plugin:bookmarks toggle"; }
