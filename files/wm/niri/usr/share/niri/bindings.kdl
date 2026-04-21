@@ -39,12 +39,6 @@ binds {
     Mod+Shift+Left hotkey-overlay-title="Consume or expel window left" { consume-or-expel-window-left; }
     Mod+Shift+Right hotkey-overlay-title="Consume or expel window right" { consume-or-expel-window-right; }
 
-    // #"Resize"
-    Mod+Minus hotkey-overlay-title="Set column width -10%" { set-column-width "-10%"; }
-    Mod+Equal hotkey-overlay-title="Set column width +10%" { set-column-width "+10%"; }
-    Mod+Shift+Minus hotkey-overlay-title="Set window height -10%" { set-window-height "-10%"; }
-    Mod+Shift+Equal hotkey-overlay-title="Set window height +10%" { set-window-height "+10%"; }
-
     // #"Column Management"
     Mod+BracketLeft hotkey-overlay-title="Consume or expel window left" { consume-or-expel-window-left; }
     Mod+BracketRight hotkey-overlay-title="Consume or expel window right" { consume-or-expel-window-right; }
@@ -59,12 +53,6 @@ binds {
     Mod+Ctrl+Right hotkey-overlay-title="Move column right" { move-column-right; }
     Mod+Ctrl+Up hotkey-overlay-title="Move window up" { move-window-up; }
     Mod+Ctrl+Down hotkey-overlay-title="Move window down" { move-window-down; }
-
-    // #"Column Width Presets"
-    Mod+1 hotkey-overlay-title="Set column width 33%" { set-column-width "33%"; }
-    Mod+2 hotkey-overlay-title="Set column width 50%" { set-column-width "50%"; }
-    Mod+3 hotkey-overlay-title="Set column width 66%" { set-column-width "66%"; }
-    Mod+4 hotkey-overlay-title="Set column width 100%" { set-column-width "100%"; }
 
     // #"Focus First/Last"
     Mod+Home hotkey-overlay-title="Focus first window in column" { focus-column-first; }
