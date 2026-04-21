@@ -1,8 +1,0 @@
-[Unit]
-After=network.target
-Requires=wayvnc.socket
-
-[Service]
-Type=simple
-Environment='WAYLAND_DISPLAY=wayland-1'
-ExecStart=-wayvnc --config=/etc/wayvnc/config -Ldebug -x 3

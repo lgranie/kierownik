@@ -1,0 +1,8 @@
+[Unit]
+After=network.target,graphical-session.target
+Requires=wayvnc.socket,graphical-session.target
+
+[Service]
+Type=simple
+Environment='WAYLAND_DISPLAY=wayland-1'
+ExecStart=-wayvnc --config=/etc/wayvnc/config -Lquiet --external-listener-fd 3 --gpu --detached

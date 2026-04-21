@@ -11,7 +11,7 @@ modules:
       - source: wm/common/wayvnc
         destination: /
 
-#  - type: systemd
-#    user:
-#      enabled:
-#        - wayvnc.socket
+  - type: systemd
+    user:
+      enabled:
+        - wayvnc.socket
