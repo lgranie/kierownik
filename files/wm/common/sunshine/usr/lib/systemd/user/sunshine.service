@@ -1,13 +1,16 @@
 [Unit]
 Description=Sunshine Service
-After=network.target graphical-session-pre
-ConditionEnvironment=WAYLAND_DISPLAY
+StartLimitIntervalSec=500
+StartLimitBurst=5
+After=network.target graphical-session-pre.target
 ConditionEnvironment=XDG_RUNTIME_DIR
 
 [Service]
 Type=simple
-ExecStartPre=/bin/sleep 15
+ExecStartPre=sleep 3
 ExecStart=/usr/bin/sunshine
+Restart=on-failure
+RestartSec=5s
 
 [Install]
 WantedBy=multi-user.target

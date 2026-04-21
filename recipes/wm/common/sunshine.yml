@@ -14,8 +14,7 @@ modules:
     files:
       - source: wm/common/sunshine
         destination: /
-
-  - type: systemd
-    user:
-      enabled:
-        - sunshine.socket
+  
+  - type: script
+    snippets:
+      - "setcap 'cap_sys_nice=eip' $(readlink -f /usr/bin/sunshine)"
