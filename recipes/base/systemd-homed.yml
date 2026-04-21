@@ -8,16 +8,18 @@ modules:
         - pam-u2f
         - pamu2fcfg
         - pcsc-lite
+        - sssd
 
   - type: systemd
     system:
       enabled:
         - pcscd.service
         - pcscd.socket
+        - sssd.service
         - systemd-homed
   
   - type: script
     snippets:
-      - "authselect select local with-systemd-homed with-faillock without-nullok with-pam-u2f"
+      - "authselect select sssd with-systemd-homed with-faillock without-nullok with-pam-u2f"
       - "authselect apply-changes"
       - "sed -i 's|^# minlen = 8|minlen = 6|' /etc/security/pwquality.conf"
