@@ -7,9 +7,6 @@ flatpak override --system --filesystem=home
 flatpak override --system --socket=wayland
 flatpak override --system --nosocket=x11
 
-# com.brave.Browser
-flatpak override --system --device=dri com.brave.Browser
-
 # com.vscodium.codium
 flatpak override --system --filesystem=/usr/bin com.vscodium.codium
 flatpak override --system --filesystem=xdg-run/podman com.vscodium.codium

@@ -1,0 +1,11 @@
+---
+modules:
+  - type: dnf
+    repos:
+      cleanup: true
+      files:
+        - https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo
+    install:
+      install-weak-deps: false
+      packages:
+        - brave-browser

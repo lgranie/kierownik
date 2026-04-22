@@ -22,7 +22,6 @@ modules:
           title: Flathub
         # If no repo information is specified, Flathub will be used by default
         install: # system flatpaks we want all users to have and not remove
-          - com.brave.Browser
           - com.vscodium.codium
           - io.github.kolunmi.Bazaar
           - org.localsend.localsend_app
