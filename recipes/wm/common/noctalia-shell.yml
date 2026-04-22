@@ -4,7 +4,7 @@ modules:
     repos:
       cleanup: true
       copr:
-        - zhangyi6324/noctalia-shell
+        - lionheartp/Hyprland
     install:
       install-weak-deps: false
       packages:

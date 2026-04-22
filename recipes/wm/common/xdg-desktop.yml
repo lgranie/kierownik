@@ -8,7 +8,6 @@ modules:
         - gnome-keyring
         - xdg-desktop-portal-gnome
         - xdg-desktop-portal-gtk
-        - xdg-desktop-portal-hyprland
         - xdg-utils
 
   - type: systemd
