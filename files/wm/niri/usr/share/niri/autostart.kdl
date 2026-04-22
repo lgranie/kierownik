@@ -9,4 +9,4 @@ spawn-at-startup "/usr/libexec/pam_kwallet_init"
 
 spawn-at-startup "qs" "-c" "noctalia-shell"
 #spawn-at-startup "wayvnc" "0.0.0.0"
-spawn-at-startup "sunshine"
+spawn-at-startup "sunshine" "/etc/sunshine/sunshine.conf"
