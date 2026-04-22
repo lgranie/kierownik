@@ -1,9 +1,0 @@
-[Unit]
-Description=WayVNC socket
-
-[Socket]
-ListenStream=0.0.0.0:5900
-Accept=false
-
-[Install]
-WantedBy=sockets.target
