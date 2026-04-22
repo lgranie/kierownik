@@ -26,6 +26,7 @@ modules:
         - stow
         - tar
         - tmux
+        - unzip
         - yq
         - zoxide
         - zstd
