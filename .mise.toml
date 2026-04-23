@@ -11,7 +11,7 @@ windows_default_inline_shell_args = "pwsh -c"
 binstall = true
 
 [env]
-BASE_IMAGE = 'quay.io/fedora/fedora-bootc:43'
+BASE_IMAGE = 'quay.io/fedora/fedora-bootc:44'
 BIB_IMAGE  = 'ghcr.io/osbuild/bootc-image-builder:latest'
 ROOTFS     = 'btrfs'
 BB_REGISTRY = 'ghcr.io/lgranie'
@@ -50,7 +50,7 @@ run0 podman pull ghcr.io/lgranie/kierownik-{{ usage.target }}:latest
 run0 podman run --rm --privileged --pull=newer \
     --security-opt label=type:unconfined_t \
     -v ./bib/config/qcow2.toml:/config.toml:ro \
-    -v ./bib/defs/kierownik-43.yaml:/usr/share/bootc-image-builder/defs/kierownik-43.yaml:ro \
+    -v ./bib/defs/kierownik-44.yaml:/usr/share/bootc-image-builder/defs/kierownik-44.yaml:ro \
     -v /tmp/output:/output \
     -v /var/lib/containers/storage:/var/lib/containers/storage \
     -v /boot:/boot \
