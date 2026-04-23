@@ -3,6 +3,7 @@ Description=Sunshine Service
 StartLimitIntervalSec=500
 StartLimitBurst=5
 After=network.target graphical-session-pre.target
+PartOf=graphical-session.target
 ConditionEnvironment=XDG_RUNTIME_DIR
 
 [Service]
@@ -13,4 +14,4 @@ Restart=on-failure
 RestartSec=5s
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=graphical-session.target
