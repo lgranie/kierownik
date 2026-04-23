@@ -30,7 +30,7 @@ To rebase an existing atomic Fedora installation to the latest build:
 * Switch to the image :
 
 ```bash
-run0 bash -c 'bootc switch ghcr.io/lgranie/kierownik-hypr:latest --apply'
+run0 bash -c 'bootc switch ghcr.io/lgranie/kierownik-hypr-amd:latest --apply'
 ```
 
 ### ISO
