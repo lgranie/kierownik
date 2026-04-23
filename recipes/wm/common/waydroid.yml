@@ -6,11 +6,6 @@ modules:
       packages:
         - waydroid
 
-  - type: files
-    files:
-      - source: wm/common/wayvnc
-        destination: /
-
   - type: systemd
     system:
       enabled:

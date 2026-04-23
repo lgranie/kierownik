@@ -11,7 +11,6 @@ modules:
   - from-file: wm/common/sunshine.yml
   - from-file: wm/common/waydroid.yml
   - from-file: wm/common/wayland-wm.yml
-#  - from-file: wm/common/wayvnc.yml
   - from-file: wm/common/wl-tools.yml
   - from-file: wm/common/xdg-desktop.yml
 
