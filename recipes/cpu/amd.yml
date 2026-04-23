@@ -1,0 +1,17 @@
+modules:
+  - type: dnf
+    remove:
+      auto-remove: true
+      packages:
+        - intel-gpu-firmware
+
+  - type: files
+    files:
+      - source: cpu/amd
+        destination: /
+
+  - type: kargs
+    arch: x86_64
+    kargs:
+      - amd_iommu=on iommu=pt
+      - amd_pstate=active

@@ -1,9 +1,9 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 # image will be published to ghcr.io/<user>/<name>
-name: kierownik-base-amd
+name: kierownik-hypr-intel
 # description will be included in the image's metadata
-description: This is my personal OS image.
+description: This is my personal OS image. Hyprland on Intel CPU ( T480 )
 
 # the base image to build on top of (FROM) and the version tag to use
 #base-image: ghcr.io/blue-build/base-images/fedora-base
@@ -18,7 +18,10 @@ platforms:
 # you can include multiple instances of the same module
 modules:
   - from-file: base/all.yml
-  - from-file: cpu/amd.yml
+  - from-file: cpu/intel.yml
   
+  - from-file: wm/common/all.yml
+  - from-file: wm/hypr.yml
+
   # finalize
   - from-file: common/finalize.yml

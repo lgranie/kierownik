@@ -11,3 +11,9 @@ modules:
   - type: script
     snippets:
       - "plymouth-set-default-theme spinner"
+  
+  - type: kargs
+    arch: x86_64
+    kargs:
+      - quiet splash rhgb
+      - plymouth.use-simpledrm=0

@@ -21,14 +21,6 @@ modules:
   
   - from-file: base/systemd-services.yml
   
-  - type: kargs
-    arch: x86_64
-    kargs:
-      - quiet splash rhgb
-      - plymouth.use-simpledrm=0
-      - amd_iommu=on iommu=pt
-      - amd_pstate=active
-  
   - type: script
     scripts:
       - base/bootc-update
