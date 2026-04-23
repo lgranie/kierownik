@@ -27,29 +27,11 @@ Kierownik is an operating system built with bluebuild. It is immutable and conta
 
 To rebase an existing atomic Fedora installation to the latest build:
 
-* First rebase to the unsigned image, to get the proper signing keys and policies installed:
+* Switch to the image :
 
-  ```bash
-  rpm-ostree rebase ostree-unverified-registry:ghcr.io/lgranie/kierownik-hypr:latest
-  ```
-
-* Reboot to complete the rebase:
-
-  ```bash
-  systemctl reboot
-  ```
-
-* Then rebase to the signed image, like so:
-
-  ```bash
-  rpm-ostree rebase ostree-image-signed:docker://ghcr.io/lgranie/kierownik-hypr:latest
-  ```
-
-* Reboot again to complete the installation
-
-  ```bash
-  systemctl reboot
-  ```
+```bash
+run0 bash -c 'bootc switch ghcr.io/lgranie/kierownik-hypr:latest --apply'
+```
 
 ### ISO
 
