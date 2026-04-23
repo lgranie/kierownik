@@ -6,7 +6,7 @@ Kierownik is an operating system built with bluebuild. It is immutable and conta
   * fish as default interactive shell
   * a collection of terminal tools ( lsd, zoxide, bat, tv, ... )
   * mise for dev
-* 2 graphical flavors ( kierownik-hypr, kierownik-niri ) : Hyprland with scrolling layout as default and Niri
+* graphical flavors ( kierownik-hypr ) : Hyprland with scrolling layout as default
   * noctalia-shell
   * flatpak / flathub / bazaar
   * foot terminal

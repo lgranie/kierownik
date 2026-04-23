@@ -8,7 +8,7 @@ This is a BlueBuild/Fedora bootc OS configuration repository. Agents working her
 ```bash
 # Build OCI image
 mise run build_oci base    # Build base image
-mise run build_oci wm      # Build WM (Hyprland/Niri) image
+mise run build_oci wm      # Build WM (Hyprland) image
 
 # Build ISO
 mise run build_iso wm
