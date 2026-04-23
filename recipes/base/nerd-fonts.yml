@@ -1,5 +1,11 @@
 ---
 modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - fontconfig
+  
   - type: fonts
     fonts:
       nerd-fonts:
