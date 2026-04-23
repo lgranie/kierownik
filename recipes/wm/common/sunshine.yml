@@ -18,3 +18,8 @@ modules:
   - type: script
     snippets:
       - "setcap 'cap_sys_nice=eip' $(readlink -f /usr/bin/sunshine)"
+  
+  - type: systemd
+    user:
+      enabled:
+        - sunshine.service

@@ -1,0 +1,16 @@
+[Unit]
+Description=Sunshine Service
+StartLimitIntervalSec=500
+StartLimitBurst=5
+After=network.target graphical-session-pre.target
+ConditionEnvironment=XDG_RUNTIME_DIR
+
+[Service]
+Type=simple
+ExecStartPre=sleep 3
+ExecStart=/usr/bin/sunshine /etc/sunshine/sunshine.conf
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
