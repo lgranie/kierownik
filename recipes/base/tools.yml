@@ -31,16 +31,6 @@ modules:
         - zoxide
         - zstd
 
-  - type: dnf
-    repos:
-      cleanup: true
-      copr:
-        - jdxcode/mise
-    install:
-      install-weak-deps: false
-      packages:
-        - mise
-
   - type: script
     scripts:
       - base/non-packaged-tools

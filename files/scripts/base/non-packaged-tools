@@ -31,3 +31,8 @@ curl --silent -L --output - https://github.com/alexpasmantier/television/release
 LAZYGIT_TAG=$(curl --silent "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | jq -r .tag_name)
 curl --silent -L --output - https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_TAG:1}_linux_x86_64.tar.gz \
      | tar -xzf - -C /usr/bin/ lazygit
+
+# Install mise
+MISE_TAG=$(curl --silent "https://api.github.com/repos/jdx/mise/releases/latest" | jq -r .tag_name)
+curl --silent -L --output - https://github.com/jdx/mise/releases/latest/download/mise-${MISE_TAG}-linux-x64.tar.gz \
+     | tar -xzf - --strip-components=2 -C /usr/bin/ mise/bin/mise
