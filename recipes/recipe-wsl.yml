@@ -1,14 +1,14 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 # image will be published to ghcr.io/<user>/<name>
-name: kierownik-base-intel
+name: kierownik-base-amd
 # description will be included in the image's metadata
 description: This is my personal OS image.
 
 # the base image to build on top of (FROM) and the version tag to use
 #base-image: ghcr.io/blue-build/base-images/fedora-base
 #image-version: latest # latest is also supported if you want new updates ASAP
-base-image: quay.io/fedora/fedora-bootc
+base-image: quay.io/fedora/fedora
 image-version: 44
 
 platforms:
@@ -17,9 +17,7 @@ platforms:
 # module configuration, executed in order
 # you can include multiple instances of the same module
 modules:
-  - from-file: base/all.yml
-  - from-file: base/kmscon.yml
-  - from-file: cpu/intel.yml
+  - from-file: wsl/all.yml
   
   # finalize
-  - from-file: common/all.yml
+  - from-file: common/container.yml

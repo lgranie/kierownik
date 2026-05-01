@@ -1,0 +1,7 @@
+---
+modules:
+  - type: initramfs
+    env:
+      DRACUT_NO_XATTR: '1'
+
+  - type: signing # this sets up the proper policy & signing files for signed images to work fully

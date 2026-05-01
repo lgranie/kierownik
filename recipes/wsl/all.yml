@@ -1,0 +1,8 @@
+---
+modules:
+  - type: files
+    files:
+      - source: wsl/system
+        destination: /
+
+  - from-file: 

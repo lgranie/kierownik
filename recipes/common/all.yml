@@ -1,0 +1,4 @@
+---
+modules:
+  - from-file: common/container.yml
+  - from-file: common/bootc.yml

@@ -22,4 +22,4 @@ modules:
   - from-file: cpu/amd.yml
   
   # finalize
-  - from-file: common/finalize.yml
+  - from-file: common/all.yml

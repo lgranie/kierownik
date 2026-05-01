@@ -24,4 +24,4 @@ modules:
   - from-file: wm/hypr.yml
 
   # finalize
-  - from-file: common/finalize.yml
+  - from-file: common/all.yml
