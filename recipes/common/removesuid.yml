@@ -2,4 +2,4 @@
 modules:
   - type: script
     scripts:
-      - base/removesuid
+      - finalize/removesuid

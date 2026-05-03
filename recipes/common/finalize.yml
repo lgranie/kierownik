@@ -15,6 +15,8 @@ modules:
     snippets:
       - "rm -rf /etc/skel/.{bash,mozilla}*"
 
+  - from-file: common/removesuid.yml
+
   - type: initramfs
     env:
       DRACUT_NO_XATTR: '1'
