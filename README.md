@@ -49,6 +49,17 @@ bluebuild generate-iso --iso-name kier-hypr.iso receipe recipes/recipe-hypr.yml
 bluebuild generate-iso --iso-name kier-hypr.iso image ghcr.io/lgranie/kierownik-hypr:latest
 ```
 
+### WSL
+
+```bash
+podman pull ghcr.io/lgranie/kierownik-wsl:latest
+podman create --name kierownik-temp ghcr.io/lgranie/kierownik-wsl:latest
+podman export kierownik-temp -o kierownik.wsl
+podman rm kierownik-temp
+wsl --import Kierownik .local/share/kierownik kierownik.wsl
+wsl -d Kierownik
+```
+
 ## Verification
 
 These images are signed with [Sigstore](https://www.sigstore.dev/)'s [cosign](https://github.com/sigstore/cosign). You can verify the signature by downloading the `cosign.pub` file from this repo and running the following command:
