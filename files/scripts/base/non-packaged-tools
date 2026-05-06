@@ -36,3 +36,19 @@ curl --silent -L --output - https://github.com/jesseduffield/lazygit/releases/la
 MISE_TAG=$(curl --silent "https://api.github.com/repos/jdx/mise/releases/latest" | jq -r .tag_name)
 curl --silent -L --output - https://github.com/jdx/mise/releases/latest/download/mise-${MISE_TAG}-linux-x64.tar.gz \
      | tar -xzf - --strip-components=2 -C /usr/bin/ mise/bin/mise
+
+# Install pi-less-yolo
+mkdir -p /usr/lib/pi-less-yolo
+PI_LESS_YOLO_TAG=$(curl --silent "https://api.github.com/repos/cjermain/pi-less-yolo/releases/latest" | jq -r .tag_name)
+PI_LESS_YOLO_VER=${PI_LESS_YOLO_TAG:1}
+curl --silent -L --output - https://github.com/cjermain/pi-less-yolo/archive/refs/tags/${PI_LESS_YOLO_TAG}.tar.gz \
+     | tar -xzf - --strip-components=1 -C /usr/lib/pi-less-yolo/ pi-less-yolo-${PI_LESS_YOLO_VER}/tasks -C /usr/lib/pi-less-yolo/ pi-less-yolo-${PI_LESS_YOLO_VER}/Dockerfile
+mkdir -p /etc/skel/.config/mise/conf.d
+cat > "/etc/skel/.config/mise/conf.d/pi-less-yolo.toml" << TOML
+# Managed by pi-less-yolo — do not edit by hand.
+# Source repo: ${MISE_PROJECT_ROOT}
+# Re-run \`mise run install\` from that directory to update this path.
+
+[task_config]
+includes = ["/usr/lib/pi-less-yolo/tasks"]
+TOML
