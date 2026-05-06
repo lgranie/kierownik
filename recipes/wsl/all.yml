@@ -10,4 +10,5 @@ modules:
   - from-file: base/clean.yml
   - from-file: base/locale.yml
   - from-file: base/nerd-fonts.yml
+  - from-file: base/network.yml
   - from-file: base/tools.yml

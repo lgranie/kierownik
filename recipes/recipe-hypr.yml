@@ -20,7 +20,8 @@ modules:
   - from-file: base/all.yml
   - from-file: cpu/amd.yml
   
-  - from-file: wm/common/all.yml
+  - from-file: wm/base.yml
+  - from-file: wm/desktop.yml
   - from-file: wm/hypr.yml
 
   # finalize
