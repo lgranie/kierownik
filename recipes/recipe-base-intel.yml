@@ -3,7 +3,7 @@
 # image will be published to ghcr.io/<user>/<name>
 name: kierownik-base-intel
 # description will be included in the image's metadata
-description: This is my personal OS image.
+description: This is my personal OS image. ( Intel N100 )
 
 # the base image to build on top of (FROM) and the version tag to use
 #base-image: ghcr.io/blue-build/base-images/fedora-base
