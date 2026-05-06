@@ -52,6 +52,7 @@ set -oue pipefail
 modules:
   - type: dnf
     install:
+      install-weak-deps: false
       packages:
         - package-name
   - type: files

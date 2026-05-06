@@ -2,6 +2,7 @@
 modules:
   - type: dnf
     install:
+      install-weak-deps: false
       packages:
         - fido2-tools
         - gnupg2-scdaemon

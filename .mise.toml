@@ -70,7 +70,7 @@ arg "target" help="Target environment" {
 }
 '''
 run = '''
-set -xeuo pipefail
+set -xeu
 
 run0 virt-install \
     --name kier-{{ usage.target }} \
@@ -84,4 +84,22 @@ run0 virt-install \
     --video virtio,accel3d=on \
     --xml './devices/graphics/listen/@type=none' \
     --noautoconsole
+'''
+
+[tasks.build_wsl]
+run = '''
+set -xeu
+
+mkdir -p /tmp/output/wsl
+
+# Build OCI image first
+bluebuild build recipes/recipe-wsl.yml
+
+# Export to tar for WSL
+podman pull {{ env.BB_REGISTRY }}/kierownik-wsl:latest
+podman export -o /tmp/output/wsl/kierownik-wsl.tar {{ env.BB_REGISTRY }}/kierownik-wsl:latest
+
+# Compress to .wsl format
+zstd /tmp/output/wsl/kierownik-wsl.tar -o /tmp/output/wsl/kierownik.wsl --force
+echo "WSL image created at /tmp/output/wsl/kierownik.wsl"
 '''
