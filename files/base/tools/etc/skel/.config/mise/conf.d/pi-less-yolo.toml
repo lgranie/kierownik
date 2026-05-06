@@ -1,0 +1,4 @@
+# Source repo: ${MISE_PROJECT_ROOT}
+
+[task_config]
+includes = ["/usr/lib/pi-less-yolo/tasks"]

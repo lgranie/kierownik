@@ -16,4 +16,4 @@ abbr du 'du -h -d 1'
 
 # run0
 abbr --add dmesg 'run0 dmesg'
-abbr --add sudo --set-cursor 'run0 bash -c \'%\'' 
+abbr --add sudo --set-cursor 'run0 bash -c \'%\''
