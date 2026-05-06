@@ -28,9 +28,9 @@ jobs:
       matrix:
         recipe:
           # !! Add your recipes here
-          # - recipe-base.yml
           - recipe-hypr.yml
           - recipe-hypr-intel.yml
+          - recipe-wsl.yml
     steps:
       # the build is fully handled by the reusable github action
       - name: Build Custom Image
