@@ -1,0 +1,4 @@
+include "/usr/share/niri/config.kdl"
+
+include "inputs.kdl"
+include "monitors.kdl"

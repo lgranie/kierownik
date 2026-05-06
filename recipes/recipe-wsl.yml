@@ -19,5 +19,19 @@ platforms:
 modules:
   - from-file: wsl/all.yml
   
+  - from-file: wm/common/brave.yml
+  - from-file: wm/common/audio.yml
+  - from-file: wm/common/firewall.yml
+  - from-file: wm/common/flatpak.yml
+  - from-file: wm/common/foot.yml
+  - from-file: wm/common/noctalia-shell.yml
+  - from-file: wm/common/printer.yml
+  - from-file: wm/common/sunshine.yml
+  - from-file: wm/common/waydroid.yml
+  - from-file: wm/common/wayland-wm.yml
+  - from-file: wm/common/wl-tools.yml
+  - from-file: wm/common/xdg-desktop.yml
+  - from-file: wm/niri.yml
+
   # finalize
   - from-file: common/container.yml

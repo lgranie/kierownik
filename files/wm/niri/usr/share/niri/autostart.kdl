@@ -1,0 +1,12 @@
+// Add lines like this to spawn processes at startup.
+// Note that running niri as a session supports xdg-desktop-autostart,
+// which may be more convenient to use.
+// See the binds section below for more spawn examples.
+
+spawn-at-startup "dbus-update-activation-environment" "--all"
+spawn-at-startup "gnome-keyring-daemon" "--start" "--components=secrets"
+spawn-at-startup "/usr/libexec/pam_kwallet_init"
+
+spawn-at-startup "qs" "-c" "noctalia-shell"
+// spawn-at-startup "wayvnc" "0.0.0.0"
+// spawn-at-startup "sunshine" "/etc/sunshine/sunshine.conf"
