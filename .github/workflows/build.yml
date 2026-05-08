@@ -30,7 +30,7 @@ jobs:
           # !! Add your recipes here
           - recipe-hypr.yml
           - recipe-hypr-intel.yml
-          - recipe-wsl.yml
+          # - recipe-wsl.yml
     steps:
       # the build is fully handled by the reusable github action
       - name: Build Custom Image
