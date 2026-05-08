@@ -4,4 +4,5 @@ modules:
     install:
       install-weak-deps: false
       packages:
+        - iwlwifi-mvm-firmware
         - NetworkManager-wifi
