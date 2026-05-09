@@ -4,9 +4,11 @@ modules:
     install:
       install-weak-deps: false
       packages:
+        - avahi
         - cups
         - cups-filters
-        - avahi
+        - system-config-printer
+        - system-config-printer-udev
 
   - type: files
     files:
