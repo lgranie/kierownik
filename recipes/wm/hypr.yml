@@ -9,6 +9,7 @@ modules:
       install-weak-deps: false
       packages:
         - hyprland
+        - hyprland-guiutils
         - xdg-desktop-portal-hyprland
 
   - type: files
