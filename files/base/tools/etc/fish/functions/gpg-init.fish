@@ -10,8 +10,8 @@ Key-Usage: cert
 Subkey-Type: RSA
 Subkey-Length: 4096
 Subkey-Usage: sign
-Name-Real: ${user_name}
-Name-Email: ${user_email}
+Name-Real: $user_name
+Name-Email: $user_email
 Expire-Date: 0
 EOF
 
