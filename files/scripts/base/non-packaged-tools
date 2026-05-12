@@ -42,5 +42,8 @@ mkdir -p /usr/lib/pi-less-yolo
 PI_LESS_YOLO_TAG=$(curl --silent "https://api.github.com/repos/cjermain/pi-less-yolo/releases/latest" | jq -r .tag_name)
 PI_LESS_YOLO_VER=${PI_LESS_YOLO_TAG:1}
 curl --silent -L --output - https://github.com/cjermain/pi-less-yolo/archive/refs/tags/${PI_LESS_YOLO_TAG}.tar.gz \
-     | tar -xzf - --strip-components=1 -C /usr/lib/pi-less-yolo/ pi-less-yolo-${PI_LESS_YOLO_VER}/tasks -C /usr/lib/pi-less-yolo/ pi-less-yolo-${PI_LESS_YOLO_VER}/Dockerfile
+     | tar -xzf - --strip-components=1  \
+           -C /usr/lib/pi-less-yolo/ pi-less-yolo-${PI_LESS_YOLO_VER}/tasks \
+           -C /usr/lib/pi-less-yolo/ pi-less-yolo-${PI_LESS_YOLO_VER}/Dockerfile \
+           -C /usr/lib/pi-less-yolo/ pi-less-yolo-${PI_LESS_YOLO_VER}/mise-release.asc
 
