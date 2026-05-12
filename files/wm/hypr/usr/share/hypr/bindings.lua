@@ -4,7 +4,7 @@
 local exec = hl.dsp.exec_cmd
 local layout = hl.dsp.layout
 local window = hl.dsp.window
-local workspace = hl.dsp.workspace
+local worksp = hl.dsp.workspace
 
 -- 0. Keybind Cheatsheet
 hl.bind("SUPER + slash", exec("qs -c noctalia-shell ipc call plugin:keybind-cheatsheet toggle"), { description = "Keybind Cheatsheet" })
@@ -46,5 +46,7 @@ hl.bind("SUPER + mouse:273", window.resize(), { mouse = true })
 
 -- 9. Hyprland Specific
 hl.bind("SUPER + R", layout("colresize +conf"))
-hl.bind("SUPER + S", workspace.toggle_special("scratchpad"), { description = "Toggle scratchpad" })
+hl.bind("SUPER + S", function()
+    hl.dispatch(worksp.toggle_special("scratchpad"))
+end, { description = "Toggle scratchpad" })
 hl.bind("SUPER + ALT + S", window.move({ workspace = "special:scratchpad", silent = true }), { description = "Move window to scratchpad" })
