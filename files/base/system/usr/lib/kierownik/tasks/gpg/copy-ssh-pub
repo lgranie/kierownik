@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+#MISE description="Extract ssh pub key with email"
+subkey_keygrip=$(gpg --list-keys --with-keygrip | awk '$0 ~ /\[A\]/ {getline; print $3}')
+
+if [[ ! -f "$HOME/.gnupg/sshcontrol" ]]; then
+    echo "${subkey_keygrip}" >> "$HOME/.gnupg/sshcontrol"
+fi
+
+user_email=$(gum input --prompt "Enter your email : ")
+ssh_pubkey=$(gpg --export-ssh-key "${user_email}")
+echo "Your ssh pub key is :"
+echo "${ssh_pubkey}"
+
+gum confirm "Copy to clipboard?" && gpg --export-ssh-key "${user_email}" | wl-copy

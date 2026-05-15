@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+#MISE description="Reload gpg agent"
+set -euo pipefail
+
+gpg-connect-agent reloadagent /bye
