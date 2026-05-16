@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-WM=${1:?Usage: start-wm-session <wm-name>}
+WM=${1:-hyprland}
 
-if [[ "$(tty)" != "/dev/tty1" ]]; then
+if [[ "$(tty)" != "/dev/tty1" ]] && [[ -z "${KIER_WM_ANY_TTY:-}" ]]; then
     echo "$WM session should only be started from tty1"
+    echo "Set KIER_WM_ANY_TTY=1 to bypass"
     exit 1
 fi
 
