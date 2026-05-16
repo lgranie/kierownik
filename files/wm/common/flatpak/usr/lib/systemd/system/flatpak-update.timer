@@ -4,7 +4,7 @@ Requires=flatpak-update.service
 
 [Timer]
 OnBootSec=10min
-OnUnitInactiveSec=4h
+OnCalendar=daily
 Persistent=true
 
 [Install]
