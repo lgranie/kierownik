@@ -2,14 +2,19 @@
 
 set -euo pipefail
 
+fetch_gh_latest_tag() {
+    local repo="$1"
+    curl --silent --retry 3 "https://api.github.com/repos/${repo}/releases/latest" | jq -r '.tag_name // empty' 2>/dev/null || true
+}
+
 # Install tar.gz github latest releases
 declare -A tgz_bins=(
     ["sesh"]=https://github.com/joshmedeski/sesh/releases/latest/download/sesh_Linux_x86_64.tar.gz
     ["usage"]=https://github.com/jdx/usage/releases/latest/download/usage-x86_64-unknown-linux-gnu.tar.gz
 )
 for bin in "${!tgz_bins[@]}"; do
-    curl --silent -L --output - ${tgz_bins[$bin]} | tar -xzf - -C /usr/bin/ ${bin}
-    chmod +x /usr/bin/${bin}
+    curl --silent --retry 3 -L --output - "${tgz_bins[$bin]}" | tar -xzf - -C /usr/bin/ "${bin}"
+    chmod +x "/usr/bin/${bin}"
 done
 
 # Install binaries github releases
@@ -18,32 +23,40 @@ declare -A bins=(
     ["impala"]=https://github.com/pythops/impala/releases/latest/download/impala-x86_64-unknown-linux-musl
 )
 for bin in "${!bins[@]}"; do
-    curl --silent -L --output /usr/bin/${bin} ${bins[$bin]}
-    chmod +x /usr/bin/${bin}
+    curl --silent --retry 3 -L --output "/usr/bin/${bin}" "${bins[$bin]}"
+    chmod +x "/usr/bin/${bin}"
 done
 
 # Install television
-TV_VERSION=$(curl --silent "https://api.github.com/repos/alexpasmantier/television/releases/latest" | jq -r .tag_name)
-curl --silent -L --output - https://github.com/alexpasmantier/television/releases/latest/download/tv-${TV_VERSION}-x86_64-unknown-linux-gnu.tar.gz \
-     | tar -xzf - --strip-components=1 -C /usr/bin/ tv-${TV_VERSION}-x86_64-unknown-linux-gnu/tv
+TV_VERSION=$(fetch_gh_latest_tag "alexpasmantier/television")
+if [[ -n "$TV_VERSION" ]]; then
+    curl --silent --retry 3 -L --output - "https://github.com/alexpasmantier/television/releases/latest/download/tv-${TV_VERSION}-x86_64-unknown-linux-gnu.tar.gz" \
+         | tar -xzf - --strip-components=1 -C /usr/bin/ "tv-${TV_VERSION}-x86_64-unknown-linux-gnu/tv"
+fi
 
 # Install lazygit
-LAZYGIT_TAG=$(curl --silent "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | jq -r .tag_name)
-curl --silent -L --output - https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_TAG:1}_linux_x86_64.tar.gz \
-     | tar -xzf - -C /usr/bin/ lazygit
+LAZYGIT_TAG=$(fetch_gh_latest_tag "jesseduffield/lazygit")
+if [[ -n "$LAZYGIT_TAG" ]]; then
+    curl --silent --retry 3 -L --output - "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_TAG:1}_linux_x86_64.tar.gz" \
+         | tar -xzf - -C /usr/bin/ lazygit
+fi
 
 # Install mise
-MISE_TAG=$(curl --silent "https://api.github.com/repos/jdx/mise/releases/latest" | jq -r .tag_name)
-curl --silent -L --output - https://github.com/jdx/mise/releases/latest/download/mise-${MISE_TAG}-linux-x64.tar.gz \
-     | tar -xzf - --strip-components=2 -C /usr/bin/ mise/bin/mise
+MISE_TAG=$(fetch_gh_latest_tag "jdx/mise")
+if [[ -n "$MISE_TAG" ]]; then
+    curl --silent --retry 3 -L --output - "https://github.com/jdx/mise/releases/latest/download/mise-${MISE_TAG}-linux-x64.tar.gz" \
+         | tar -xzf - --strip-components=2 -C /usr/bin/ mise/bin/mise
+fi
 
 # Install pi-less-yolo
-mkdir -p /usr/lib/pi-less-yolo
-PI_LESS_YOLO_TAG=$(curl --silent "https://api.github.com/repos/cjermain/pi-less-yolo/releases/latest" | jq -r .tag_name)
-PI_LESS_YOLO_VER=${PI_LESS_YOLO_TAG:1}
-curl --silent -L --output - https://github.com/cjermain/pi-less-yolo/archive/refs/tags/${PI_LESS_YOLO_TAG}.tar.gz \
-     | tar -xzf - --strip-components=1  \
-           -C /usr/lib/pi-less-yolo/ pi-less-yolo-${PI_LESS_YOLO_VER}/tasks \
-           -C /usr/lib/pi-less-yolo/ pi-less-yolo-${PI_LESS_YOLO_VER}/Dockerfile \
-           -C /usr/lib/pi-less-yolo/ pi-less-yolo-${PI_LESS_YOLO_VER}/mise-release.asc
+PI_LESS_YOLO_TAG=$(fetch_gh_latest_tag "cjermain/pi-less-yolo")
+if [[ -n "$PI_LESS_YOLO_TAG" ]]; then
+    mkdir -p /usr/lib/pi-less-yolo
+    PI_LESS_YOLO_VER=${PI_LESS_YOLO_TAG:1}
+    curl --silent --retry 3 -L --output - "https://github.com/cjermain/pi-less-yolo/archive/refs/tags/${PI_LESS_YOLO_TAG}.tar.gz" \
+         | tar -xzf - --strip-components=1 \
+               -C /usr/lib/pi-less-yolo/ "pi-less-yolo-${PI_LESS_YOLO_VER}/tasks" \
+               -C /usr/lib/pi-less-yolo/ "pi-less-yolo-${PI_LESS_YOLO_VER}/Dockerfile" \
+               -C /usr/lib/pi-less-yolo/ "pi-less-yolo-${PI_LESS_YOLO_VER}/mise-release.asc"
+fi
 
