@@ -2,8 +2,9 @@
 
 set -euo pipefail
 
-while IFS=$': \t' read -r session type name; do
-  if [[ "$type" == "wayland" ]]; then
-    systemd-run --machine="$name@.host" --user --no-ask-password notify-send "$1" "$2" 2>/dev/null || true
+for id in $(loginctl list-sessions -j | jq -r '.[] | .session'); do
+  source <(loginctl show-session -p Type -p Name ${id})
+  if [[ ${Type} =~ (wayland|x11) ]]; then
+    systemd-run --machine=${Name}@.host --user notify-send "$1" "$2"
   fi
-done < <(loginctl list-sessions --no-legend 2>/dev/null | awk '{print $1, $3, $2}' || true)
+done
