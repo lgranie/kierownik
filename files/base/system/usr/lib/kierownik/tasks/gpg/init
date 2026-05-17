@@ -3,8 +3,16 @@
 #MISE description="Generate gpg keys"
 set -euo pipefail
 
-user_name=$(gum input --prompt "Enter your name : ")
-user_email=$(gum input --prompt "Enter your email : ")
+identity_file="$HOME/.identity"
+default_name=""
+default_email=""
+if [[ -f "$identity_file" ]]; then
+    default_name=$(jq -r '.realName' "$identity_file")
+    default_email=$(jq -r '.emailAddress' "$identity_file")
+fi
+
+user_name=$(gum input --prompt "Enter your name : " --value "$default_name")
+user_email=$(gum input --prompt "Enter your email : " --value "$default_email")
 
 ## Create the master key ( cert ) & sub key [SEA]
 gpg2 --batch --gen-key <<EOK

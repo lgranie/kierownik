@@ -7,7 +7,13 @@ if [[ ! -f "$HOME/.gnupg/sshcontrol" ]]; then
     echo "${subkey_keygrip}" >> "$HOME/.gnupg/sshcontrol"
 fi
 
-user_email=$(gum input --prompt "Enter your email : ")
+identity_file="$HOME/.identity"
+default_email=""
+if [[ -f "$identity_file" ]]; then
+    default_email=$(jq -r '.emailAddress' "$identity_file")
+fi
+
+user_email=$(gum input --prompt "Enter your email : " --value "$default_email")
 ssh_pubkey=$(gpg --export-ssh-key "${user_email}")
 echo "Your ssh pub key is :"
 echo "${ssh_pubkey}"
