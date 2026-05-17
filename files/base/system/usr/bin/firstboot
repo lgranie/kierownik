@@ -17,6 +17,7 @@ trap '/usr/libexec/kier/firstboot;' SIGINT
 
 FULLNAME="Laurent Granie"
 USERNAME="lgranie"
+EMAIL="laurent.granie@codeberg.org"
 PASSWORD="changeme"
 DOTSREPO="https://codeberg.org/lgranie/mise-dots.git"
 TIMEZONE="Europe/Paris"
@@ -27,6 +28,7 @@ main_menu() {
     gum style --border thick \
       "Full name: $FULLNAME" \
       "Username:  $USERNAME" \
+      "Email:     $EMAIL" \
       "dotfiles:  $DOTSREPO" \
       "Timezone:  $TIMEZONE" \
       "Hostname:  $HOSTNAME"
@@ -42,7 +44,7 @@ main_menu() {
       setup_form
       ;;
     "Confirm")
-      if [[ -z "$FULLNAME" || -z "$USERNAME" || -z "$PASSWORD" || -z "$TIMEZONE" ]]; then
+      if [[ -z "$FULLNAME" || -z "$USERNAME" || -z "$EMAIL" || -z "$PASSWORD" || -z "$TIMEZONE" ]]; then
         gum style --border thick \
           "Some fields are missing, please fill them in."
         continue
@@ -61,7 +63,7 @@ create_account() {
   local confirm_password=""
 
   while :; do
-    FULLNAME=$(gum input --placeholder "Enter Full name")
+    FULLNAME=$(gum input --value "$FULLNAME" --placeholder "Enter Full name")
 
     if [[ -z "$FULLNAME" ]]; then
       clear
@@ -78,7 +80,7 @@ create_account() {
   done
 
   while :; do
-    USERNAME=$(gum input --placeholder "Enter username")
+    USERNAME=$(gum input --value "$USERNAME" --placeholder "Enter username")
 
     if [[ -z "$USERNAME" ]]; then
       clear
@@ -96,6 +98,23 @@ create_account() {
       clear
       gum style --border thick \
         "Username must start with a lowercase letter and contain only lowercase letters, digits, '.', '_', or '-'"
+      continue
+    fi
+    clear && break
+  done
+
+  while :; do
+    EMAIL=$(gum input --value "$EMAIL" --placeholder "Enter email address")
+
+    if [[ -z "$EMAIL" ]]; then
+      clear
+      gum style --border thick "Email cannot be empty"
+      continue
+    fi
+
+    if [[ ! "$EMAIL" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
+      clear
+      gum style --border thick "Invalid email format"
       continue
     fi
     clear && break
@@ -145,7 +164,7 @@ select_timezone() {
 
 select_hostname() {
   while :; do
-    HOSTNAME=$(gum input --placeholder "Enter host name")
+    HOSTNAME=$(gum input --value "$HOSTNAME" --placeholder "Enter host name")
     [[ -n "$HOSTNAME" ]] && clear && break
     clear
     gum style --border thick "Host name selection is required" 2>/dev/null
@@ -172,7 +191,8 @@ EOF
     --fs-type=btrfs \
     --shell=/usr/bin/fish \
     --member-of=wheel,users \
-    --real-name="$FULLNAME"
+    --real-name="$FULLNAME" \
+    --email="$EMAIL"
   
   shopt -s dotglob
   runuser -u $USERNAME -- cp -R /tmp/skel/$USERNAME/* /var/home/$USERNAME.homedir/
