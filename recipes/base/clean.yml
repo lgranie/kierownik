@@ -4,7 +4,9 @@ modules:
     remove:
       auto-remove: true
       packages:
+        - cirrus-audio-firmware
         - nano
+        - nvidia-gpu-firmware
         - openssh-server
         - vim-common
         - vim-data
