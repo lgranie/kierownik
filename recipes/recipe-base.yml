@@ -18,7 +18,6 @@ platforms:
 # you can include multiple instances of the same module
 modules:
   - from-file: base/all.yml
-  - from-file: base/kmscon.yml
   - from-file: cpu/amd.yml
   
   # finalize
