@@ -3,8 +3,7 @@ modules:
     remove:
       auto-remove: true
       packages:
-        - amd-gpu-firmware
-        - amd-ucode-firmware
+        - intel-gpu-firmware
 
   - type: files
     files:
