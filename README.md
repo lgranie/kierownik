@@ -1,17 +1,24 @@
 # Kierownik &nbsp; [![bluebuild build badge](https://github.com/lgranie/kierownik/actions/workflows/build.yml/badge.svg)](https://github.com/lgranie/kierownik/actions/workflows/build.yml)
 
-Kierownik is an operating system built with bluebuild. It is immutable and container‑native, designed for reproducibility, developer productivity, and a responsive desktop experience. Kierownik ships with:
+Kierownik is a personal operating system built with [BlueBuild](https://blue-build.org) for my machines:
+
+* [krw-5290](https://github.com/lgranie/kierownik/blob/main/recipes/krw-5290.yml) — **Dell Latitude 5290 2-in-1** — Hyprland
+* [krw-8745](https://github.com/lgranie/kierownik/blob/main/recipes/krw-8745.yml) — **Chuwi AuBox 8745** — Hyprland
+* [krw-N100](https://github.com/lgranie/kierownik/blob/main/recipes/krw-N100.yml) — headless server (Intel N100)
+* [krw-wsl](https://github.com/lgranie/kierownik/blob/main/recipes/krw-wsl.yml) — WSL
+
+Kierownik ships with:
 
 * a headless version ( kierownik-base ) with :
   * fish as default interactive shell
   * a collection of terminal tools ( lsd, zoxide, bat, tv, ... )
-  * mise for dev
+  * mise for dev and system tasks
 * graphical flavors ( kierownik-hypr ) : Hyprland with scrolling layout as default
   * noctalia-shell
   * flatpak / flathub / bazaar
   * foot terminal
   * some nerd fonts
-
+  
 ## Inspirations
 
 * <https://github.com/blue-build/template>
@@ -30,23 +37,23 @@ To rebase an existing atomic Fedora installation to the latest build:
 * Switch to the image :
 
 ```bash
-run0 bash -c 'bootc switch ghcr.io/lgranie/kierownik-hypr-amd:latest --apply'
+run0 bash -c 'bootc switch ghcr.io/lgranie/krw-5290:latest --apply'
 ```
 
 ### ISO
 
-If build on Fedora Atomic, you can generate an offline ISO with the instructions available [here](https://blue-build.org/how-to/generate-iso/#_top). These ISOs cannot unfortunately be distributed on GitHub for free due to large sizes, so for public projects something else has to be used for hosting.
+If building on Fedora Atomic, you can generate an offline ISO with the instructions available [here](https://blue-build.org/how-to/generate-iso/#_top). These ISOs cannot unfortunately be distributed on GitHub for free due to large sizes, so for public projects something else has to be used for hosting.
 
 #### From a recipe
 
 ```bash
-bluebuild generate-iso --iso-name kier-hypr.iso receipe recipes/recipe-hypr.yml
+bluebuild generate-iso --iso-name krw-5290.iso recipe recipes/krw-5290.yml
 ```
 
-#### From a image
+#### From an image
 
 ```bash
-bluebuild generate-iso --iso-name kier-hypr.iso image ghcr.io/lgranie/kierownik-hypr:latest
+bluebuild generate-iso --iso-name krw-5290.iso image ghcr.io/lgranie/krw-5290:latest
 ```
 
 ### WSL
@@ -65,11 +72,5 @@ wsl -d Kierownik
 These images are signed with [Sigstore](https://www.sigstore.dev/)'s [cosign](https://github.com/sigstore/cosign). You can verify the signature by downloading the `cosign.pub` file from this repo and running the following command:
 
 ```bash
-cosign verify --key cosign.pub ghcr.io/lgranie/kierownik
+cosign verify --key cosign.pub ghcr.io/lgranie/krw-5290
 ```
-
-## BlueBuild Template &nbsp; [![bluebuild build badge](https://github.com/blue-build/template/actions/workflows/build.yml/badge.svg)](https://github.com/blue-build/template/actions/workflows/build.yml)
-
-See the [BlueBuild docs](https://blue-build.org/how-to/setup/) for quick setup instructions for setting up your own repository based on this template.
-
-After setup, it is recommended you update this README to describe your custom image.

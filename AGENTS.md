@@ -7,23 +7,27 @@ This is a BlueBuild/Fedora bootc OS configuration repository. Agents working her
 ### Using mise (recommended)
 ```bash
 # Build OCI image
-mise run build_oci base    # Build base image
-mise run build_oci wm      # Build WM (Hyprland) image
+mise run build:oci N100      # Headless server
+mise run build:oci 8745      # Hyprland (AMD)
+mise run build:oci 5290      # Hyprland (Intel)
 
 # Build ISO
-mise run build_iso wm
+mise run build:iso 5290
 
 # Build QCOW2 for VM
-mise run build_qcow2 wm
+mise run build:qcow2 5290
 
 # Run in VM
-mise run vm wm
+mise run vm 5290
+
+# Build WSL image
+mise run build:wsl
 ```
 
 ### Using bluebuild directly
 ```bash
-bluebuild build recipes/recipe-wm.yml
-bluebuild generate-iso --iso-name kier-wm.iso recipe recipes/recipe-wm.yml
+bluebuild build recipes/krw-5290.yml
+bluebuild generate-iso --iso-name krw-5290.iso recipe recipes/krw-5290.yml
 ```
 
 ### CI/CD

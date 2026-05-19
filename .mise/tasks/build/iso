@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+#MISE description="Generate bootable ISO"
+#USAGE arg "<target>" help="Target profile" { choices "N100" "8745" "5290" }
+set -oue pipefail
+
+bluebuild generate-iso --iso-name krw-"${usage_target}".iso recipe recipes/krw-"${usage_target}".yml

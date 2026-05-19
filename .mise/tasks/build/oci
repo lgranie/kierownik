@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+#MISE description="Build OCI image"
+#USAGE arg "<target>" help="Target profile" { choices "N100" "8745" "5290" }
+set -oue pipefail
+
+bluebuild build recipes/krw-"${usage_target}".yml

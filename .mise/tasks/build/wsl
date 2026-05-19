@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#MISE description="Build WSL image"
+set -oue pipefail
+
+mkdir -p /tmp/output/wsl
+
+# Build OCI image first
+bluebuild build recipes/krw-wsl.yml
+
+# Export to tar for WSL
+podman pull "${BB_REGISTRY}"/kierownik-wsl:latest
+podman export -o /tmp/output/wsl/kierownik-wsl.tar "$(podman create "${BB_REGISTRY}"/kierownik-wsl:latest)"
+
+# Compress to .wsl format
+zstd /tmp/output/wsl/kierownik-wsl.tar -o /tmp/output/wsl/kierownik.wsl --force
+echo "WSL image created at /tmp/output/wsl/kierownik.wsl"

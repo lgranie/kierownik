@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+#MISE description="Build QCOW2 disk image for VM"
+#USAGE arg "<target>" help="Target profile" { choices "N100" "8745" "5290" }
+set -oue pipefail
+
+mkdir -p /tmp/output
+
+run0 podman pull ghcr.io/lgranie/krw-"${usage_target}":latest
+
+run0 podman run --rm --privileged --pull=newer \
+    --security-opt label=type:unconfined_t \
+    -v ./bib/config/qcow2.toml:/config.toml:ro \
+    -v ./bib/defs/kierownik-44.yaml:/usr/share/bootc-image-builder/defs/kierownik-44.yaml:ro \
+    -v /tmp/output:/output \
+    -v /var/lib/containers/storage:/var/lib/containers/storage \
+    -v /boot:/boot \
+    "${BIB_IMAGE}" \
+    --progress term \
+    --target-arch amd64 \
+    --type qcow2 \
+    --rootfs "${ROOTFS}" \
+    --installer-payload-ref "${BASE_IMAGE}" \
+    ghcr.io/lgranie/krw-"${usage_target}":latest
