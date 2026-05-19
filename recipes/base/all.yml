@@ -22,7 +22,6 @@ modules:
   - type: script
     snippets:
       - "chmod +x /usr/bin/firstboot"
-      - "chmod -R +x /usr/lib/kierownik"
   
   - from-file: base/systemd-services.yml
   

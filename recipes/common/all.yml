@@ -2,3 +2,7 @@
 modules:
   - from-file: common/container.yml
   - from-file: common/bootc.yml
+
+  - type: script
+    snippets:
+      - "chmod -R +x /usr/lib/kierownik"
