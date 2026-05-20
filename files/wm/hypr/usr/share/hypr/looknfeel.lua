@@ -49,7 +49,7 @@ hl.config({
     scrolling = {
         fullscreen_on_one_column = false,
         explicit_column_widths = "0.333, 0.5, 0.667, 1.0",
-		column_width = 0.9, -- Sets new windows to 90% of screen width
+		column_width = 0.5, -- Sets new windows to 90% of screen width
 		direction = "right", -- Windows stack horizontally
     },
 

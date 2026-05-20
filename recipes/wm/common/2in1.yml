@@ -6,3 +6,8 @@ modules:
       packages:
         - iio-sensor-proxy
         - maliit-keyboard
+  
+  - type: files
+    files:
+      - source: wm/common/2in1
+        destination: /
