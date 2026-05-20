@@ -5,3 +5,4 @@ modules:
       install-weak-deps: false
       packages:
         - iio-sensor-proxy
+        - maliit-keyboard
