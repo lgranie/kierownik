@@ -1,0 +1,18 @@
+[Unit]
+Description=Wvkbd Service
+StartLimitIntervalSec=500
+StartLimitBurst=5
+After=network.target graphical-session-pre.target
+PartOf=graphical-session.target
+ConditionEnvironment=XDG_RUNTIME_DIR
+
+[Service]
+Type=simple
+ExecStartPre=sleep 3
+ExecStart=/usr/bin/start-wvkbd
+PIDFile=%t/wvkbd.pid
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=graphical-session.target

@@ -11,17 +11,10 @@ hl.gesture({
 })
 
 hl.gesture({
-    fingers = 3,
-    direction = "down",
     action = function()
-        hl.exec_cmd("maliit-keyboard")
-    end
-})
-
-hl.gesture({
-    fingers = 3,
+        hl.exec_cmd("killall -34 wvkbd-mobintl")
+    end,
     direction = "up",
-    action = function()
-        hl.exec_cmd("pkill maliit-keyboard")
-    end
+    fingers = 3,
+    workspace_swipe_touch = true
 })

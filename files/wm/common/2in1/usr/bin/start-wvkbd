@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Define temporary state files
+PID_FILE="${XDG_RUNTIME_DIR}/wvkbd.pid"
+echo "${PID_FILE}"
+
+# Remove old PID file if it exists
+rm -f "${PID_FILE}"
+
+# Start the keyboard
+/usr/bin/wvkbd-mobintl -L 240 &
+PID=$!
+
+# Store PID
+echo "${PID}" > "${PID_FILE}"
+
+wait "${PID}"

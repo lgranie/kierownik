@@ -5,9 +5,27 @@ modules:
       install-weak-deps: false
       packages:
         - iio-sensor-proxy
-        - maliit-keyboard
+
+  - type: dnf
+    repos:
+      cleanup: true
+      copr:
+        - ersen/my-little-copr
+    install:
+      install-weak-deps: false
+      packages:
+        - wvkbd
   
   - type: files
     files:
       - source: wm/common/2in1
         destination: /
+  
+  - type: script
+    snippets:
+      - "chmod +x /usr/bin/start-wvkbd"
+
+  - type: systemd
+    user:
+      enabled:
+        - wvkbd.service
