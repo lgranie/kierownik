@@ -5,9 +5,9 @@ hl.config({
 })
 
 hl.gesture({
-    fingers = 3,
-    direction = "horizontal",
     action = "workspace",
+    direction = "horizontal",
+    fingers = 3,
 })
 
 hl.gesture({
@@ -15,6 +15,5 @@ hl.gesture({
         hl.exec_cmd("killall -34 wvkbd-mobintl")
     end,
     direction = "up",
-    fingers = 3,
-    workspace_swipe_touch = true
+    fingers = 2
 })
