@@ -9,3 +9,8 @@ modules:
       install-weak-deps: false
       packages:
         - brave-browser
+
+  - type: files
+    files:
+      - source: wm/common/brave
+        destination: /
