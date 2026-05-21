@@ -1,0 +1,15 @@
+---
+modules:
+  - type: script
+    scripts:
+      - wm/common/voxtype/install
+
+  - type: files
+    files:
+      - source: wm/common/voxtype
+        destination: /
+
+  - type: systemd
+    system:
+      masked:
+        - voxtype

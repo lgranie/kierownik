@@ -1,15 +1,7 @@
-function recursiveRequire(folder)
-   for _, file in ipairs(love.filesystem.getDirectoryItems(folder)) do
-      local path = folder..'/'..file
-      if love.filesystem.isDirectory(path) then
-         recursiveRequire(path)
-      else
-         local pathWithoutDotLua = path:match('(.*)%.lua$')
-         if pathWithoutDotLua then
-            require(pathWithoutDotLua:gsub('/', '.'))
-         end
-      end
-   end
-end
+local success, err = pcall(function()
+    require("additionals/2in1")
+end)
 
-recursiveRequire 'additionnals'
+local success, err = pcall(function()
+    require("additionals/voxtype")
+end)
