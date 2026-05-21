@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+#MISE description="Init voxtype"
+set -euo pipefail
+
+voxtype setup --download
+systemctl --user enable --now voxtype

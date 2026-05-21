@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+fetch_gh_latest_tag() {
+    local repo="$1"
+    curl --silent --retry 3 "https://api.github.com/repos/${repo}/releases/latest" | jq -r '.tag_name // empty' 2>/dev/null || true
+}
+
+VOXTYPE_TAG=$(fetch_gh_latest_tag "peteonrails/voxtype")
+VOXTYPE_VER=${VOXTYPE_TAG:1}
+
+curl --silent --retry 3 -L --output /tmp/voxtype.rpm https://github.com/peteonrails/voxtype/releases/download/${VOXTYPE_TAG}/voxtype-${VOXTYPE_VER}-1.x86_64.rpm
+dnf install /tmp/voxtype.rpm
+
+# voxtype setup gpu --enable --backend vulkan
