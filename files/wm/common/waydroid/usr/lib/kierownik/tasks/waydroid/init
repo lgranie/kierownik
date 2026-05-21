@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+#MISE description="Init waydroid"
+set -euo pipefail
+
+waydroid init \
+    --system_channel https://ota.waydro.id/system \
+    --vendor_channel https://ota.waydro.id/vendor
+    

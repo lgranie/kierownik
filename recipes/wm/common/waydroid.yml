@@ -6,6 +6,11 @@ modules:
       packages:
         - waydroid
 
+  - type: files
+    files:
+      - source: wm/common/waydroid
+        destination: /
+
   - type: systemd
     system:
       enabled:
