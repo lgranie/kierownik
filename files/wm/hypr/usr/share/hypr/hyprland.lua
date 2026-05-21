@@ -19,10 +19,6 @@ require("looknfeel")
 require("perm")
 require("windows")
 
-local success, err = pcall(function()
-    require("2in1")
-end)
-
 hl.config({
 	ecosystem = {
         no_update_news = true,
@@ -44,3 +40,4 @@ hl.config({
 	},
 })
 
+require("additionals")
