@@ -3,7 +3,7 @@
 #MISE description="Init waydroid"
 set -euo pipefail
 
-waydroid init \
+run0 bash -c 'waydroid init \
     --system_channel https://ota.waydro.id/system \
-    --vendor_channel https://ota.waydro.id/vendor
+    --vendor_channel https://ota.waydro.id/vendor'
     
