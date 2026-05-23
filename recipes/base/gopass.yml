@@ -1,0 +1,13 @@
+---
+modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - gopass
+        - gopass-jsonapi
+
+  - type: files
+    files:
+      - source: base/gopass
+        destination: /

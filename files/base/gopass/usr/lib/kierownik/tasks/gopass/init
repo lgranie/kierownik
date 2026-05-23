@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+#MISE description="Initialize gopass"
+
+set -euo pipefail
+
