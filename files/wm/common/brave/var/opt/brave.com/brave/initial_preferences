@@ -1,0 +1,138 @@
+{
+    "accessibility": {
+        "captions": {
+            "headless_caption_enabled": false
+        }
+    },
+    "apps": {
+        "shortcuts_arch": "",
+        "shortcuts_version": 0
+    },
+    "autocomplete": {
+        "retention_policy_last_version": 148
+    },
+    "brave": {
+        "ai_chat": {
+            "autocomplete_provider_enabled": false,
+            "context_menu_enabled": false,
+            "show_toolbar_button": false,
+            "storage_enabled": false,
+            "tab_organization_enabled": false
+        },
+        "ask_widevine_install": false,
+        "brave_private_new_tab": {
+            "tor_window_disclaimer_dismissed": true
+        },
+        "brave_vpn": {
+            "show_button": false
+        },
+        "cosmetic_filtering_migration": true,
+        "dark_mode_migrated": true,
+        "enable_media_router_on_restart": true,
+        "enable_window_closing_confirm": false,
+        "has_seen_brave_welcome_page": true,
+        "migrated_search_default_in_jp": true,
+        "new_tab_page": {
+            "new_tab_takeover_infobar_remaining_display_count": 0,
+
+            "hide_all_widgets": true,
+            "show_branded_background_image": true,
+            "show_brave_news": false,
+            "show_rewards": false,
+            "show_stats": false,
+            "show_together": false
+        },
+        "news": {
+            "open-articles-in-new-tab": false
+        },
+        "omnibox": {
+            "bookmark_suggestions_enabled": false,
+            "commander_suggestions_enabled": false
+        },
+        "rewards": {
+            "show_brave_rewards_button_in_location_bar": false
+        },
+        "search": {
+            "default_version": 32,
+            "search_result_ad": {
+                "should_show_clicked_infobar": false
+            }
+        },
+        "shields_settings_version": 4,
+        "show_side_panel_button": false,
+        "sidebar": {
+            "hidden_built_in_items": [
+                7,
+                1,
+                2
+            ],
+            "item_added_feedback_bubble_shown_count": 1,
+            "sidebar_items": [
+                {
+                    "built_in_item_type": 1,
+                    "type": 0
+                },
+                {
+                    "built_in_item_type": 2,
+                    "type": 0
+                },
+                {
+                    "built_in_item_type": 3,
+                    "type": 0
+                },
+                {
+                    "built_in_item_type": 4,
+                    "type": 0
+                }
+            ],
+            "sidebar_show_option": 3
+        },
+        "tabs": {
+            "vertical_tabs_collapsed": true,
+            "vertical_tabs_enabled": true
+        },
+        "top_site_suggestions_enabled": false,
+        "wallet": {
+            "show_wallet_icon_on_toolbar": false
+        },
+        "web_view_rounded_corners": true,
+    },
+    "download": {
+        "prompt_for_download": false
+    },
+    "gcm": {
+        "product_category_for_subtypes": "com.brave.linux",
+        "push_messaging_unsubscribed_entries_list": []
+    },
+    "intl": {
+        "selected_languages": "en-US,en"
+    },
+    "omnibox": {
+        "prevent_url_elisions": true,
+        "shown_count_history_scope_promo": 3
+    },
+    "privacy_sandbox": {
+        "first_party_sets_data_access_allowed_initialized": true,
+        "first_party_sets_enabled": false,
+        "m1": {
+            "ad_measurement_enabled": false,
+            "fledge_enabled": false,
+            "topics_enabled": false
+        }
+    },
+    "settings": {
+        "force_google_safesearch": false
+    },
+    "spellcheck": {
+        "dictionaries": [
+            "en-US"
+        ],
+        "dictionary": ""
+    },
+    "tab_search": {
+        "pinned_to_tabstrip": true,
+        "pinned_to_tabstrip_migration_complete": true,
+        "pinned_to_tabstrip_migration_complete_2": true
+    },
+    "translate_recent_target": "en"
+}
