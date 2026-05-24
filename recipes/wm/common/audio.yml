@@ -10,3 +10,8 @@ modules:
         - pipewire-alsa
         - pipewire-pulseaudio
         - wireplumber
+  
+  - type: files
+    files:
+      - source: wm/common/audio
+        destination: /

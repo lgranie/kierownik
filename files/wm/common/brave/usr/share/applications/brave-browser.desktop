@@ -21,12 +21,15 @@ Exec=/usr/bin/brave-browser-stable --enable-features=UseOzonePlatform --ozone-pl
 
 [Desktop Action new-window-app]
 Name=New Window App
+Comment=Open site in app mode
 Exec=/usr/bin/brave-browser-stable --enable-features=UseOzonePlatform --ozone-platform=wayland --app=%U
 
 [Desktop Action new-private-window]
 Name=New Incognito Window
+Comment=Open a private window
 Exec=/usr/bin/brave-browser-stable --enable-features=UseOzonePlatform --ozone-platform=wayland --incognito
 
 [Desktop Action new-private-window-tor]
 Name=New Incognito Tor Window
+Comment=Open a private tor window
 Exec=/usr/bin/brave-browser-stable --enable-features=UseOzonePlatform --ozone-platform=wayland --incognito --tor
