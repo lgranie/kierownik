@@ -154,7 +154,7 @@ translate = false
 # Primary output mode: "type" or "clipboard"
 # - type: Simulates keyboard input at cursor position (requires ydotool)
 # - clipboard: Copies text to clipboard (requires wl-copy)
-mode = "type"
+mode = "clipboard"
 
 # Fall back to clipboard if typing fails
 fallback_to_clipboard = true
@@ -167,7 +167,7 @@ fallback_to_clipboard = true
 #   driver_order = ["wtype", "ydotool", "dotool", "clipboard"]
 # Example: use only ydotool, no fallback:
 #   driver_order = ["ydotool"]
-# driver_order = ["wtype", "dotool", "ydotool", "clipboard"]
+driver_order = ["clipboard"]
 
 # Delay between typed characters in milliseconds
 # 0 = fastest possible, increase if characters are dropped
