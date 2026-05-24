@@ -47,6 +47,7 @@ modules:
       - "zoxide init --cmd cd fish > /etc/fish/conf.d/90-zoxide.fish"
       - "bat --completion fish > /etc/fish/completions/bat.fish"
       - "delta --generate-completion fish > /etc/fish/completions/delta.fish"
+      - "gopass completion fish > /etc/fish/completions/gopass.fish"
       - "gum completion fish > /etc/fish/completions/gum.fish"
       - "sesh completion fish > /etc/fish/completions/sesh.fish"
       - "yq completion fish > /etc/fish/completions/yq.fish"
@@ -55,4 +56,3 @@ modules:
     user:
       enabled:
         - tmux.service
-
