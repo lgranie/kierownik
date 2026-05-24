@@ -11,3 +11,8 @@ modules:
     files:
       - source: base/gopass
         destination: /
+
+  - type: script
+    snippets:
+      - "gopass completion fish > /etc/fish/completions/gopass.fish"
+      
