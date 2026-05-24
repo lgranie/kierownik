@@ -45,3 +45,14 @@ hl.window_rule({
 	move = "20 monitor_h-120",
 	float = true,
 })
+
+-- fsel menu
+hl.window_rule({
+	name = "fsel",
+	match = {
+		initial_title = "fsel",
+	},
+	float = true,
+	center = true,
+	workspace = "special:fsel",
+})

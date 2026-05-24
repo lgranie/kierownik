@@ -31,21 +31,23 @@ done
 TV_VERSION=$(fetch_gh_latest_tag "alexpasmantier/television")
 if [[ -n "$TV_VERSION" ]]; then
     curl --silent --retry 3 -L --output - "https://github.com/alexpasmantier/television/releases/latest/download/tv-${TV_VERSION}-x86_64-unknown-linux-gnu.tar.gz" \
-         | tar -xzf - --strip-components=1 -C /usr/bin/ "tv-${TV_VERSION}-x86_64-unknown-linux-gnu/tv"
+        | tar -xzf - --strip-components=1 \
+            -C /usr/bin/ "tv-${TV_VERSION}-x86_64-unknown-linux-gnu/tv"
 fi
 
 # Install lazygit
 LAZYGIT_TAG=$(fetch_gh_latest_tag "jesseduffield/lazygit")
 if [[ -n "$LAZYGIT_TAG" ]]; then
     curl --silent --retry 3 -L --output - "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_TAG:1}_linux_x86_64.tar.gz" \
-         | tar -xzf - -C /usr/bin/ lazygit
+        | tar -xzf - -C /usr/bin/ lazygit
 fi
 
 # Install mise
 MISE_TAG=$(fetch_gh_latest_tag "jdx/mise")
 if [[ -n "$MISE_TAG" ]]; then
     curl --silent --retry 3 -L --output - "https://github.com/jdx/mise/releases/latest/download/mise-${MISE_TAG}-linux-x64.tar.gz" \
-         | tar -xzf - --strip-components=2 -C /usr/bin/ mise/bin/mise
+        | tar -xzf - --strip-components=2 \
+            -C /usr/bin/ mise/bin/mise
 fi
 
 # Install pi-less-yolo
@@ -54,9 +56,14 @@ if [[ -n "$PI_LESS_YOLO_TAG" ]]; then
     mkdir -p /usr/lib/pi-less-yolo
     PI_LESS_YOLO_VER=${PI_LESS_YOLO_TAG:1}
     curl --silent --retry 3 -L --output - "https://github.com/cjermain/pi-less-yolo/archive/refs/tags/${PI_LESS_YOLO_TAG}.tar.gz" \
-         | tar -xzf - --strip-components=1 \
-               -C /usr/lib/pi-less-yolo/ "pi-less-yolo-${PI_LESS_YOLO_VER}/tasks" \
-               -C /usr/lib/pi-less-yolo/ "pi-less-yolo-${PI_LESS_YOLO_VER}/Dockerfile" \
-               -C /usr/lib/pi-less-yolo/ "pi-less-yolo-${PI_LESS_YOLO_VER}/mise-release.asc"
+        | tar -xzf - --strip-components=1 \
+            -C /usr/lib/pi-less-yolo/ "pi-less-yolo-${PI_LESS_YOLO_VER}/tasks" \
+            -C /usr/lib/pi-less-yolo/ "pi-less-yolo-${PI_LESS_YOLO_VER}/Dockerfile" \
+            -C /usr/lib/pi-less-yolo/ "pi-less-yolo-${PI_LESS_YOLO_VER}/mise-release.asc"
 fi
 
+# Install fsel
+curl --silent --retry 3 -L --output - "https://github.com/Mjoyufull/fsel/releases/latest/download/fsel-x86_64-unknown-linux-gnu.tar.xz" \
+        | tar -xJf - --strip-components=1 \
+            -C /usr/bin/ "fsel-x86_64-unknown-linux-gnu/fsel" \
+    
