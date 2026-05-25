@@ -56,3 +56,14 @@ hl.window_rule({
 	center = true,
 	workspace = "special:fsel",
 })
+
+-- freetube
+hl.window_rule({
+	name = "freetube",
+	match = {
+		class = "io.freetubeapp.FreeTube",
+	},
+	float = true,
+	center = true,
+	workspace = "special:media",
+})

@@ -47,7 +47,12 @@ hl.bind("SUPER + mouse:273", window.resize(), { mouse = true })
 
 -- 9. Hyprland Specific
 hl.bind("SUPER + R", layout("colresize +conf"))
+
 hl.bind("SUPER + S", function()
     hl.dispatch(worksp.toggle_special("scratchpad"))
 end, { description = "Toggle scratchpad" })
 hl.bind("SUPER + ALT + S", window.move({ workspace = "special:scratchpad", silent = true }), { description = "Move window to scratchpad" })
+
+hl.bind("SUPER + S", function()
+    hl.dispatch(worksp.toggle_special("media"))
+end, { description = "Toggle media" })
