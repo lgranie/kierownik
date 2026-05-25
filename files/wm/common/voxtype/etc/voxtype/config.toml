@@ -307,3 +307,6 @@ on_transcription = true
 # [profiles.code]
 # post_process_command = "ollama run llama3.2:1b 'Format as code comment...'"
 # output_mode = "clipboard"
+
+[osd]
+enabled = false

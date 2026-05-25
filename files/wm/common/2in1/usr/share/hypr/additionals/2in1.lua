@@ -10,10 +10,10 @@ hl.gesture({
     fingers = 3,
 })
 
-hl.gesture({
-    action = function()
-        hl.exec_cmd("killall -34 wvkbd-mobintl")
-    end,
-    direction = "up",
-    fingers = 2
-})
+-- hl.gesture({
+--     action = function()
+--         hl.exec_cmd("killall -34 wvkbd-mobintl")
+--     end,
+--     direction = "up",
+--     fingers = 2
+-- })

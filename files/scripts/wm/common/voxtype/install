@@ -13,10 +13,10 @@ VOXTYPE_VER=${VOXTYPE_TAG:1}
 curl --silent --retry 3 -L --output /usr/bin/voxtype https://github.com/peteonrails/voxtype/releases/latest/download//voxtype-${VOXTYPE_VER}-linux-x86_64-vulkan
 chmod +x /usr/bin/voxtype
 
-curl --silent --retry 3 -L --output /usr/bin/voxtype-osd https://github.com/peteonrails/voxtype/releases/latest/download//voxtype-${VOXTYPE_VER}-linux-x86_64-osd
-chmod +x /usr/bin/voxtype-osd
-
-curl --silent --retry 3 -L --output /usr/bin/voxtype-osd-gtk4 https://github.com/peteonrails/voxtype/releases/latest/download//voxtype-${VOXTYPE_VER}-linux-x86_64-osd-gtk4
-chmod +x /usr/bin/voxtype-osd-gtk4
+# OSD ( depends on gtk4-layer-shell )
+# curl --silent --retry 3 -L --output /usr/bin/voxtype-osd https://github.com/peteonrails/voxtype/releases/latest/download//voxtype-${VOXTYPE_VER}-linux-x86_64-osd
+# chmod +x /usr/bin/voxtype-osd
+# curl --silent --retry 3 -L --output /usr/bin/voxtype-osd-gtk4 https://github.com/peteonrails/voxtype/releases/latest/download//voxtype-${VOXTYPE_VER}-linux-x86_64-osd-gtk4
+# chmod +x /usr/bin/voxtype-osd-gtk4
 
 # voxtype setup gpu --enable --backend vulkan
