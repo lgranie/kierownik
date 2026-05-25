@@ -2,14 +2,15 @@
 
 set -euo pipefail
 
-updates=$(flatpak remote-ls --updates 2>/dev/null || true)
+UPDATES=$(flatpak remote-ls --updates 2>/dev/null || true)
 
-if [[ -z "$updates" ]]; then
+if [[ -z "${UPDATES}" ]]; then
     exit 0
 fi
 
-update_count=$(echo "$updates" | wc -l)
-notify_all "Flatpak" "Updating $update_count packages..."
+UPDATES_COUNT=$(echo "$updates" | wc -l)
+notify_all "Flatpak" "Updating ${UPDATES_COUNT} packages..."
 
 flatpak update --noninteractive --assumeyes
-notify_all "Flatpak" "Updates completed successfully"
+TODAY_UPDATES=$(flatpak history | grep "$(date +"%b %d")" | grep "deploy update" | awk -F ' ' '{print $6}')
+notify_all "Flatpak" "Flatpaks updated : ${TODAY_UPDATES}"
