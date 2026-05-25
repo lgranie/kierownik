@@ -6,7 +6,7 @@ binds {
     Mod+Return hotkey-overlay-title="Open a Terminal: foot client" { spawn "footclient"; }
     Mod+Alt+Return hotkey-overlay-title="Open a Terminal: foot client Tmux" { spawn "footclient tmux"; }
     Mod+Shift+Return hotkey-overlay-title="Open a Terminal: foot" { spawn "foot"; }
-    Mod+Space hotkey-overlay-title="Run an Application: Menu" { spawn-sh "footclient fsel --systemd-run --detach"; }
+    Mod+Space hotkey-overlay-title="Run an Application: Menu" { spawn-sh "footclient fsel --config /etc/fsel/config.toml --systemd-run --detach"; }
     Mod+Shift+Space hotkey-overlay-title="Run an Application: Menu" { spawn-sh "qs -c noctalia-shell ipc call launcher toggle"; }
     Mod+B hotkey-overlay-title="Open Bookmark" { spawn-sh "qs -c noctalia-shell ipc call plugin:bookmarks toggle"; }
     Mod+Alt+L hotkey-overlay-title="Lock the Screen: swaylock" { spawn "swaylock"; }

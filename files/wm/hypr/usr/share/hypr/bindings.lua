@@ -23,7 +23,7 @@ hl.bind("SUPER + RETURN", exec("footclient"), { description = "Open a Terminal: 
 hl.bind("SUPER + ALT + RETURN", exec("footclient tmux"), { description = "Open a Terminal: foot client tmux" })
 hl.bind("SUPER + SHIFT + RETURN", exec("foot"), { description = "Open a Terminal: foot" })
 hl.bind("SUPER + SHIFT + SPACE", exec("qs -c noctalia-shell ipc call launcher toggle"), { description = "Run an Application: Menu" })
-hl.bind("SUPER + SPACE", exec("footclient --title=fsel fsel --systemd-run --detach"), { description = "Run an Application via fsel" })
+hl.bind("SUPER + SPACE", exec("footclient --title=fsel fsel --config /etc/fsel/config.toml --systemd-run --detach"), { description = "Run an Application via fsel" })
 hl.bind("SUPER + B", exec("qs -c noctalia-shell ipc call plugin:bookmarks toggle"), { description = "Open Bookmark" })
 hl.bind("SUPER + ALT + L", exec("swaylock"), { description = "Lock the Screen: swaylock" })
 
