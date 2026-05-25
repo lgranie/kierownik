@@ -102,7 +102,7 @@ function auto_connect_ports(args)
 
   function _connect()
     local delete_links = unless and unless:get_n_objects() > 0
-
+    
     if delete_links then
       for _i, link in pairs(links) do
         link:request_destroy()
@@ -115,15 +115,15 @@ function auto_connect_ports(args)
 
     for output_name, input_names in pairs(args.connect) do
       local input_names = input_names[1] == nil and { input_names } or input_names
-
+      
       if delete_links then
       else
 				-- Iterate through all the output ports with the correct channel name
-        for output in output_om:iterate { Constraint { "audio.channel", "equals", output_name } } do
+        for output in output_om:iterate { Constraint { "port.name", "equals", output_name } } do
 
         	for _i, input_name in pairs(input_names) do
 						-- Iterate through all the input ports with the correct channel name
-        	  for input in input_om:iterate { Constraint { "audio.channel", "equals", input_name } } do
+        	  for input in input_om:iterate { Constraint { "port.name", "equals", input_name } } do
 							-- Link all the nodes
         	  	local link = link_port(output, input)
 
@@ -196,10 +196,10 @@ end
 -- }
 
 auto_connect_ports {
-  output = Constraint { "node.description", "matches", "Cardinal" },
-  input = Constraint { "node.description", "matches", "Built-in Audio Analog Stereo" },
+  output = Constraint { "object.path", "matches", "Cardinal:output_*" },
+  input = Constraint { "port.alias", "matches", "ALC3253 Analog:playback_*" },
   connect = {
-    ["audio_output_1"] = "playback_FL",
-    ["audio_output_2"] = "playback_FR",
+    ["audio_out_1"] = "playback_FL",
+    ["audio_out_2"] = "playback_FR",
   },
 }
