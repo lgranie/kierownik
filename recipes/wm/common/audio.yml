@@ -9,6 +9,7 @@ modules:
         - pipewire
         - pipewire-alsa
         - pipewire-pulseaudio
+        - pipewire-utils
         - wireplumber
   
   - type: files
