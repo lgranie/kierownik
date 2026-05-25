@@ -196,8 +196,8 @@ end
 -- }
 
 auto_connect_ports {
-  output = Constraint { "node.name", "matches", "Cardinal" },
-  input = Constraint { "node.name", "matches", "Built-in Audio Analog Stereo" },
+  output = Constraint { "node.description", "matches", "Cardinal" },
+  input = Constraint { "node.description", "matches", "Built-in Audio Analog Stereo" },
   connect = {
     ["audio_output_1"] = "playback_FL",
     ["audio_output_2"] = "playback_FR",
