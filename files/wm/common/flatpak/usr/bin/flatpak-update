@@ -8,7 +8,7 @@ if [[ -z "${UPDATES}" ]]; then
     exit 0
 fi
 
-UPDATES_COUNT=$(echo "$updates" | wc -l)
+UPDATES_COUNT=$(echo "${UPDATES}" | wc -l)
 notify_all "Flatpak" "Updating ${UPDATES_COUNT} packages..."
 
 flatpak update --noninteractive --assumeyes
