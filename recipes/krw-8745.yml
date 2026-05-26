@@ -17,6 +17,7 @@ platforms:
 modules:
   - from-file: base/all.yml
   - from-file: cpu/amd.yml
+  - from-file: cpu/realtime.yml
   
   - from-file: wm/base.yml
   - from-file: wm/desktop.yml

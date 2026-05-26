@@ -18,6 +18,7 @@ modules:
   - from-file: base/all.yml
   - from-file: base/wifi.yml
   - from-file: cpu/intel.yml
+  - from-file: cpu/realtime.yml
   
   - from-file: wm/base.yml
   - from-file: wm/desktop.yml
