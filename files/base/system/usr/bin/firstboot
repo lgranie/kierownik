@@ -22,6 +22,7 @@ PASSWORD="changeme"
 DOTSREPO="https://codeberg.org/lgranie/mise-dots.git"
 TIMEZONE="Europe/Paris"
 HOSTNAME="kier-vm"
+
 main_menu() {
   local choice=""
   while :; do
@@ -199,21 +200,10 @@ EOF
   shopt -u dotglob
 
   rm -rf /tmp/skel/$USERNAME
-
-  # Set autologin
-  systemctl edit --stdin getty@tty1 <<EOF
-[Unit]
-Description=Getty on %I
-After=systemd-user-sessions.service plymouth-quit-wait.service getty-pre.target
-After=rc-local.service
-
-[Service]
-ExecStart=
-ExecStart=-/usr/sbin/agetty --autologin $USERNAME --noclear %I \$TERM
-
-[Install]
-WantedBy=getty.target
-EOF
+  
+  # Add subuid and subgid
+  SUBRANGE="524288-$(( 524288 + 65536 ))"
+  usermod --add-subuids $SUBRANGE --add-subgids $SUBRANGE $USERNAME
   
   # Register u2f key
   if command -v pamu2fcfg >/dev/null 2>&1; then
