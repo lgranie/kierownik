@@ -3,4 +3,20 @@
 #USAGE arg "<target>" help="Target profile" { choices "N100" "8745" "5290" }
 set -oue pipefail
 
-bluebuild generate-iso --iso-name krw-"${usage_target}".iso recipe recipes/krw-"${usage_target}".yml
+run0 bash -c "podman run \
+    --privileged \
+    --network=host \
+    --rm \
+    --volume /var/home/lgranie/Projects/kierownik:/build-container-installer/build \
+    --volume dnf-cache:/cache/dnf/ \
+    ghcr.io/jasonn3/build-container-installer:v1.4.0 \
+    VARIANT=Kinoite \
+    ISO_NAME=build/krw-${usage_target}.iso \
+    DNF_CACHE=/cache/dnf \
+    SECURE_BOOT_KEY_URL=https://github.com/ublue-os/bazzite/raw/main/secure_boot.der \
+    ENROLLMENT_PASSWORD=universalblue \
+    WEB_UI=false \
+    IMAGE_NAME=krw-${usage_target} \
+    IMAGE_REPO=ghcr.io/lgranie \
+    IMAGE_TAG=latest \
+    VERSION=44"

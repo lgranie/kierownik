@@ -46,14 +46,21 @@ If building on Fedora Atomic, you can generate an offline ISO with the instructi
 
 #### From a recipe
 
+if you got sudo command
 ```bash
 bluebuild generate-iso --iso-name krw-5290.iso recipe recipes/krw-5290.yml
 ```
 
 #### From an image
 
+if you have sudo command
 ```bash
 bluebuild generate-iso --iso-name krw-5290.iso image ghcr.io/lgranie/krw-5290:latest
+```
+
+or use mise taks ( use run0 )
+```bash
+mise run build:iso 5290
 ```
 
 ### WSL
