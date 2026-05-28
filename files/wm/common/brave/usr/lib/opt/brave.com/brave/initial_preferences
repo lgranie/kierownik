@@ -1,138 +1,791 @@
-{
+[
+  {
+    "NewTabPage": {
+      "CustomizeChromeExplicitlyClosed": true
+    },
     "accessibility": {
-        "captions": {
-            "headless_caption_enabled": false
-        }
+      "captions": {
+        "headless_caption_enabled": false
+      }
     },
     "apps": {
-        "shortcuts_arch": "",
-        "shortcuts_version": 0
+      "shortcuts_arch": "",
+      "shortcuts_version": 0
     },
+    "auto_pin_new_tab_groups": false,
     "autocomplete": {
-        "retention_policy_last_version": 148
+      "retention_policy_last_version": 148
+    },
+    "autofill": {
+      "credit_card_enabled": false,
+      "last_version_deduped": 148,
+      "payment_cvc_storage": false,
+      "profile_enabled": false
+    },
+    "bookmark": {
+      "storage_computation_last_update": ""
+    },
+    "bookmark_bar": {
+      "show_tab_groups": false
     },
     "brave": {
-        "ai_chat": {
-            "autocomplete_provider_enabled": false,
-            "context_menu_enabled": false,
-            "show_toolbar_button": false,
-            "storage_enabled": false,
-            "tab_organization_enabled": false
+      "ai_chat": {
+        "autocomplete_provider_enabled": false,
+        "context_menu_enabled": false,
+        "show_toolbar_button": false,
+        "storage_enabled": false,
+        "tab_organization_enabled": false,
+        "user_customization_enabled": false,
+        "user_memory_enabled": false
+      },
+      "always_show_bookmark_bar_on_ntp": false,
+      "autofill_private_windows": false,
+      "brave_ads": {
+        "grace_period": "0",
+        "notification_ads": [],
+        "should_allow_ads_subdivision_targeting": false,
+        "state": {
+          "has_migrated": {
+            "client": {
+              "v7": true
+            },
+            "confirmations": {
+              "v8": true
+            },
+            "v2": true
+          }
+        }
+      },
+      "brave_search": {
+        "migrated-ntp-chat-from-search": true,
+        "show-ntp-search": false
+      },
+      "cosmetic_filtering_migration": true,
+      "dark_mode_migrated": true,
+      "default_private_search_provider_data": {
+        "alternate_urls": [],
+        "contextual_search_url": "",
+        "created_from_play_api": false,
+        "date_created": "0",
+        "doodle_url": "",
+        "enforced_by_policy": false,
+        "favicon_url": "https://cdn.search.brave.com/serp/favicon.ico",
+        "featured_by_policy": false,
+        "id": "2",
+        "image_search_branding_label": "",
+        "image_translate_source_language_param_key": "",
+        "image_translate_target_language_param_key": "",
+        "image_translate_url": "",
+        "image_url": "",
+        "image_url_post_params": "",
+        "input_encodings": [
+          "UTF-8"
+        ],
+        "is_active": 0,
+        "keyword": ":br",
+        "last_modified": "0",
+        "last_visited": "0",
+        "logo_url": "",
+        "new_tab_url": "",
+        "originating_url": "",
+        "policy_origin": 0,
+        "preconnect_to_search_url": false,
+        "prefetch_likely_navigations": false,
+        "prepopulate_id": 550,
+        "safe_for_autoreplace": true,
+        "search_intent_params": [],
+        "search_url_post_params": "",
+        "short_name": "Brave",
+        "starter_pack_id": 0,
+        "suggestions_url": "https://search.brave.com/api/suggest?q={searchTerms}&rich=true&source=desktop",
+        "suggestions_url_post_params": "",
+        "synced_guid": "",
+        "url": "https://search.brave.com/search?q={searchTerms}&source=desktop",
+        "usage_count": 0
+      },
+      "default_private_search_provider_guid": "",
+      "enable_media_router_on_restart": true,
+      "enable_window_closing_confirm": false,
+      "fb_embed_default": false,
+      "has_seen_brave_welcome_page": true,
+      "location_bar_is_wide": true,
+      "migrated_search_default_in_jp": true,
+      "new_tab_page": {
+        "p3a_new_tabs_created_daily": [
+        ],
+        "show_branded_background_image": false,
+        "show_brave_news": false,
+        "show_rewards": false,
+        "show_stats": false,
+        "show_together": false
+      },
+      "news": {
+        "open-articles-in-new-tab": true
+      },
+      "omnibox": {
+        "bookmark_suggestions_enabled": false,
+        "commander_suggestions_enabled": false
+      },
+      "pin_share_menu_button": false,
+      "rewards": {
+        "notifications": "{\"displayed\":[],\"notifications\":[]}",
+        "scheduled_captcha": {
+          "failed_attempts": 0,
+          "id": "",
+          "paused": false,
+          "payment_id": ""
         },
-        "ask_widevine_install": false,
-        "brave_private_new_tab": {
-            "tor_window_disclaimer_dismissed": true
+        "show_brave_rewards_button_in_location_bar": false
+      },
+      "search": {
+        "default_version": 32
+      },
+      "shields": {
+        "stats_badge_visible": false
+      },
+      "shields_settings_version": 4,
+      "show_bookmarks_button": false,
+      "show_side_panel_button": false,
+      "sidebar": {
+        "hidden_built_in_items": [
+          7
+        ],
+        "last_used_built_in_item_type": 0,
+        "sidebar_items": [
+          {
+            "built_in_item_type": 1,
+            "type": 0
+          },
+          {
+            "built_in_item_type": 2,
+            "type": 0
+          },
+          {
+            "built_in_item_type": 3,
+            "type": 0
+          },
+          {
+            "built_in_item_type": 4,
+            "type": 0
+          }
+        ]
+      },
+      "speedreader": {
+        "enabled_for_all_sites": true,
+        "feature_enabled": true
+      },
+      "stats": {
+        "ads_blocked": "16",
+        "bandwidth_saved_bytes": "1222957",
+        "daily_saving_predictions_bytes": []
+      },
+      "tabs": {
+        "middle_click_close_tab_enabled": false,
+        "vertical_tabs_collapsed": true,
+        "vertical_tabs_enabled": true
+      },
+      "today": {
+        "opted_in": false,
+        "p3a_total_card_views": [],
+        "p3a_total_card_visits": [],
+        "p3a_total_sidebar_filter_usages": [],
+        "should_show_toolbar_button": false
+      },
+      "twitter_embed_default": false,
+      "wallet": {
+        "aurora_mainnet_migrated": true,
+        "custom_networks": {
+          "goerli_migrated": true
         },
-        "brave_vpn": {
-            "show_button": false
-        },
-        "cosmetic_filtering_migration": true,
-        "dark_mode_migrated": true,
-        "enable_media_router_on_restart": true,
-        "enable_window_closing_confirm": false,
-        "has_seen_brave_welcome_page": true,
-        "migrated_search_default_in_jp": true,
-        "new_tab_page": {
-            "new_tab_takeover_infobar_remaining_display_count": 0,
-
-            "hide_all_widgets": true,
-            "show_branded_background_image": true,
-            "show_brave_news": false,
-            "show_rewards": false,
-            "show_stats": false,
-            "show_together": false
-        },
-        "news": {
-            "open-articles-in-new-tab": false
-        },
-        "omnibox": {
-            "bookmark_suggestions_enabled": false,
-            "commander_suggestions_enabled": false
-        },
-        "rewards": {
-            "show_brave_rewards_button_in_location_bar": false
-        },
-        "search": {
-            "default_version": 32,
-            "search_result_ad": {
-                "should_show_clicked_infobar": false
-            }
-        },
-        "shields_settings_version": 4,
-        "show_side_panel_button": false,
-        "sidebar": {
-            "hidden_built_in_items": [
-                7,
-                1,
-                2
-            ],
-            "item_added_feedback_bubble_shown_count": 1,
-            "sidebar_items": [
-                {
-                    "built_in_item_type": 1,
-                    "type": 0
-                },
-                {
-                    "built_in_item_type": 2,
-                    "type": 0
-                },
-                {
-                    "built_in_item_type": 3,
-                    "type": 0
-                },
-                {
-                    "built_in_item_type": 4,
-                    "type": 0
-                }
-            ],
-            "sidebar_show_option": 3
-        },
-        "tabs": {
-            "vertical_tabs_collapsed": true,
-            "vertical_tabs_enabled": true
-        },
-        "top_site_suggestions_enabled": false,
-        "wallet": {
-            "show_wallet_icon_on_toolbar": false
-        },
-        "web_view_rounded_corners": true,
+        "eip1559_chains_migrated": true,
+        "is_compressed_nft_migrated": true,
+        "is_spl_token_program_migrated": true,
+        "keyrings": {},
+        "last_transaction_sent_time_dict": {},
+        "show_wallet_icon_on_toolbar": false
+      },
+      "web_discovery": {
+        "cta_state": {
+          "count": 2,
+          "dismissed": true,
+          "id": "v1",
+          "last_displayed": ""
+        }
+      },
+      "web_view_rounded_corners": true,
+      "webcompat": {
+        "report": {
+          "contact_info": "",
+          "enable_save_contact_info": false
+        }
+      },
+      "weekly_storage": {
+        "search_count": []
+      }
+    },
+    "brave_shields": {
+      "p3a_ads_allow_domain_count": 0,
+      "p3a_ads_standard_domain_count": 0,
+      "p3a_ads_strict_domain_count": 0,
+      "p3a_first_reported_revision": 4,
+      "p3a_fp_allow_domain_count": 0,
+      "p3a_fp_standard_domain_count": 0,
+      "p3a_fp_strict_domain_count": 0
+    },
+    "brave_sync_v2": {
+      "reset_devices_progress_token_time": ""
+    },
+    "browser": {
+      "pin_pwa_install_button": false,
+      "show_home_button": false,
+      "theme": {
+        "color_scheme2": 0
+      },
+      "window_placement": {
+        "bottom": 950,
+        "left": 10,
+        "maximized": true,
+        "right": 1060,
+        "top": 10,
+        "work_area_bottom": 960,
+        "work_area_left": 0,
+        "work_area_right": 1440,
+        "work_area_top": 0
+      }
+    },
+    "commerce_daily_metrics_last_update_time": "",
+    "countryid_at_install": 21843,
+    "credentials_enable_automatic_passkey_upgrades": false,
+    "credentials_enable_autosignin": false,
+    "credentials_enable_service": false,
+    "default_apps_install_state": 3,
+    "domain_diversity": {
+      "last_reporting_timestamp": "",
+      "last_reporting_timestamp_v4": ""
     },
     "download": {
-        "prompt_for_download": false
+      "prompt_for_download": false
     },
+    "download_bubble": {
+      "partial_view_enabled": false
+    },
+    "dual_layer_user_pref_store": {
+      "user_selected_sync_types": []
+    },
+    "enterprise": {
+      "promotion_eligibility": 0
+    },
+    "enterprise_profile_guid": "",
+    "ephemeral_storage": {
+      "first_party_storage_origins_to_cleanup": []
+    },
+    "extensions": {
+      "alerts": {
+        "initialized": true
+      },
+      "chrome_url_overrides": {},
+      "commands": {},
+      "enterprise_promotion": {
+        "expiration_time": ""
+      },
+      "install": {
+        "initiallist": [],
+        "initialprovidername": ""
+      },
+      "last_chrome_version": "148.1.90.124",
+      "pinned_extensions": [],
+      "theme": {
+        "id": "",
+        "system_theme": 1
+      }
+    },
+    "gaia_cookie": {},
     "gcm": {
-        "product_category_for_subtypes": "com.brave.linux",
-        "push_messaging_unsubscribed_entries_list": []
+      "product_category_for_subtypes": "com.brave.linux",
+      "push_messaging_unsubscribed_entries_list": []
+    },
+    "google": {
+      "services": {}
+    },
+    "https_upgrade_navigations": {},
+    "in_product_help": {
+      "new_badge": {
+        "ComposeNudge": {
+          "feature_enabled_time": "",
+          "show_count": 0,
+          "used_count": 0
+        },
+        "ComposeProactiveNudge": {
+          "feature_enabled_time": "",
+          "show_count": 0,
+          "used_count": 0
+        },
+        "GlicAppMenuNewBadge": {
+          "feature_enabled_time": "",
+          "show_count": 0,
+          "used_count": 0
+        },
+        "GlicKeyboardShortcutNewBadge": {
+          "feature_enabled_time": "",
+          "show_count": 0,
+          "used_count": 0
+        }
+      },
+      "recent_session_enabled_time": "",
+      "recent_session_start_times": [
+        "",
+        "",
+        ""
+      ],
+      "session_last_active_time": "",
+      "session_number": 4,
+      "session_start_time": "",
+      "snoozed_feature": {
+        "IPH_SideBySidePinnableFeature": {
+          "first_show_time": "0",
+          "is_dismissed": true,
+          "last_dismissed_by": 0,
+          "last_show_time": "",
+          "last_snooze_time": "0",
+          "promo_index": 0,
+          "show_count": 0,
+          "shown_for_apps": [],
+          "snooze_count": 0
+        },
+        "IPH_SideBySideTabSwitchFeature": {
+          "first_show_time": "0",
+          "is_dismissed": true,
+          "last_dismissed_by": 0,
+          "last_show_time": "",
+          "last_snooze_time": "0",
+          "promo_index": 0,
+          "show_count": 0,
+          "shown_for_apps": [],
+          "snooze_count": 0
+        }
+      }
     },
     "intl": {
-        "selected_languages": "en-US,en"
+      "accept_languages": "en-US,en,fr",
+      "selected_languages": "en-US,en,fr"
+    },
+    "invalidation": {
+      "per_sender_registered_for_invalidation": {
+        "1013309121859": {},
+        "947318989803": {}
+      }
+    },
+    "language_model_counters": {
+      "en": 97,
+      "fr": 1
+    },
+    "media": {
+      "device_id_salt": "",
+      "engagement": {
+        "schema_version": 5
+      }
+    },
+    "media_router": {
+      "enable_media_router": true,
+      "receiver_id_hash_token": ""
+    },
+    "ntp": {
+      "custom_background_inspiration": false,
+      "custom_background_local_to_device": false,
+      "num_personal_suggestions": 4,
+      "shortcust_visible": false
     },
     "omnibox": {
-        "prevent_url_elisions": true,
-        "shown_count_history_scope_promo": 3
+      "prevent_url_elisions": true
     },
-    "privacy_sandbox": {
-        "first_party_sets_data_access_allowed_initialized": true,
-        "first_party_sets_enabled": false,
-        "m1": {
-            "ad_measurement_enabled": false,
-            "fledge_enabled": false,
-            "topics_enabled": false
+    "password_manager": {
+      "account_store_backup_password_cleaning_last_timestamp": "",
+      "account_store_migrated_to_os_crypt_async": true,
+      "password_promo_cards_list": [
+        {
+          "id": "relaunch_chrome_promo",
+          "last_time_shown": "0",
+          "number_of_times_shown": 0,
+          "was_dismissed": false
         }
+      ],
+      "profile_store_backup_password_cleaning_last_timestamp": "",
+      "profile_store_migrated_to_os_crypt_async": true,
+      "relaunch_chrome_bubble_dismissed_counter": 0
     },
+    "payments": {
+      "can_make_payment_enabled": false
+    },
+    "pinned_tabs": [],
+    "privacy_sandbox": {
+      "first_party_sets_data_access_allowed_initialized": true,
+      "first_party_sets_enabled": false,
+      "m1": {
+        "ad_measurement_enabled": false,
+        "fledge_enabled": false,
+        "topics_enabled": false
+      }
+    },
+    "profile": {
+      "avatar_index": 26,
+      "background_password_check": {
+        "check_fri_weight": 9,
+        "check_interval": "2592000000000",
+        "check_mon_weight": 6,
+        "check_sat_weight": 6,
+        "check_sun_weight": 6,
+        "check_thu_weight": 9,
+        "check_tue_weight": 9,
+        "check_wed_weight": 9,
+        "next_check_time": ""
+      },
+      "content_settings": {
+        "exceptions": {
+          "3pcd_heuristics_grants": {},
+          "abusive_notification_permissions": {},
+          "access_to_get_all_screens_media_in_session": {},
+          "anti_abuse": {},
+          "app_banner": {
+            "chrome://password-manager/,*": {
+              "last_modified": "",
+              "setting": {
+                "chrome://password-manager/": {
+                  "couldShowBannerEvents": 
+                }
+              }
+            }
+          },
+          "ar": {},
+          "are_suspicious_notifications_allowlisted_by_user": {},
+          "auto_picture_in_picture": {},
+          "auto_select_certificate": {},
+          "automatic_downloads": {},
+          "automatic_fullscreen": {},
+          "autoplay": {},
+          "background_sync": {},
+          "bluetooth_chooser_data": {},
+          "bluetooth_guard": {},
+          "bluetooth_scanning": {},
+          "braveAutoShred": {},
+          "bravePsst": {},
+          "braveShields": {},
+          "braveShieldsMetadata": {},
+          "braveSpeedreader": {},
+          "brave_cardano": {},
+          "brave_ethereum": {},
+          "brave_google_sign_in": {},
+          "brave_open_ai_chat": {},
+          "brave_remember_1p_storage": {},
+          "brave_solana": {},
+          "brave_webcompat_audio": {},
+          "brave_webcompat_canvas": {},
+          "brave_webcompat_device_memory": {},
+          "brave_webcompat_event_source_pool": {},
+          "brave_webcompat_font": {},
+          "brave_webcompat_hardware_concurrency": {},
+          "brave_webcompat_keyboard": {},
+          "brave_webcompat_language": {},
+          "brave_webcompat_media_devices": {},
+          "brave_webcompat_none": {},
+          "brave_webcompat_plugins": {},
+          "brave_webcompat_screen": {},
+          "brave_webcompat_speech_synthesis": {},
+          "brave_webcompat_usb_device_serial_number": {},
+          "brave_webcompat_user_agent": {},
+          "brave_webcompat_web_sockets_pool": {},
+          "brave_webcompat_webgl": {},
+          "brave_webcompat_webgl2": {},
+          "camera_pan_tilt_zoom": {},
+          "captured_surface_control": {},
+          "client_hints": {},
+          "clipboard": {},
+          "controlled_frame": {},
+          "cookie_controls_metadata": {},
+          "cookies": {},
+          "cosmeticFilteringV2": {},
+          "direct_sockets": {},
+          "direct_sockets_private_network_access": {},
+          "display_media_system_audio": {},
+          "disruptive_notification_permissions": {},
+          "durable_storage": {},
+          "fedcm_idp_registration": {},
+          "fedcm_idp_signin": {},
+          "fedcm_share": {},
+          "file_system_access_chooser_data": {},
+          "file_system_access_extended_permission": {},
+          "file_system_access_restore_permission": {},
+          "file_system_last_picked_directory": {},
+          "file_system_read_guard": {},
+          "file_system_write_guard": {},
+          "fingerprintingV2": {},
+          "formfill_metadata": {},
+          "geolocation": {},
+          "geolocation_with_options": {},
+          "hand_tracking": {},
+          "has_migrated_local_network_access": true,
+          "hid_chooser_data": {},
+          "hid_guard": {},
+          "httpUpgradableResources": {},
+          "http_allowed": {},
+          "httpsUpgrades": {},
+          "https_enforced": {},
+          "idle_detection": {},
+          "images": {},
+          "important_site_info": {},
+          "initialized_translations": {},
+          "intent_picker_auto_display": {},
+          "javascript": {},
+          "javascript_jit": {},
+          "javascript_optimizer": {},
+          "keyboard_lock": {},
+          "legacy_cookie_access": {},
+          "legacy_cookie_scope": {},
+          "local_fonts": {},
+          "local_network": {},
+          "local_network_access": {},
+          "loopback_network": {},
+          "media_engagement": {},
+          "media_stream_camera": {},
+          "media_stream_mic": {},
+          "midi_sysex": {},
+          "mixed_script": {},
+          "nfc_devices": {},
+          "notification_interactions": {},
+          "notification_permission_review": {},
+          "notifications": {},
+          "ondevice_languages_downloaded": {},
+          "password_protection": {},
+          "payment_handler": {},
+          "permission_actions_history": {},
+          "permission_autoblocking_data": {},
+          "permission_autorevocation_data": {},
+          "pointer_lock": {},
+          "popups": {},
+          "protocol_handler": {},
+          "reduced_accept_language": {},
+          "referrers": {},
+          "safe_browsing_url_check_data": {},
+          "sensors": {},
+          "serial_chooser_data": {},
+          "serial_guard": {},
+          "shieldsAds": {},
+          "shieldsCookiesV3": {},
+          "site_engagement": {},
+          "sound": {},
+          "speaker_selection": {},
+          "ssl_cert_decisions": {},
+          "storage_access": {},
+          "storage_access_header_origin_trial": {},
+          "subresource_filter": {},
+          "subresource_filter_data": {},
+          "suspicious_notification_ids": {},
+          "suspicious_notification_show_original": {},
+          "top_level_storage_access": {},
+          "trackers": {},
+          "unused_site_permissions": {},
+          "usb_chooser_data": {},
+          "usb_guard": {},
+          "vr": {},
+          "web_app_installation": {},
+          "webid_api": {},
+          "webid_auto_reauthn": {},
+          "window_placement": {}
+        },
+        "pref_version": 1
+      },
+      "created_by_version": "148.1.90.124",
+      "creation_time": "",
+      "default_content_setting_values": {
+        "has_migrated_local_network_access": true,
+        "notifications": 2
+      },
+      "exit_type": "Crashed",
+      "family_member_role": "not_in_family",
+      "last_engagement_time": "",
+      "last_time_obsolete_http_credentials_removed": "",
+      "last_time_password_store_metrics_reported": "",
+      "managed": {
+        "locally_parent_approved_extensions": {},
+        "locally_parent_approved_extensions_migration_state": 1
+      },
+      "managed_user_id": "",
+      "name": "lgranie",
+      "password_hash_data_list": [],
+      "safety_hub_menu_notifications": {
+        "extensions": {
+          "isCurrentlyActive": false,
+          "result": {
+            "timestamp": "",
+            "triggeringExtensions": []
+          }
+        },
+        "passwords": {
+          "isCurrentlyActive": false,
+          "result": {
+            "passwordCheckOrigins": [],
+            "timestamp": ""
+          }
+        },
+        "safe-browsing": {
+          "isCurrentlyActive": false,
+          "onlyShowAfterTime": "",
+          "result": {
+            "safeBrowsingStatus": 1,
+            "timestamp": ""
+          }
+        },
+        "unused-site-permissions": {
+          "isCurrentlyActive": false,
+          "result": {
+            "permissions": [],
+            "timestamp": ""
+          }
+        }
+      },
+      "using_default_avatar": true,
+      "using_default_name": false,
+      "using_gaia_avatar": false,
+      "were_old_google_logins_removed": true
+    },
+    "protection": {
+      "macs": {}
+    },
+    "safebrowsing": {
+      "event_timestamps": {},
+      "metrics_last_log_time": "",
+      "scout_reporting_enabled_when_deprecated": false
+    },
+    "safety_hub": {
+      "unused_site_permissions_revocation": {
+        "migration_completed": true
+      }
+    },
+    "saved_tab_groups": {
+      "did_enable_shared_tab_groups_in_last_session": false,
+      "specifics_to_data_migration": true
+    },
+    "schedule_to_flush_to_disk": "",
+    "search": {
+      "suggest_enabled": false
+    },
+    "sessions": {},
     "settings": {
-        "force_google_safesearch": false
+      "force_google_safesearch": false
+    },
+    "signin": {
+      "accounts_metadata_dict": {},
+      "allowed": false
+    },
+    "site_search_settings": {
+      "overridden_keywords": []
     },
     "spellcheck": {
-        "dictionaries": [
-            "en-US"
-        ],
-        "dictionary": ""
+      "dictionaries": [
+        "en-US"
+      ],
+      "dictionary": ""
     },
+    "sync": {
+      "data_type_status_for_sync_to_signin": {
+        "accessibility_annotation": false,
+        "account_setting": false,
+        "ai_thread": false,
+        "app_list": false,
+        "app_settings": false,
+        "apps": false,
+        "arc_package": false,
+        "autofill": false,
+        "autofill_profiles": false,
+        "autofill_valuable": false,
+        "autofill_valuable_metadata": false,
+        "autofill_wallet": false,
+        "autofill_wallet_credential": false,
+        "autofill_wallet_metadata": false,
+        "autofill_wallet_offer": false,
+        "autofill_wallet_usage": false,
+        "bookmarks": false,
+        "collaboration_group": false,
+        "contact_info": false,
+        "contextual_task": false,
+        "cookies": false,
+        "device_info": false,
+        "dictionary": false,
+        "extension_settings": false,
+        "extensions": false,
+        "gemini_thread": false,
+        "history": false,
+        "history_delete_directives": false,
+        "incoming_password_sharing_invitation": false,
+        "managed_user_settings": false,
+        "nigori": false,
+        "os_preferences": false,
+        "os_priority_preferences": false,
+        "outgoing_password_sharing_invitation": false,
+        "passwords": false,
+        "plus_address": false,
+        "plus_address_setting": false,
+        "preferences": false,
+        "printers": false,
+        "printers_authorization_servers": false,
+        "priority_preferences": false,
+        "product_comparison": false,
+        "reading_list": false,
+        "saved_tab_group": false,
+        "search_engines": false,
+        "security_events": false,
+        "send_tab_to_self": false,
+        "sessions": false,
+        "shared_comment": false,
+        "shared_tab_group_account_data": false,
+        "shared_tab_group_data": false,
+        "sharing_message": false,
+        "skill": false,
+        "themes": false,
+        "themes_ios": false,
+        "user_consent": false,
+        "user_events": false,
+        "web_apps": false,
+        "webapks": false,
+        "webauthn_credential": false,
+        "wifi_configurations": false,
+        "workspace_desk": false
+      },
+      "encryption_bootstrap_token_per_account_migration_done": true,
+      "feature_status_for_sync_to_signin": 5
+    },
+    "syncing_theme_prefs_migrated_to_non_syncing": true,
     "tab_search": {
-        "pinned_to_tabstrip": true,
-        "pinned_to_tabstrip_migration_complete": true,
-        "pinned_to_tabstrip_migration_complete_2": true
+      "pinned_to_tabstrip": true,
+      "pinned_to_tabstrip_migration_complete_2": true
     },
-    "translate_recent_target": "en"
-}
+    "toolbar": {
+      "pinned_actions": [
+        "kActionShowChromeLabs"
+      ],
+      "pinned_cast_migration_complete": true,
+      "pinned_chrome_labs_migration_complete": true,
+      "tab_search_migration_complete": true
+    },
+    "total_passwords_available_for_account": 0,
+    "total_passwords_available_for_profile": 0,
+    "translate_allowlists": {},
+    "translate_blocked_languages": [
+      "en",
+      "fr"
+    ],
+    "translate_site_blacklist": [],
+    "translate_site_blocklist_with_time": {},
+    "updateclientdata": {
+      "apps": {}
+    },
+    "web_apps": {
+      "daily_metrics": {},
+      "daily_metrics_date": "",
+      "did_migrate_default_chrome_apps": [
+        "MigrateDefaultChromeAppToWebAppsGSuite",
+        "MigrateDefaultChromeAppToWebAppsNonGSuite"
+      ],
+      "last_preinstall_synchronize_version": "148"
+    }
+  }
+]
