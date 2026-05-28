@@ -16,7 +16,7 @@ run0 bash -c "podman run \
     SECURE_BOOT_KEY_URL=https://github.com/ublue-os/bazzite/raw/main/secure_boot.der \
     ENROLLMENT_PASSWORD=universalblue \
     WEB_UI=false \
-    IMAGE_NAME=krw-${usage_target} \
     IMAGE_REPO=ghcr.io/lgranie \
+    IMAGE_NAME=krw-${usage_target} \
     IMAGE_TAG=latest \
     VERSION=44"
