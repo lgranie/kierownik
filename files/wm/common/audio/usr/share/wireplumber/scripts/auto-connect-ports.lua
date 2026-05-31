@@ -198,7 +198,7 @@ end
 -- Auto connect Cardinal 2in1
 auto_connect_ports {
   output = Constraint { "object.path", "matches", "Cardinal:output_*" },
-  input = Constraint { "port.alias", "matches", "ALC3253 Analog:playback_*" },
+  input  = Constraint { "object.path", "matches", "alsa:acp:*" },
   connect = {
     ["audio_out_1"] = "playback_FL",
     ["audio_out_2"] = "playback_FR",
