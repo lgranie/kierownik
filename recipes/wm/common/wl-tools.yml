@@ -4,8 +4,6 @@ modules:
     install:
       install-weak-deps: false
       packages:
-        - swayidle
-        - swaylock
         - upower
         - wl-clipboard
         #- cliphist
