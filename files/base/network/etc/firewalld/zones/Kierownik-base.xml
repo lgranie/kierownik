@@ -2,5 +2,6 @@
 <zone>
   <short>Kierownik Base</short>
   <description>Kierownik base default config</description>
+  <service name="syncthing"/>
   <forward/>
 </zone>

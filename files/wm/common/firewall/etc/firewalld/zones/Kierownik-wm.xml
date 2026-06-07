@@ -4,5 +4,6 @@
   <description>Kierownik wm default config</description>
   <service name="localsend"/>
   <service name="sunshine"/>
+  <service name="syncthing"/>
   <forward/>
 </zone>

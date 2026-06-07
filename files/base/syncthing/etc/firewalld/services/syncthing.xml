@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>syncthing</short>
+  <description>Syncthing</description>
+  <!-- sync protocol -->
+  <port protocol="tcp" port="22000"/>
+  <port protocol="udp" port="22000"/>
+
+  <!-- local discovery broadcasts -->
+  <port protocol="udp" port="22000"/>
+
+  <!-- web GUI and REST API -->
+  <port protocol="tcp" port="8384"/>
+</service>

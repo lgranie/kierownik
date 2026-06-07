@@ -5,3 +5,8 @@ modules:
       install-weak-deps: false
       packages:
         - syncthing
+
+  - type: files
+    files:
+      - source: base/syncthing
+        destination: /
