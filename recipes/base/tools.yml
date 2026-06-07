@@ -32,6 +32,16 @@ modules:
         - zoxide
         - zstd
 
+  - type: dnf
+    repos:
+      cleanup: true
+      copr:
+        - lihaohong/yazi
+    install:
+      install-weak-deps: false
+      packages:
+        - yazi
+
   - type: script
     scripts:
       - base/non-packaged-tools
