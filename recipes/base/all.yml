@@ -14,6 +14,7 @@ modules:
   - from-file: base/systemd-homed.yml
   - from-file: base/tools.yml
   - from-file: base/gopass.yml
+  - from-file: base/syncthing.yml
 
   - type: files
     files:
