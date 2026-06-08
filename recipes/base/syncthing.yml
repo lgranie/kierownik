@@ -10,3 +10,11 @@ modules:
     files:
       - source: base/syncthing
         destination: /
+
+  - type: systemd
+    system:
+      masked:
+        - syncthing.service
+    user:
+      enabled:
+        - syncthing.service
