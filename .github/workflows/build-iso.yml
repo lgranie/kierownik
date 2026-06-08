@@ -1,10 +1,10 @@
 name: Build disk image
 
-on:
-  workflow_dispatch:
-  schedule:
-    - cron:
-        "00 08 * * 6" # build at 08:00 UTC every saturday
+# on:
+  # workflow_dispatch:
+  # schedule:
+    # - cron:
+      #   "00 08 * * 6" # build at 08:00 UTC every saturday
         # (1 hour after last ublue image start building)
 
 env:
