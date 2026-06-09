@@ -57,11 +57,11 @@ hl.window_rule({
 	workspace = "special:fsel",
 })
 
--- freetube
+-- Media Player
 hl.window_rule({
-	name = "freetube",
+	name = "media",
 	match = {
-		class = "io.freetubeapp.FreeTube",
+		class = "^.*(Euphonica|FreeTube)$",
 	},
 	float = true,
 	center = true,
