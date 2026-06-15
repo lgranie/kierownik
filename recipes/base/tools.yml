@@ -13,6 +13,7 @@ modules:
         - bcvk
         - btop
         - delta
+        - dua-cli
         - fd
         - fish
         - gcc
