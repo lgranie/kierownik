@@ -18,7 +18,7 @@ modules:
   
   - type: files
     files:
-      - source: wm/common/2in1
+      - source: wm/common/5290
         destination: /
   
   - type: script

@@ -23,7 +23,7 @@ modules:
   - from-file: wm/base.yml
   - from-file: wm/desktop.yml
   - from-file: wm/hypr.yml
-  - from-file: wm/common/2in1.yml
+  - from-file: wm/common/5290.yml
 
   # finalize
   - from-file: common/all.yml

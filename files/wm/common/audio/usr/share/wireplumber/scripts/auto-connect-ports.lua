@@ -195,7 +195,7 @@ end
 --   }
 -- }
 
--- Auto connect Cardinal 2in1
+-- Auto connect Cardinal
 auto_connect_ports {
   output = Constraint { "object.path", "matches", "Cardinal:output_*" },
   input  = Constraint { "object.path", "matches", "alsa:acp:*" },
