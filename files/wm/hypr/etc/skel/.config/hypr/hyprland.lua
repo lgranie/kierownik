@@ -2,6 +2,3 @@
 -- https://wiki.hypr.land/Configuring/
 
 dofile("/usr/share/hypr/hyprland.lua")
-
-require("inputs")
-require("monitors")

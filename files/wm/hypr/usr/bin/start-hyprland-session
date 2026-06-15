@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-exec /usr/bin/start-wm-session hyprland -c /usr/share/hypr/hyprland.lua "$@"
+exec /usr/bin/start-wm-session hyprland "$@"
