@@ -6,7 +6,9 @@ modules:
       packages:
         - avahi
         - cups
+        - cups-client
         - cups-filters
+        - cups-ipptool
         - system-config-printer
         - system-config-printer-udev
 

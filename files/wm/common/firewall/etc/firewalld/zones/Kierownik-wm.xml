@@ -5,5 +5,9 @@
   <service name="localsend"/>
   <service name="sunshine"/>
   <service name="syncthing"/>
+  <!-- cups/printer -->
+  <service name="ipp-client"/>
+  <!-- service name="ipp"/ -->
+  <service name="mdns"/>
   <forward/>
 </zone>

@@ -1,0 +1,6 @@
+!/usr/bin/env bash
+
+#MISE description="Add EPSON ET-2750 printer"
+set -euo pipefail
+
+run0 bash -c 'lpadmin -p ET2750 -v ipp://EPSON%20ET-2750%20Series%20%28USB%29._ipp._tcp.local/ipp/print -E -m everywhere'
