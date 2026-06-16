@@ -5,8 +5,9 @@ modules:
       install-weak-deps: false
       packages:
         - fontconfig
-  
+
   - type: fonts
     fonts:
       nerd-fonts:
         - JetBrainsMono
+...

@@ -15,12 +15,12 @@ modules:
       install-weak-deps: false
       packages:
         - wvkbd
-  
+
   - type: files
     files:
       - source: wm/common/5290
         destination: /
-  
+
   - type: script
     snippets:
       - "chmod +x /usr/bin/start-wvkbd"
@@ -29,3 +29,4 @@ modules:
     user:
       enabled:
         - wvkbd.service
+...

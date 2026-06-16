@@ -16,3 +16,4 @@ modules:
   - type: script
     snippets:
       - "ln -s /usr/lib/systemd/system/kmsconvt@.service /etc/systemd/system/autovt@.service"
+...

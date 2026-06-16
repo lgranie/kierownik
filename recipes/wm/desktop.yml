@@ -4,4 +4,4 @@ modules:
   - from-file: wm/common/sunshine.yml
   - from-file: wm/common/synth.yml
   - from-file: wm/common/waydroid.yml
-
+...

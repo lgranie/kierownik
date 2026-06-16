@@ -14,12 +14,13 @@ modules:
     files:
       - source: wm/common/sunshine
         destination: /
-  
+
   - type: script
     snippets:
       - "setcap 'cap_sys_nice=+ep' $(readlink -f /usr/bin/sunshine)"
-  
+
   - type: systemd
     user:
       enabled:
         - sunshine.service
+...

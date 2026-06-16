@@ -15,3 +15,4 @@ modules:
       enabled:
         - dbus-broker
         - gnome-keyring-daemon
+...

@@ -16,9 +16,10 @@ platforms:
 # you can include multiple instances of the same module
 modules:
   - from-file: wsl/all.yml
-  
+
   - from-file: wm/base.yml
   - from-file: wm/niri.yml
 
   # finalize
   - from-file: common/container.yml
+...

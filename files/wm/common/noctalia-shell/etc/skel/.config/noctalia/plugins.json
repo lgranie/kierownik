@@ -9,7 +9,7 @@
     "states": {
         "keybind-cheatsheet":{
             "enabled": true,
-            "sourceUrl": "https://github.com/noctalia-dev/noctalia-plugins"      
+            "sourceUrl": "https://github.com/noctalia-dev/noctalia-plugins"
         },
         "polkit-agent": {
             "enabled": true,

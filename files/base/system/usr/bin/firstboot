@@ -177,7 +177,7 @@ setup() {
   timedatectl set-timezone "$TIMEZONE"
 
   hostnamectl hostname "$HOSTNAME" --transient
-  
+
   # Prepare skel
   mkdir -p /tmp/skel/$USERNAME/.config/systemd/user/dotfiles-init.service.d
   cat << EOF > /tmp/skel/$USERNAME/.config/systemd/user/dotfiles-init.service.d/10-custom.conf
@@ -194,20 +194,20 @@ EOF
     --member-of=pipewire,users,wheel \
     --real-name="$FULLNAME" \
     --email="$EMAIL"
-  
+
   shopt -s dotglob
   runuser -u $USERNAME -- cp -R /tmp/skel/$USERNAME/* /var/home/$USERNAME.homedir/
   shopt -u dotglob
 
   rm -rf /tmp/skel/$USERNAME
-  
+
   # Add subuid and subgid
   SUBRANGE="524288-$(( 524288 + 65536 ))"
   usermod --add-subuids $SUBRANGE --add-subgids $SUBRANGE $USERNAME
-  
+
   # Register u2f key
   if command -v pamu2fcfg >/dev/null 2>&1; then
-    pamu2fcfg -u $USERNAME --no-user-presence >> /etc/u2f_mappings   
+    pamu2fcfg -u $USERNAME --no-user-presence >> /etc/u2f_mappings
   fi
 
   unset NEWPASSWORD

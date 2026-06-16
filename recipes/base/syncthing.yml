@@ -18,3 +18,4 @@ modules:
     user:
       enabled:
         - syncthing.service
+...

@@ -16,3 +16,4 @@ modules:
     files:
       - source: wm/common/noctalia-shell
         destination: /
+...

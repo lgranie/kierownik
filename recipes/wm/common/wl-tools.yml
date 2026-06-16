@@ -8,3 +8,4 @@ modules:
         - wl-clipboard
         #- cliphist
         - wlsunset
+...

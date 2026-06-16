@@ -20,13 +20,14 @@ modules:
     files:
       - source: base/system
         destination: /
-  
+
   - type: script
     snippets:
       - "chmod +x /usr/bin/firstboot"
-  
+
   - from-file: base/systemd-services.yml
-  
+
   - type: script
     scripts:
       - base/bootc-update
+...

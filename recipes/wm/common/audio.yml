@@ -11,8 +11,9 @@ modules:
         - pipewire-pulseaudio
         - pipewire-utils
         - wireplumber
-  
+
   - type: files
     files:
       - source: wm/common/audio
         destination: /
+...

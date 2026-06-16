@@ -6,3 +6,4 @@ modules:
       packages:
         - iwlwifi-mvm-firmware
         - NetworkManager-wifi
+...

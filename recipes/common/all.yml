@@ -6,3 +6,4 @@ modules:
   - type: script
     snippets:
       - "chmod -R +x /usr/lib/kierownik"
+...

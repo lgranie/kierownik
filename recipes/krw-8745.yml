@@ -18,7 +18,7 @@ modules:
   - from-file: base/all.yml
   - from-file: cpu/amd.yml
   - from-file: cpu/realtime.yml
-  
+
   - from-file: wm/base.yml
   - from-file: wm/desktop.yml
   - from-file: wm/hypr.yml
@@ -26,3 +26,4 @@ modules:
 
   # finalize
   - from-file: common/all.yml
+...

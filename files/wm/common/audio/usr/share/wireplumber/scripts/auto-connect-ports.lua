@@ -16,7 +16,7 @@ function link_port(output_port, input_port)
 
     ["link.output.node"] = output_port.properties["node.id"],
     ["link.output.port"] = output_port.properties["object.id"],
-    
+
     -- The node never got created if it didn't have this field set to something
     ["object.id"] = nil,
 
@@ -43,15 +43,15 @@ end
 -- └──────────────────┘         │ AUX2              │
 --                              │                   │
 --                              └───────────────────┘
--- 
+--
 -- -- Call this method inside a script in global scope
 --
 -- auto_connect_ports {
 --
---   -- A constraint for all the required ports of the output device 
+--   -- A constraint for all the required ports of the output device
 --   output = Constraint { "node.name"}
 --
---   -- A constraint for all the required ports of the input device 
+--   -- A constraint for all the required ports of the input device
 --   input = Constraint { .. }
 --
 --   -- A mapping of output audio channels to input audio channels
@@ -102,7 +102,7 @@ function auto_connect_ports(args)
 
   function _connect()
     local delete_links = unless and unless:get_n_objects() > 0
-    
+
     if delete_links then
       for _i, link in pairs(links) do
         link:request_destroy()
@@ -115,7 +115,7 @@ function auto_connect_ports(args)
 
     for output_name, input_names in pairs(args.connect) do
       local input_names = input_names[1] == nil and { input_names } or input_names
-      
+
       if delete_links then
       else
 				-- Iterate through all the output ports with the correct channel name

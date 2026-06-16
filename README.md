@@ -18,7 +18,7 @@ Kierownik ships with:
   * flatpak / flathub / bazaar
   * foot terminal
   * some nerd fonts
-  
+
 ## Inspirations
 
 * <https://github.com/blue-build/template>

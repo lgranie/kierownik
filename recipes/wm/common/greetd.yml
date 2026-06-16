@@ -7,13 +7,14 @@ modules:
         - greetd
         - greetd-selinux
         - tuigreet
-  
+
   - type: files
     files:
       - source: wm/common/greetd
         destination: /
-  
+
   - type: systemd
     system:
       enabled:
         - greetd
+...

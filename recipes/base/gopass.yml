@@ -15,4 +15,4 @@ modules:
   - type: script
     snippets:
       - "gopass completion fish > /etc/fish/completions/gopass.fish"
-      
+...

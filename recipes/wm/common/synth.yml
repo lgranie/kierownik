@@ -5,7 +5,7 @@ modules:
       install-weak-deps: false
       packages:
         - pipewire-jack-audio-connection-kit
-  
+
   - type: dnf
     repos:
       cleanup: true
@@ -15,4 +15,4 @@ modules:
       install-weak-deps: false
       packages:
         - cardinal
-  
+...

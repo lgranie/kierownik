@@ -9,3 +9,4 @@ modules:
   - type: script
     snippets:
       - "chmod +x /usr/bin/start-wm-session"
+...

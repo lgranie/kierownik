@@ -1,3 +1,4 @@
+---
 modules:
   - type: dnf
     remove:
@@ -15,3 +16,4 @@ modules:
     kargs:
       - amd_iommu=on iommu=pt
       - amd_pstate=active
+...

@@ -19,7 +19,7 @@ modules:
   - from-file: base/wifi.yml
   - from-file: cpu/intel.yml
   - from-file: cpu/realtime.yml
-  
+
   - from-file: wm/base.yml
   - from-file: wm/desktop.yml
   - from-file: wm/hypr.yml
@@ -27,3 +27,4 @@ modules:
 
   # finalize
   - from-file: common/all.yml
+...

@@ -6,7 +6,7 @@ modules:
       packages:
         - flatpak
         - flatpak-spawn
-  
+
   - type: files
     files:
       - source: wm/common/flatpak
@@ -37,3 +37,4 @@ modules:
       enabled:
         - flatpak-default_config.service
         - flatpak-update.timer
+...

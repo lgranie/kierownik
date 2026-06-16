@@ -3,7 +3,7 @@
 animations {
     // Uncomment to turn off all animations.
     // off
-    
+
     slowdown 0.5
 
     window-open {

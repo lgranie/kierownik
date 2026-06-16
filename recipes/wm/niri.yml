@@ -17,3 +17,4 @@ modules:
     snippets:
       - "chmod +x /usr/bin/start-niri"
       - "chmod +x /usr/bin/start-niri-session"
+...
