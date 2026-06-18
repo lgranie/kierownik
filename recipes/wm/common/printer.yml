@@ -9,6 +9,7 @@ modules:
         - cups-client
         - cups-filters
         - cups-ipptool
+        - nss-mdns
         - system-config-printer
         - system-config-printer-udev
 
