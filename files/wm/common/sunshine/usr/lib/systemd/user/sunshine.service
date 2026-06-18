@@ -7,6 +7,11 @@ PartOf=graphical-session.target
 ConditionEnvironment=XDG_RUNTIME_DIR
 
 [Service]
+# Allow the service to inherit these capabilities
+# AmbientCapabilities=CAP_SYS_NICE CAP_SYS_ADMIN
+# Ensure the capability bounding set includes them (allows the caps to be available)
+# CapabilityBoundingSet=CAP_SYS_NICE CAP_SYS_ADMIN
+
 Type=simple
 ExecStartPre=sleep 3
 ExecStart=/usr/bin/sunshine /etc/sunshine/sunshine.conf

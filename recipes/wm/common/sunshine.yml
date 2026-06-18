@@ -13,7 +13,7 @@ modules:
   - type: dnf
     install:
       packages:
-        - https://download.copr.fedorainfracloud.org/results/lizardbyte/beta/fedora-44-x86_64/10572451-Sunshine/Sunshine-2026.605.170308-1.fc44.x86_64.rpm
+        - https://download.copr.fedorainfracloud.org/results/lizardbyte/beta/fedora-44-x86_64/10581589-Sunshine/Sunshine-2026.608.233907-1.fc44.x86_64.rpm
   
   - type: files
     files:
@@ -22,7 +22,7 @@ modules:
 
   - type: script
     snippets:
-      - "setcap 'cap_sys_nice=+ep' $(readlink -f /usr/bin/sunshine)"
+      - "setcap \"cap_sys_nice=ep\" \"/usr/bin/sunshine\""
 
   - type: systemd
     user:
