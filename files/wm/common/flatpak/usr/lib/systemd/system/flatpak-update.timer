@@ -1,6 +1,6 @@
 [Unit]
 Description=Daily Flatpak updates
-Requires=flatpak-update.service
+#Requires=flatpak-update.service
 
 [Timer]
 OnBootSec=10min
