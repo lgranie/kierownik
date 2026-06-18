@@ -1,0 +1,10 @@
+---
+modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - ffmpeg-free
+        - libavcodec-free
+        - vlc
+...

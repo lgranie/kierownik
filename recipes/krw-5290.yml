@@ -18,13 +18,11 @@ modules:
   - from-file: base/all.yml
   - from-file: base/wifi.yml
   - from-file: cpu/intel.yml
-  - from-file: cpu/realtime.yml
 
   - from-file: wm/base.yml
-  - from-file: wm/desktop.yml
   - from-file: wm/hypr.yml
-  - from-file: wm/common/5290.yml
+  - from-file: wm/5290.yml
 
   # finalize
-  - from-file: common/all.yml
+  - from-file: finalize/all.yml
 ...

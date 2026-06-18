@@ -17,13 +17,11 @@ platforms:
 modules:
   - from-file: base/all.yml
   - from-file: cpu/amd.yml
-  - from-file: cpu/realtime.yml
 
   - from-file: wm/base.yml
-  - from-file: wm/desktop.yml
   - from-file: wm/hypr.yml
-  # - from-file: wm/common/8745.yml
+  - from-file: wm/8745.yml
 
   # finalize
-  - from-file: common/all.yml
+  - from-file: finalize/all.yml
 ...

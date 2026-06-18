@@ -1,0 +1,12 @@
+---
+modules:
+  - from-file: wm/video/common.yml
+  
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - libigfxcmrt
+        - libva-intel-media-driver
+        - libva-utils
+...

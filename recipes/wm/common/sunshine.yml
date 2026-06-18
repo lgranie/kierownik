@@ -1,15 +1,20 @@
 ---
 modules:
-  - type: dnf
-    repos:
-      cleanup: true
-      copr:
-        - lizardbyte/beta
-    install:
-      install-weak-deps: false
-      packages:
-        - Sunshine
+  # - type: dnf
+  #   repos:
+  #     cleanup: true
+  #     copr:
+  #       - lizardbyte/beta
+  #   install:
+  #     install-weak-deps: false
+  #     packages:
+  #       - Sunshine
 
+  - type: dnf
+    install:
+      packages:
+        - https://download.copr.fedorainfracloud.org/results/lizardbyte/beta/fedora-44-x86_64/10572451-Sunshine/Sunshine-2026.605.170308-1.fc44.x86_64.rpm
+  
   - type: files
     files:
       - source: wm/common/sunshine

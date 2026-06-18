@@ -16,4 +16,6 @@ modules:
     kargs:
       - amd_iommu=on iommu=pt
       - amd_pstate=active
+
+  - from-file: cpu/common/realtime.yml
 ...

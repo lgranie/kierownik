@@ -11,6 +11,8 @@
 # See the License for the specific language governing permissions and limitations under the License.
 ---
 modules:
+  - from-file: wm/negativo/common.yml
+  
   - type: dnf
     repos:
       cleanup: true
@@ -25,8 +27,6 @@ modules:
         - rar
         - pipewire-libs-extra
 
-
-        
     replace:
       - from-repo: fedora-multimedia
         skip-unavailable: true
@@ -40,29 +40,4 @@ modules:
           - mesa-libGL
           - mesa-libgbm
           - mesa-vulkan-drivers
-          - libva-intel-media-driver
-          - intel-gmmlib
-          - intel-mediasdk
-          - old: ffmpeg-free
-            new: ffmpeg
-          - old: fdk-aac-free
-            new: libfdk-aac
-          - old: gstreamer1-plugins-ugly-free
-            new: gstreamer1-plugins-ugly
-          - old: libavcodec-free
-            new: libavcodec
-          - old: libavdevice-free
-            new: libavdevice
-          - old: libavfilter-free
-            new: libavfilter
-          - old: libavformat-free
-            new: libavformat
-          - old: libavutil-free
-            new: libavutil
-          - old: libpostproc-free
-            new: libpostproc
-          - old: libswresample-free
-            new: libswresample
-          - old: libswscale-free
-            new: libswscale
 ...

@@ -1,9 +1,9 @@
 ---
 modules:
-  - from-file: common/container.yml
-  - from-file: common/bootc.yml
-
   - type: script
     snippets:
       - "chmod -R +x /usr/lib/kierownik"
+
+  - from-file: finalize/container.yml
+  - from-file: finalize/bootc.yml
 ...

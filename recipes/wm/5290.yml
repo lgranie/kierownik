@@ -1,0 +1,16 @@
+---
+modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - iio-sensor-proxy
+
+  - from-file: wm/video/intel.yml
+  - from-file: wm/common/wvkbd.yml
+
+  - type: files
+    files:
+      - source: wm/5290
+        destination: /
+...

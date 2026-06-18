@@ -15,5 +15,5 @@ modules:
     snippets:
       - "rm -rf /etc/skel/.{bash,mozilla}*"
 
-  - from-file: common/removesuid.yml
+  - from-file: finalize/removesuid.yml
 ...
