@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+#MISE description="Install cert from url"
+#USAGE arg "<url>" help="Site url"
+set -euo pipefail
+
+server="${usage_url#*://}"
+server_name="${server%%:*}"
+
+echo quit | openssl s_client -showcerts -servername $server_name -connect ${server} 2>/dev/null | sed -ne '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/p' >/tmp/${server_name}
+run0 bash -c "mv /tmp/${server_name} /etc/pki/ca-trust/source/anchors/"
+run0 bash -c 'update-ca-trust extract'
