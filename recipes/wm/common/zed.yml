@@ -1,0 +1,6 @@
+---
+modules:
+  - type: script
+    scripts:
+      - wm/common/zed/install
+...
