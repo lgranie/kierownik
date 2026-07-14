@@ -1,0 +1,137 @@
+# Builds PODMAN_FLAGS for pi container tasks. Source this file; do not execute directly.
+# Usage: source "$(dirname "$0")/_podman_flags"
+
+PI_IMAGE="pi-less-yolo:latest"
+
+# PI_CONTAINER_RUNTIME overrides; otherwise detect podman via version output or binary path.
+# || true: some podman-as-podman shims exit non-zero, which would abort under pipefail.
+# readlink: when podman is symlinked as "podman", it reports "podman version X" not "podman version X".
+if [[ -n "${PI_CONTAINER_RUNTIME:-}" ]]; then
+  PODMAN_CMD="${PI_CONTAINER_RUNTIME}"
+else
+  PODMAN_CMD="podman"
+  detected_version=$(podman --version 2>&1 || true)
+  podman_realpath=$(readlink -f "$(command -v podman || true)" 2>/dev/null || true)
+  if [[ "${detected_version}" == *podman* ]] || [[ "${podman_realpath}" == *podman* ]]; then
+    PODMAN_CMD="podman"
+  fi
+fi
+
+"${PODMAN_CMD}" image inspect "${PI_IMAGE}" > /dev/null 2>&1 || mise run pi:build
+
+# Pre-create so Docker doesn't auto-create it as root (breaking writes by the
+# container's non-root UID).
+mkdir -p "${HOME}/.pi/agent"
+
+# Permissions:
+#   --user $(id -u):$(id -g)   files created in /workspace are owned by the
+#                               calling user on the host, not root.
+#   --cap-drop=ALL             drop all Linux capabilities; pi needs none.
+#   --no-new-privileges        prevent setuid binaries from gaining privileges.
+#
+# Mounts:
+#   $(pwd):$(pwd)              current directory, mounted at its real host path.
+#   ~/.pi/agent:/pi-agent      pi config, credentials, sessions, and managed
+#                               binaries from the host. PI_CODING_AGENT_DIR
+#                               tells pi to use this path instead of deriving
+#                               it from $HOME, sidestepping any HOME-resolution
+#                               issues inside the container.
+PODMAN_FLAGS=(
+  "--rm"
+  "--user" "$(id -u):$(id -g)"
+  "--cap-drop=ALL"
+  "--security-opt=no-new-privileges"
+  "--ipc=none"
+  "--volume" "$(pwd):$(pwd)${_PI_WORKDIR_RO:+:ro}"  # :ro set by pi:readonly
+  "--volume" "${HOME}/.pi/agent:/pi-agent"
+  "--workdir" "$(pwd)"
+  "--env" "PI_CODING_AGENT_DIR=/pi-agent"
+  "--env" "TERM=${TERM:-xterm-256color}"
+  "--env" "COLORTERM=${COLORTERM:-truecolor}"
+)
+
+# Podman-specific: use --userns=keep-id to properly map the user namespace
+# and avoid "crun: chown `/dev/pts/0`: Invalid argument" errors.
+if [[ "${PODMAN_CMD}" == "podman" ]]; then
+  PODMAN_FLAGS+=("--userns=keep-id")
+fi
+
+# Forward pi-related env vars and API keys if set on the host.
+# Auth file (~/.pi/agent/auth.json) takes priority over these if present.
+PI_ENV_VARS=(
+  PI_SKIP_VERSION_CHECK
+  PI_CACHE_RETENTION
+  PI_PACKAGE_DIR
+  VISUAL
+  EDITOR
+  ANTHROPIC_API_KEY
+  AZURE_OPENAI_API_KEY
+  OPENAI_API_KEY
+  GEMINI_API_KEY
+  MISTRAL_API_KEY
+  GROQ_API_KEY
+  CEREBRAS_API_KEY
+  XAI_API_KEY
+  OPENROUTER_API_KEY
+  AI_GATEWAY_API_KEY
+  ZAI_API_KEY
+  OPENCODE_API_KEY
+  KIMI_API_KEY
+  MINIMAX_API_KEY
+  MINIMAX_CN_API_KEY
+)
+for var in "${PI_ENV_VARS[@]}"; do
+  [ -n "${!var:-}" ] && PODMAN_FLAGS+=("--env" "$var=${!var}")
+done
+
+# Git identity: mount ~/.gitconfig read-only. Opt out with PI_NO_GITCONFIG=1.
+# Credential helpers (e.g. osxkeychain) are unavailable; git falls back to prompting.
+if [[ -z "${PI_NO_GITCONFIG:-}" && -f "${HOME}/.gitconfig" ]]; then
+  PODMAN_FLAGS+=("--volume" "${HOME}/.gitconfig:/home/piuser/.gitconfig:ro")
+fi
+
+# Resource limits. Opt in by setting any of PI_MEMORY, PI_CPUS, or PI_PIDS_LIMIT.
+# Examples: PI_MEMORY=4g PI_CPUS=2 PI_PIDS_LIMIT=512
+[[ -n "${PI_MEMORY:-}" ]]     && PODMAN_FLAGS+=("--memory" "${PI_MEMORY}")
+[[ -n "${PI_CPUS:-}" ]]       && PODMAN_FLAGS+=("--cpus" "${PI_CPUS}")
+[[ -n "${PI_PIDS_LIMIT:-}" ]] && PODMAN_FLAGS+=("--pids-limit" "${PI_PIDS_LIMIT}")
+
+# PI_LOCAL_MODELS=1: share the host network namespace so local model servers
+# (Ollama, LM Studio, vLLM) are reachable at their native localhost URLs.
+# Security: all host ports become reachable. macOS: uses the Docker Desktop VM
+# network — localhost on the Mac is not reachable; use host.podman.internal.
+if [[ -n "${PI_LOCAL_MODELS:-}" ]]; then
+  PODMAN_FLAGS+=("--network=host")
+fi
+
+# SSH agent forwarding. Opt in by setting PI_SSH_AGENT=1.
+# Also mounts ~/.ssh/known_hosts and ~/.ssh/config read-only.
+# Security: a compromised container can authenticate as you to any server your
+# agent has loaded. If ~/.ssh/config contains ForwardAgent yes, that forwarding
+# cascades to any server the container connects to. Review loaded keys with
+# `ssh-add -l` before enabling.
+if [[ -n "${PI_SSH_AGENT:-}" ]]; then
+  if [[ -f "${HOME}/.ssh/known_hosts" ]]; then
+    PODMAN_FLAGS+=("--volume" "${HOME}/.ssh/known_hosts:/home/piuser/.ssh/known_hosts:ro")
+  fi
+  if [[ -f "${HOME}/.ssh/config" ]]; then
+    PODMAN_FLAGS+=("--volume" "${HOME}/.ssh/config:/home/piuser/.ssh/config:ro")
+  fi
+
+  if [[ "$(uname -s)" == "Darwin" ]] && [[ "${PODMAN_CMD}" == "podman" ]]; then
+    # Docker Desktop creates the socket root:root 660; add GID 0 so the
+    # non-root user can access it. --cap-drop=ALL limits the exposure.
+    PODMAN_FLAGS+=(
+      "--mount" "type=bind,src=/run/host-services/ssh-auth.sock,target=/run/host-services/ssh-auth.sock"
+      "--env" "SSH_AUTH_SOCK=/run/host-services/ssh-auth.sock"
+      "--group-add" "0"
+    )
+  elif [[ -S "${SSH_AUTH_SOCK:-}" ]]; then
+    PODMAN_FLAGS+=(
+      "--volume" "${SSH_AUTH_SOCK:-}:${SSH_AUTH_SOCK:-}"
+      "--env" "SSH_AUTH_SOCK=${SSH_AUTH_SOCK:-}"
+    )
+  else
+    echo "warning: PI_SSH_AGENT=1 but SSH_AUTH_SOCK is not set or is not a socket — SSH agent forwarding disabled" >&2
+  fi
+fi
