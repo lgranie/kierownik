@@ -1,6 +1,0 @@
-[Unit]
-Description=Shutdown %i Wayland compositor session
-Documentation=man:systemd.special(7)
-DefaultDependencies=no
-StopWhenUnneeded=yes
-RefuseManualStart=yes
