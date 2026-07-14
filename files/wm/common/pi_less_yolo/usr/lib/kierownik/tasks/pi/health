@@ -1,0 +1,171 @@
+#!/usr/bin/env bash
+#MISE description="Check the pi container setup for problems"
+set -euo pipefail
+
+PASS="[PASS]"
+WARN="[WARN]"
+FAIL="[FAIL]"
+INFO="[INFO]"
+STATUS=0
+
+pass() { echo "  ${PASS} $*"; }
+warn() { echo "  ${WARN} $*"; }
+fail() { echo "  ${FAIL} $*"; STATUS=1; }
+info() { echo "  ${INFO} $*"; }
+
+# ---------------------------------------------------------------------------
+# Semver comparison: returns 0 if $1 >= $2
+# ---------------------------------------------------------------------------
+version_gte() {
+  printf '%s\n%s' "$2" "$1" | sort -C -V
+}
+
+echo "pi-less-yolo health check"
+echo "========================="
+echo ""
+
+# --- detect container runtime -----------------------------------------------
+if [[ -n "${PI_CONTAINER_RUNTIME:-}" ]]; then
+  DOCKER_CMD="${PI_CONTAINER_RUNTIME}"
+else
+  DOCKER_CMD="podman"
+  if podman --version 2>&1 | grep -q podman; then
+    DOCKER_CMD="podman"
+  fi
+fi
+
+# --- mise version -----------------------------------------------------------
+MISE_VER=$(mise --version 2>/dev/null | awk '{print $1}')
+MISE_MIN="2024.12.0"
+if version_gte "${MISE_VER}" "${MISE_MIN}"; then
+  pass "mise ${MISE_VER} (>= ${MISE_MIN})"
+else
+  fail "mise ${MISE_VER} is below minimum ${MISE_MIN} — run: mise self-update"
+fi
+
+# --- container runtime binary -----------------------------------------------
+if command -v "${DOCKER_CMD}" > /dev/null 2>&1; then
+  pass "${DOCKER_CMD} available"
+else
+  fail "${DOCKER_CMD} not found — install Docker: https://docs.podman.com/get-podman/ or Podman: https://podman.io/getting-started/installation"
+fi
+
+# --- container runtime daemon -----------------------------------------------
+if "${DOCKER_CMD}" info > /dev/null 2>&1; then
+  pass "${DOCKER_CMD} daemon running"
+else
+  fail "${DOCKER_CMD} daemon not running — start Docker Desktop, podmand, or the Podman socket"
+fi
+
+# --- image ------------------------------------------------------------------
+if "${DOCKER_CMD}" image inspect "pi-less-yolo:latest" > /dev/null 2>&1; then
+  pass "image pi-less-yolo:latest exists"
+else
+  warn "image pi-less-yolo:latest not found — run: mise run pi:build"
+fi
+
+# --- conf.d entry -----------------------------------------------------------
+CONF_D="${XDG_CONFIG_HOME:-${HOME}/.config}/mise/conf.d"
+CONF_FILE="${CONF_D}/pi-less-yolo.toml"
+if [[ -f "${CONF_FILE}" ]]; then
+  pass "global config ${CONF_FILE}"
+else
+  fail "global config not found — run: mise run install (from the pi-less-yolo repo)"
+fi
+
+# --- task files -------------------------------------------------------------
+echo ""
+echo "  Task files:"
+TASKS_DIR="${MISE_TASK_DIR}"
+for NAME in _default build shell upgrade health; do
+  if [[ -x "${TASKS_DIR}/${NAME}" ]]; then
+    pass "  tasks/pi/${NAME}"
+  else
+    fail "  tasks/pi/${NAME} missing or not executable"
+  fi
+done
+
+# --- ~/.pi/agent ------------------------------------------------------------
+if [[ -d "${HOME}/.pi/agent" ]]; then
+  _agent_owner=$(stat -c '%u' "${HOME}/.pi/agent" 2>/dev/null || stat -f '%u' "${HOME}/.pi/agent" 2>/dev/null)
+  if [[ "${_agent_owner}" == "$(id -u)" ]]; then
+    # shellcheck disable=SC2088
+    pass "~/.pi/agent exists and is owned by current user"
+  else
+    # shellcheck disable=SC2088
+    fail "~/.pi/agent is owned by UID ${_agent_owner}, not $(id -u) — run: sudo chown -R \"\$(id -u):\$(id -g)\" ~/.pi/agent"
+  fi
+else
+  # shellcheck disable=SC2088
+  warn "~/.pi/agent does not exist — it will be created on first run"
+fi
+
+# --- tmux passthrough -------------------------------------------------------
+if command -v tmux > /dev/null 2>&1; then
+  TMUX_VER=$(tmux -V 2>/dev/null | awk '{print $2}')
+  TMUX_MIN="3.3"
+  if version_gte "${TMUX_VER}" "${TMUX_MIN}"; then
+    pass "tmux ${TMUX_VER} (>= ${TMUX_MIN}, passthrough supported)"
+  else
+    warn "tmux ${TMUX_VER} < ${TMUX_MIN} — terminal passthrough disabled; upgrade tmux for best experience"
+  fi
+else
+  info "tmux not found — passthrough not available (not required)"
+fi
+
+# --- git identity -----------------------------------------------------------
+if [[ -n "${PI_NO_GITCONFIG:-}" ]]; then
+  info "git identity disabled (PI_NO_GITCONFIG is set)"
+elif [[ -f "${HOME}/.gitconfig" ]]; then
+  # shellcheck disable=SC2088
+  pass "~/.gitconfig found (will be mounted read-only)"
+else
+  # shellcheck disable=SC2088
+  info "~/.gitconfig not found — git commits inside the container will have no author identity"
+fi
+
+# --- SSH agent forwarding ---------------------------------------------------
+if [[ -n "${PI_SSH_AGENT:-}" ]]; then
+  if [[ -S "${SSH_AUTH_SOCK:-}" ]]; then
+    pass "SSH agent forwarding enabled (SSH_AUTH_SOCK=${SSH_AUTH_SOCK:-})"
+  else
+    warn "PI_SSH_AGENT=1 but SSH_AUTH_SOCK is not set or is not a socket — start ssh-agent or ensure your keychain agent is running"
+  fi
+else
+  info "SSH agent forwarding disabled (set PI_SSH_AGENT=1 to enable for SSH-based git remotes)"
+fi
+
+# --- local model servers ---------------------------------------------------
+MODELS_JSON="${HOME}/.pi/agent/models.json"
+_has_local_urls=0
+[[ -f "${MODELS_JSON}" ]] && grep -qE "localhost|127\.0\.0\.1" "${MODELS_JSON}" && _has_local_urls=1
+if [[ -n "${PI_LOCAL_MODELS:-}" ]]; then
+  if [[ "${_has_local_urls}" -eq 1 ]]; then
+    pass "local model servers: --network=host active (PI_LOCAL_MODELS=1)"
+  else
+    warn "PI_LOCAL_MODELS=1 is set but no localhost URLs found in models.json"
+  fi
+  if [[ "$(uname -s)" == "Darwin" ]]; then
+    info "macOS: --network=host uses the Docker Desktop VM network, not the Mac's — localhost services on the Mac are not reachable this way"
+  fi
+elif [[ "${_has_local_urls}" -eq 1 ]]; then
+  warn "local model URLs found in models.json but PI_LOCAL_MODELS=1 is not set — they will not be reachable inside the container"
+else
+  info "local model host access inactive (set PI_LOCAL_MODELS=1 to enable)"
+fi
+
+# --- platform note ----------------------------------------------------------
+echo ""
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  info "macOS: --network=host is skipped at build time (Docker Desktop handles DNS natively)"
+fi
+
+echo ""
+if [[ "${STATUS}" -eq 0 ]]; then
+  echo "All checks passed."
+else
+  echo "One or more checks failed. See [FAIL] items above."
+fi
+echo ""
+
+exit "${STATUS}"

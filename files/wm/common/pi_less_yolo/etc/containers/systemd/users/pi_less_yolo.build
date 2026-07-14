@@ -1,0 +1,4 @@
+[Build]
+ImageTag=localhost/pi_less_yolo:latest
+File=/usr/lib/kierownik/containers/pi_less_yolo/Containerfile
+SetWorkingDirectory=/usr/lib/kierownik/containers/pi_less_yolo

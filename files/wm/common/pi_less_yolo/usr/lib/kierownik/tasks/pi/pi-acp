@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+#MISE description="Opens a pi-acp stdio tty in a pi container with the same mounts as the pi task for IDE connections"
+#MISE raw=true
+#MISE dir="{{cwd}}"
+set -euo pipefail
+
+# shellcheck source=tasks/pi/_podman_flags
+source "$(dirname "$0")/_podman_flags"
+
+DOCKER_FLAGS+=("--interactive")
+[ -t 0 ] && [ -t 1 ] && DOCKER_FLAGS+=("--tty")
+
+# Will install pi-acp, to /pi-agent/npm-global if not there and/or starts pi-acp
+"${DOCKER_CMD}" run "${DOCKER_FLAGS[@]}" "${PI_IMAGE}" sh -c 'if ! command -v pi-acp > /dev/null 2>&1; then npm install -g pi-acp && pi-acp; else pi-acp; fi'

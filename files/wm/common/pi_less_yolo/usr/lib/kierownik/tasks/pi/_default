@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+#MISE description="Run pi coding agent in a Docker container"
+#MISE raw=true
+#MISE dir="{{cwd}}"
+set -euo pipefail
+
+# shellcheck source=tasks/pi/_podman_flags
+source "$(dirname "$0")/_podman_flags"
+
+PODMAN_FLAGS+=("--interactive")
+[ -t 0 ] && [ -t 1 ] && PODMAN_FLAGS+=("--tty")
+
+if [ -n "${TMUX:-}" ]; then
+  tmux set-option -p allow-passthrough on 2>/dev/null || true
+  trap 'tmux set-option -p allow-passthrough off 2>/dev/null || true' EXIT
+fi
+
+PI_ARGS=()
+if [[ -z "${PI_NO_CONTAINER_PROMPT:-}" ]]; then
+  PI_ARGS+=(
+    "--append-system-prompt"
+    "You are running inside a Docker container as a non-root user. No Docker socket, sudo, or system package installation (apk requires root) is available."
+  )
+fi
+
+"${PODMAN_CMD}" run "${PODMAN_FLAGS[@]}" "${PI_IMAGE}" "${PI_ARGS[@]}" "$@"
