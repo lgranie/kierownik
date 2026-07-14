@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+#MISE description="Run pi read-only: project directory mounted read-only, file-modification tools disabled"
+#MISE raw=true
+#MISE dir="{{cwd}}"
+set -euo pipefail
+
+_PI_WORKDIR_RO=1
+# shellcheck source=tasks/pi/_podman_flags
+source "$(dirname "$0")/_podman_flags"
+
+DOCKER_FLAGS+=("--interactive")
+[ -t 0 ] && [ -t 1 ] && DOCKER_FLAGS+=("--tty")
+
+"${DOCKER_CMD}" run "${DOCKER_FLAGS[@]}" "${PI_IMAGE}" --tools read,grep,find,ls "$@"

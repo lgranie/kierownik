@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+#MISE description="Open a bash shell in the pi container with the same mounts as the pi task"
+#MISE raw=true
+#MISE dir="{{cwd}}"
+set -euo pipefail
+
+# shellcheck source=tasks/pi/_podman_flags
+source "$(dirname "$0")/_podman_flags"
+
+DOCKER_FLAGS+=("--interactive")
+[ -t 0 ] && [ -t 1 ] && DOCKER_FLAGS+=("--tty")
+
+# Pass bash as CMD so the entrypoint runs passwd synthesis before dropping to a shell.
+"${DOCKER_CMD}" run "${DOCKER_FLAGS[@]}" "${PI_IMAGE}" bash
