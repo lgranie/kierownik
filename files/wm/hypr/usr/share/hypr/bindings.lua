@@ -41,6 +41,10 @@ hl.bind("SUPER + SHIFT + LEFT", layout("swapcol l"), { description = "Swap windo
 hl.bind("SUPER + SHIFT + RIGHT", layout("swapcol r"), { description = "Swap window to the right" })
 hl.bind("SUPER + SHIFT + M", window.move({ workspace = "m+1"}), { description = "Swap window to the right" })
 
+-- Move window to workspace
+hl.bind("SUPER + SHIFT + up", window.move({ workspace = "e+1" }))
+hl.bind("SUPER + SHIFT + down", window.move({ workspace = "e-1" }))
+
 -- Move/resize windows with mainMod + LMB/RMB and dragging
 hl.bind("SUPER + mouse:272", window.drag(),   { mouse = true })
 hl.bind("SUPER + mouse:273", window.resize(), { mouse = true })
