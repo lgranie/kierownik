@@ -9,6 +9,7 @@ modules:
   - from-file: wm/common/noctalia-shell.yml
   - from-file: wm/common/printer.yml
   - from-file: wm/common/synth.yml
+  - from-file: wm/common/uwsm.yml
   - from-file: wm/common/voxtype.yml
   - from-file: wm/common/wl-tools.yml
   - from-file: wm/common/xdg-desktop.yml

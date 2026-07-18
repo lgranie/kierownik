@@ -87,7 +87,7 @@ hide_before_typing = false
 
 # Optional command prefix used before launched apps
 # Example: ["runapp", "--"] or ["uwsm", "app", "--"]
-# launch_prefix = ["runapp", "--"]
+launch_prefix = ["uwsm", "app", "--"]
 
 # Match mode: "fuzzy" or "exact"
 # fuzzy = fzf-style matching (fire matches Firefox)
