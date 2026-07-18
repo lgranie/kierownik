@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
-/tmp/files/scripts/common/fetch_gh_latest_tag
+
 VOXTYPE_TAG=$(/tmp/files/scripts/common/fetch_gh_latest_tag "peteonrails/voxtype")
 VOXTYPE_VER=${VOXTYPE_TAG:1}
 
