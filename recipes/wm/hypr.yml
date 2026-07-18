@@ -18,4 +18,8 @@ modules:
     files:
       - source: wm/hypr
         destination: /
+
+  - type: script
+    snippets:
+      - "rm -f /usr/share/wayland-sessions/hyprland.desktop"
 ...
