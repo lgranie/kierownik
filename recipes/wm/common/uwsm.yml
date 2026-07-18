@@ -1,0 +1,12 @@
+---
+modules:
+  - type: dnf
+    repos:
+      cleanup: true
+      copr:
+        - lionheartp/Hyprland
+    install:
+      install-weak-deps: false
+      packages:
+        - uwsm
+...
