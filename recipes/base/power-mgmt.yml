@@ -1,0 +1,9 @@
+---
+modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - kernel-tools
+        - power-profiles-daemon
+...
