@@ -4,6 +4,12 @@ modules:
     scripts:
       - wm/common/voxtype/install
 
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - ydotool
+
   - type: files
     files:
       - source: wm/common/voxtype
