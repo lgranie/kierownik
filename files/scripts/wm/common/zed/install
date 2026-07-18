@@ -1,13 +1,8 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -euo pipefail/tmp/files/scripts/common/fetch_gh_latest_tag
 
-fetch_gh_latest_tag() {
-    local repo="$1"
-    curl --silent --retry 3 "https://api.github.com/repos/${repo}/releases/latest" | jq -r '.tag_name // empty' 2>/dev/null || true
-}
-
-ZED_RELEASE=$(fetch_gh_latest_tag "zed-industries/zed")
+ZED_RELEASE=$(/tmp/files/scripts/common/fetch_gh_latest_tag "zed-industries/zed")
 curl --silent --retry 3 -L --output - "https://github.com/zed-industries/zed/releases/download/${ZED_RELEASE}/zed-linux-x86_64.tar.gz" \
     | tar -xzf - -C /usr/lib/opt/
 

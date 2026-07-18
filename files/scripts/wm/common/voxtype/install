@@ -1,13 +1,8 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
-
-fetch_gh_latest_tag() {
-    local repo="$1"
-    curl --silent --retry 3 "https://api.github.com/repos/${repo}/releases/latest" | jq -r '.tag_name // empty' 2>/dev/null || true
-}
-
-VOXTYPE_TAG=$(fetch_gh_latest_tag "peteonrails/voxtype")
+/tmp/files/scripts/common/fetch_gh_latest_tag
+VOXTYPE_TAG=$(/tmp/files/scripts/common/fetch_gh_latest_tag "peteonrails/voxtype")
 VOXTYPE_VER=${VOXTYPE_TAG:1}
 
 curl --silent --retry 3 -L --output /usr/bin/voxtype https://github.com/peteonrails/voxtype/releases/latest/download//voxtype-${VOXTYPE_VER}-linux-x86_64-vulkan
