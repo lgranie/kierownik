@@ -5,6 +5,7 @@ local exec = hl.dsp.exec_cmd
 local layout = hl.dsp.layout
 local window = hl.dsp.window
 local worksp = hl.dsp.workspace
+local ipc = "noctalia msg"
 
 -- 0. Keybind Cheatsheet
 hl.bind("SUPER + slash", exec("uwsm app -- qs -c noctalia-shell ipc call plugin:keybind-cheatsheet toggle"), { description = "Keybind Cheatsheet" })
@@ -22,9 +23,9 @@ hl.bind("SUPER + CTRL + V", exec("cliphist decode | wl-paste"))
 hl.bind("SUPER + RETURN", exec("uwsm app -- footclient"), { description = "Open a Terminal: foot client" })
 hl.bind("SUPER + ALT + RETURN", exec("uwsm app -- footclient tmux"), { description = "Open a Terminal: foot client tmux" })
 hl.bind("SUPER + SHIFT + RETURN", exec("foot"), { description = "Open a Terminal: foot" })
-hl.bind("SUPER + SHIFT + SPACE", exec("uwsm app -- qs -c noctalia-shell ipc call launcher toggle"), { description = "Run an Application: Menu" })
-hl.bind("SUPER + SPACE", exec("uwsm app -- footclient --title=fsel fsel --config /etc/fsel/config.toml --detach"), { description = "Run an Application via fsel" })
-hl.bind("SUPER + B", exec("uwsm app -- qs -c noctalia-shell ipc call plugin:bookmarks toggle"), { description = "Open Bookmark" })
+hl.bind("SUPER + SHIFT + SPACE", exec(ipc .. "panel-toggle launcher"), { description = "Run an Application: Menu" })
+hl.bind("SUPER + SPACE", exec("footclient --title=fsel fsel --config /etc/fsel/config.toml --detach"), { description = "Run an Application via fsel" })
+-- hl.bind("SUPER + B", exec(ipc .. "plugin noctalia/bookmarks all toggle"), { description = "Open Bookmark" })
 hl.bind("SUPER + ALT + L", exec("swaylock"), { description = "Lock the Screen: swaylock" })
 
 -- 2. Window Management

@@ -1,16 +1,10 @@
 ---
 modules:
   - type: dnf
-    repos:
-      cleanup: true
-      copr:
-        - lionheartp/Hyprland
     install:
       install-weak-deps: false
       packages:
-        - noctalia-qs
-        - noctalia-shell
-        - power-profiles-daemon
+        - noctalia
 
   - type: files
     files:
