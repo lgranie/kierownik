@@ -5,10 +5,10 @@ local exec = hl.dsp.exec_cmd
 local layout = hl.dsp.layout
 local window = hl.dsp.window
 local worksp = hl.dsp.workspace
-local ipc = "noctalia msg"
+local ipc = "noctalia msg "
 
 -- 0. Keybind Cheatsheet
-hl.bind("SUPER + slash", exec("uwsm app -- qs -c noctalia-shell ipc call plugin:keybind-cheatsheet toggle"), { description = "Keybind Cheatsheet" })
+-- hl.bind("SUPER + slash", exec(ipc .. "call plugin:keybind-cheatsheet toggle"), { description = "Keybind Cheatsheet" })
 
 -- Unified clipboard (Super+C/V/X works everywhere)
 hl.bind("SUPER + C", exec("wl-copy"))
