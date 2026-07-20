@@ -9,7 +9,7 @@ modules:
       install-weak-deps: false
       packages:
         - hypridle
-        - hyprland-git
+        - hyprland
         - hyprland-guiutils
         - hyprlock
         - xdg-desktop-portal-hyprland
