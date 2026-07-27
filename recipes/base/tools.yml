@@ -27,7 +27,6 @@ modules:
         - ripgrep
         - stow
         - tar
-        - tmux
         - unzip
         - yq
         - zoxide
@@ -59,11 +58,5 @@ modules:
       - "bat --completion fish > /etc/fish/completions/bat.fish"
       - "delta --generate-completion fish > /etc/fish/completions/delta.fish"
       - "gum completion fish > /etc/fish/completions/gum.fish"
-      - "sesh completion fish > /etc/fish/completions/sesh.fish"
       - "yq completion fish > /etc/fish/completions/yq.fish"
-
-  - type: systemd
-    user:
-      enabled:
-        - tmux.service
 ...

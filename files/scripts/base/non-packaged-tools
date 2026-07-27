@@ -4,7 +4,6 @@ set -euo pipefail
 
 # Install tar.gz github latest releases
 declare -A tgz_bins=(
-  ["sesh"]=https://github.com/joshmedeski/sesh/releases/latest/download/sesh_Linux_x86_64.tar.gz
   ["usage"]=https://github.com/jdx/usage/releases/latest/download/usage-x86_64-unknown-linux-gnu.tar.gz
 )
 for bin in "${!tgz_bins[@]}"; do
