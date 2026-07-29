@@ -9,7 +9,7 @@ run0 bash -c "podman run \
     --rm \
     --volume /var/home/lgranie/Projects/kierownik:/build-container-installer/build \
     --volume dnf-cache:/cache/dnf/ \
-    ghcr.io/jasonn3/build-container-installer:v1.4.0 \
+    ghcr.io/jasonn3/build-container-installer:v1.5.0 \
     VARIANT=Kinoite \
     ISO_NAME=build/krw-${usage_target}.iso \
     DNF_CACHE=/cache/dnf \
