@@ -6,8 +6,7 @@ modules:
       packages:
         - noctalia
 
-  - type: files
-    files:
-      - source: wm/common/noctalia-shell
-        destination: /
+  - type: script
+    snippets:
+      - "echo 'NoDisplay=true' >> /usr/share/applications/dev.noctalia.Noctalia.desktop"
 ...
