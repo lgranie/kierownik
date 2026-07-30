@@ -18,4 +18,8 @@ modules:
     user:
       enabled:
         - syncthing.service
+
+  - type: script
+    snippets:
+      - "echo 'NoDisplay=true' >> /usr/share/applications/syncthing-start.desktop"
 ...
