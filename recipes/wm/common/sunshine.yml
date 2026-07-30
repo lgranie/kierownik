@@ -14,7 +14,7 @@ modules:
   #  install:
   #    packages:
   #      - https://download.copr.fedorainfracloud.org/results/lizardbyte/beta/fedora-44-x86_64/10581589-Sunshine/Sunshine-2026.608.233907-1.fc44.x86_64.rpm
-  
+
   - type: files
     files:
       - source: wm/common/sunshine
@@ -28,4 +28,10 @@ modules:
     user:
       enabled:
         - sunshine.service
+        -
+  - type: script
+    snippets:
+      - "echo 'NoDisplay=true' >> /usr/share/applications/dev.lizardbyte.app.Sunshine.desktop"
+      - "echo 'NoDisplay=true' >> /usr/share/applications/dev.lizardbyte.app.Sunshine.kwin.desktop"
+      - "echo 'NoDisplay=true' >> /usr/share/applications/dev.lizardbyte.app.Sunshine.terminal.desktop"
 ...
