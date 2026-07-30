@@ -28,7 +28,7 @@ modules:
     user:
       enabled:
         - sunshine.service
-        -
+
   - type: script
     snippets:
       - "echo 'NoDisplay=true' >> /usr/share/applications/dev.lizardbyte.app.Sunshine.desktop"
