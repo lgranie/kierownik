@@ -14,4 +14,8 @@ modules:
     files:
       - source: wm/common/brave
         destination: /
+
+  - type: script
+    snippets:
+      - "rm -f /usr/share/applications/brave-browser.desktop"
 ...
