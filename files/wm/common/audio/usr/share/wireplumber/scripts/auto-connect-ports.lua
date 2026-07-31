@@ -204,3 +204,13 @@ auto_connect_ports {
     ["audio_out_2"] = "playback_FR",
   },
 }
+
+-- Auto connect Rack-v2
+-- auto_connect_ports {
+--  output = Constraint { "object.path", "matches", "Cardinal:output_*" },
+--  input  = Constraint { "object.path", "matches", "alsa:acp:*" },
+-- connect = {
+--    ["audio_out_1"] = "playback_FL",
+--    ["audio_out_2"] = "playback_FR",
+--  },
+-- }
