@@ -12,6 +12,8 @@ modules:
         - nss-mdns
         - system-config-printer
         - system-config-printer-udev
+      exclude:
+        - SwayNotificationCenter
 
   - type: files
     files:

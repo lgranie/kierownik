@@ -31,7 +31,7 @@ modules:
 
   - type: script
     snippets:
-      - "echo 'NoDisplay=true' >> /usr/share/applications/dev.lizardbyte.app.Sunshine.desktop"
-      - "echo 'NoDisplay=true' >> /usr/share/applications/dev.lizardbyte.app.Sunshine.kwin.desktop"
-      - "echo 'NoDisplay=true' >> /usr/share/applications/dev.lizardbyte.app.Sunshine.terminal.desktop"
+      - "desktop-file-edit --set-key=NoDisplay --set-value=true /usr/share/applications/dev.lizardbyte.app.Sunshine.desktop"
+      - "desktop-file-edit --set-key=NoDisplay --set-value=true /usr/share/applications/dev.lizardbyte.app.Sunshine.kwin.desktop"
+      - "desktop-file-edit --set-key=NoDisplay --set-value=true /usr/share/applications/dev.lizardbyte.app.Sunshine.terminal.desktop"
 ...

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+#MISE description="Switch branch"
+#USAGE arg "<branch>" help="Kierownik branch" default="latest"
+set -euo pipefail
+
+image=$(run0 bash -c "bootc status --format json | jq -r '.spec.image.image'")
+image_base="${image%%:*}"
+
+run0 bash -c "bootc switch ${image_base}:${usage_branch:-latest} --apply"

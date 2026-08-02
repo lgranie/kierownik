@@ -1,14 +1,14 @@
 [tools]
 "cargo:blue-build" = "latest"
-"cargo:cargo-binstall" = "latest"
-"opencode" = "latest"
+cargo-binstall = "latest"
 rust = "latest"
 
 [settings]
-windows_default_inline_shell_args = "pwsh -c"
+# windows_default_inline_shell_args = "pwsh -c"
 
 [settings.cargo]
 binstall = true
+binstall_quickinstall = true
 
 [env]
 BASE_IMAGE = 'quay.io/fedora/fedora-bootc:44'

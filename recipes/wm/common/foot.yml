@@ -19,5 +19,5 @@ modules:
 
   - type: script
     snippets:
-      - "echo 'NoDisplay=true' >> /usr/share/applications/foot-server.desktop"
+      - "desktop-file-edit --set-key=NoDisplay --set-value=true /usr/share/applications/foot-server.desktop"
 ...

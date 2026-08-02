@@ -2,7 +2,7 @@
 Description=Sunshine Service
 StartLimitIntervalSec=500
 StartLimitBurst=5
-After=network.target graphical-session-pre.target
+After=network.target graphical-session.target
 PartOf=graphical-session.target
 ConditionEnvironment=XDG_RUNTIME_DIR
 
@@ -13,6 +13,8 @@ ConditionEnvironment=XDG_RUNTIME_DIR
 # CapabilityBoundingSet=CAP_SYS_NICE CAP_SYS_ADMIN
 
 Type=simple
+# Repurpose XDG Autostart filtering
+ExecCondition=/lib/systemd/systemd-xdg-autostart-condition "Hyprland" ""
 ExecStartPre=sleep 3
 ExecStart=/usr/bin/sunshine /etc/sunshine/sunshine.conf
 Restart=on-failure

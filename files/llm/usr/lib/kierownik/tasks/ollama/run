@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+#MISE description="Run a llm"
+#USAGE arg "<model>" help="The model to run" default="qwen2.5-coder:14b"
+set -euo pipefail
+
+if ! systemctl is-active --quiet ollama; then
+    systemctl start ollama.service
+    gum style --border thick "Ollama is starting" 2>/dev/null
+    sleep 5
+fi
+
+# ollama run ${usage_model}

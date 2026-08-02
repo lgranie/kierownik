@@ -8,9 +8,12 @@ alias v nvim
 alias vi nvim
 alias vim nvim
 
-alias env 'env | sort'
+# mise
+alias mup 'mise up'
+alias mr 'mise run'
 
 # Utils
+alias env 'env | sort'
 abbr df 'df -h'
 abbr du 'du -h -d 1'
 

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+#MISE description="Update & apply"
+set -euo pipefail
+
+run0 bash -c 'bootc update --apply'

@@ -26,7 +26,7 @@ modifiers = []
 # mode = "push_to_talk"
 
 # Enable built-in hotkey detection (default: true)
-# Set to false when using compositor keybindings (Hyprland, Sway) instead
+# Set to false when using compositor keybindings (Hyprland) instead
 # When disabled, use `voxtype record start/stop/toggle` to control recording
 enabled = false
 
