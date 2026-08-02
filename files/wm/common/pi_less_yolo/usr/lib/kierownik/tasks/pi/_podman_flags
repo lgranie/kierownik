@@ -19,7 +19,7 @@ fi
 
 "${PODMAN_CMD}" image inspect "${PI_IMAGE}" > /dev/null 2>&1 || mise run pi:build
 
-# Pre-create so Docker doesn't auto-create it as root (breaking writes by the
+# Pre-create so Podman doesn't auto-create it as root (breaking writes by the
 # container's non-root UID).
 mkdir -p "${HOME}/.pi/agent"
 
@@ -98,7 +98,7 @@ fi
 
 # PI_LOCAL_MODELS=1: share the host network namespace so local model servers
 # (Ollama, LM Studio, vLLM) are reachable at their native localhost URLs.
-# Security: all host ports become reachable. macOS: uses the Docker Desktop VM
+# Security: all host ports become reachable. macOS: uses the Podman Desktop VM
 # network — localhost on the Mac is not reachable; use host.podman.internal.
 if [[ -n "${PI_LOCAL_MODELS:-}" ]]; then
   PODMAN_FLAGS+=("--network=host")
@@ -119,7 +119,7 @@ if [[ -n "${PI_SSH_AGENT:-}" ]]; then
   fi
 
   if [[ "$(uname -s)" == "Darwin" ]] && [[ "${PODMAN_CMD}" == "podman" ]]; then
-    # Docker Desktop creates the socket root:root 660; add GID 0 so the
+    # Podman Desktop creates the socket root:root 660; add GID 0 so the
     # non-root user can access it. --cap-drop=ALL limits the exposure.
     PODMAN_FLAGS+=(
       "--mount" "type=bind,src=/run/host-services/ssh-auth.sock,target=/run/host-services/ssh-auth.sock"

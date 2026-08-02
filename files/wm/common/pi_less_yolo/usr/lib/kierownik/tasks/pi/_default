@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#MISE description="Run pi coding agent in a Docker container"
+        #MISE description="Run pi coding agent in a Podman container"
 #MISE raw=true
 #MISE dir="{{cwd}}"
 set -euo pipefail
@@ -19,7 +19,7 @@ PI_ARGS=()
 if [[ -z "${PI_NO_CONTAINER_PROMPT:-}" ]]; then
   PI_ARGS+=(
     "--append-system-prompt"
-    "You are running inside a Docker container as a non-root user. No Docker socket, sudo, or system package installation (apk requires root) is available."
+    "You are running inside a Podman container as a non-root user. No Podman socket, sudo, or system package installation (apk requires root) is available."
   )
 fi
 
