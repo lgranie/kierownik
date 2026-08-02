@@ -3,21 +3,7 @@
 
 PI_IMAGE="pi-less-yolo:latest"
 
-# PI_CONTAINER_RUNTIME overrides; otherwise detect podman via version output or binary path.
-# || true: some podman-as-podman shims exit non-zero, which would abort under pipefail.
-# readlink: when podman is symlinked as "podman", it reports "podman version X" not "podman version X".
-if [[ -n "${PI_CONTAINER_RUNTIME:-}" ]]; then
-  PODMAN_CMD="${PI_CONTAINER_RUNTIME}"
-else
-  PODMAN_CMD="podman"
-  detected_version=$(podman --version 2>&1 || true)
-  podman_realpath=$(readlink -f "$(command -v podman || true)" 2>/dev/null || true)
-  if [[ "${detected_version}" == *podman* ]] || [[ "${podman_realpath}" == *podman* ]]; then
-    PODMAN_CMD="podman"
-  fi
-fi
-
-"${PODMAN_CMD}" image inspect "${PI_IMAGE}" > /dev/null 2>&1 || mise run pi:build
+podman image inspect "${PI_IMAGE}" > /dev/null 2>&1 || mise run pi:build
 
 # Pre-create so Podman doesn't auto-create it as root (breaking writes by the
 # container's non-root UID).
@@ -52,9 +38,7 @@ PODMAN_FLAGS=(
 
 # Podman-specific: use --userns=keep-id to properly map the user namespace
 # and avoid "crun: chown `/dev/pts/0`: Invalid argument" errors.
-if [[ "${PODMAN_CMD}" == "podman" ]]; then
-  PODMAN_FLAGS+=("--userns=keep-id")
-fi
+PODMAN_FLAGS+=("--userns=keep-id")
 
 # Forward pi-related env vars and API keys if set on the host.
 # Auth file (~/.pi/agent/auth.json) takes priority over these if present.
@@ -118,7 +102,7 @@ if [[ -n "${PI_SSH_AGENT:-}" ]]; then
     PODMAN_FLAGS+=("--volume" "${HOME}/.ssh/config:/home/piuser/.ssh/config:ro")
   fi
 
-  if [[ "$(uname -s)" == "Darwin" ]] && [[ "${PODMAN_CMD}" == "podman" ]]; then
+  if [[ "$(uname -s)" == "Darwin" ]] && [[ podman == "podman" ]]; then
     # Podman Desktop creates the socket root:root 660; add GID 0 so the
     # non-root user can access it. --cap-drop=ALL limits the exposure.
     PODMAN_FLAGS+=(
