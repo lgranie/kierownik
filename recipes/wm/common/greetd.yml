@@ -6,7 +6,16 @@ modules:
       packages:
         - greetd
         - greetd-selinux
-        - tuigreet
+
+  - type: dnf
+    repos:
+      cleanup: true
+      copr:
+        - lionheartp/Hyprland
+    install:
+      install-weak-deps: false
+      packages:
+        - noctalia-greeter
 
   - type: files
     files:
