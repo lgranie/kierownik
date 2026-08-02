@@ -24,16 +24,6 @@ echo "pi-less-yolo health check"
 echo "========================="
 echo ""
 
-# --- detect container runtime -----------------------------------------------
-if [[ -n "${PI_CONTAINER_RUNTIME:-}" ]]; then
-  DOCKER_CMD="${PI_CONTAINER_RUNTIME}"
-else
-  DOCKER_CMD="podman"
-  if podman --version 2>&1 | grep -q podman; then
-    DOCKER_CMD="podman"
-  fi
-fi
-
 # --- mise version -----------------------------------------------------------
 MISE_VER=$(mise --version 2>/dev/null | awk '{print $1}')
 MISE_MIN="2024.12.0"
@@ -44,21 +34,21 @@ else
 fi
 
 # --- container runtime binary -----------------------------------------------
-if command -v "${DOCKER_CMD}" > /dev/null 2>&1; then
-  pass "${DOCKER_CMD} available"
+if command -v podman > /dev/null 2>&1; then
+  pass "podman available"
 else
-  fail "${DOCKER_CMD} not found — install Docker: https://docs.podman.com/get-podman/ or Podman: https://podman.io/getting-started/installation"
+  fail "podman not found — install Podman: https://podman.io/getting-started/installation"
 fi
 
 # --- container runtime daemon -----------------------------------------------
-if "${DOCKER_CMD}" info > /dev/null 2>&1; then
-  pass "${DOCKER_CMD} daemon running"
+if podman info > /dev/null 2>&1; then
+  pass "podman socket running"
 else
-  fail "${DOCKER_CMD} daemon not running — start Docker Desktop, podmand, or the Podman socket"
+  fail "podman socket not running — start the Podman socket"
 fi
 
 # --- image ------------------------------------------------------------------
-if "${DOCKER_CMD}" image inspect "pi-less-yolo:latest" > /dev/null 2>&1; then
+if podman image inspect "pi-less-yolo:latest" > /dev/null 2>&1; then
   pass "image pi-less-yolo:latest exists"
 else
   warn "image pi-less-yolo:latest not found — run: mise run pi:build"
@@ -145,9 +135,6 @@ if [[ -n "${PI_LOCAL_MODELS:-}" ]]; then
   else
     warn "PI_LOCAL_MODELS=1 is set but no localhost URLs found in models.json"
   fi
-  if [[ "$(uname -s)" == "Darwin" ]]; then
-    info "macOS: --network=host uses the Docker Desktop VM network, not the Mac's — localhost services on the Mac are not reachable this way"
-  fi
 elif [[ "${_has_local_urls}" -eq 1 ]]; then
   warn "local model URLs found in models.json but PI_LOCAL_MODELS=1 is not set — they will not be reachable inside the container"
 else
@@ -156,10 +143,6 @@ fi
 
 # --- platform note ----------------------------------------------------------
 echo ""
-if [[ "$(uname -s)" == "Darwin" ]]; then
-  info "macOS: --network=host is skipped at build time (Docker Desktop handles DNS natively)"
-fi
-
 echo ""
 if [[ "${STATUS}" -eq 0 ]]; then
   echo "All checks passed."
