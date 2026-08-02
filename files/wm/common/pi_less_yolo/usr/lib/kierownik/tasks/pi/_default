@@ -10,11 +10,6 @@ source "$(dirname "$0")/_podman_flags"
 PODMAN_FLAGS+=("--interactive")
 [ -t 0 ] && [ -t 1 ] && PODMAN_FLAGS+=("--tty")
 
-if [ -n "${TMUX:-}" ]; then
-  tmux set-option -p allow-passthrough on 2>/dev/null || true
-  trap 'tmux set-option -p allow-passthrough off 2>/dev/null || true' EXIT
-fi
-
 PI_ARGS=()
 if [[ -z "${PI_NO_CONTAINER_PROMPT:-}" ]]; then
   PI_ARGS+=(
@@ -23,4 +18,4 @@ if [[ -z "${PI_NO_CONTAINER_PROMPT:-}" ]]; then
   )
 fi
 
-"${PODMAN_CMD}" run "${PODMAN_FLAGS[@]}" "${PI_IMAGE}" "${PI_ARGS[@]}" "$@"
+podman run "${PODMAN_FLAGS[@]}" "${PI_IMAGE}" "${PI_ARGS[@]}" "$@"

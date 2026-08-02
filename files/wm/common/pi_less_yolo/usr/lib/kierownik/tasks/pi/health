@@ -24,15 +24,6 @@ echo "pi-less-yolo health check"
 echo "========================="
 echo ""
 
-# --- mise version -----------------------------------------------------------
-MISE_VER=$(mise --version 2>/dev/null | awk '{print $1}')
-MISE_MIN="2024.12.0"
-if version_gte "${MISE_VER}" "${MISE_MIN}"; then
-  pass "mise ${MISE_VER} (>= ${MISE_MIN})"
-else
-  fail "mise ${MISE_VER} is below minimum ${MISE_MIN} — run: mise self-update"
-fi
-
 # --- container runtime binary -----------------------------------------------
 if command -v podman > /dev/null 2>&1; then
   pass "podman available"
@@ -88,19 +79,6 @@ if [[ -d "${HOME}/.pi/agent" ]]; then
 else
   # shellcheck disable=SC2088
   warn "~/.pi/agent does not exist — it will be created on first run"
-fi
-
-# --- tmux passthrough -------------------------------------------------------
-if command -v tmux > /dev/null 2>&1; then
-  TMUX_VER=$(tmux -V 2>/dev/null | awk '{print $2}')
-  TMUX_MIN="3.3"
-  if version_gte "${TMUX_VER}" "${TMUX_MIN}"; then
-    pass "tmux ${TMUX_VER} (>= ${TMUX_MIN}, passthrough supported)"
-  else
-    warn "tmux ${TMUX_VER} < ${TMUX_MIN} — terminal passthrough disabled; upgrade tmux for best experience"
-  fi
-else
-  info "tmux not found — passthrough not available (not required)"
 fi
 
 # --- git identity -----------------------------------------------------------
