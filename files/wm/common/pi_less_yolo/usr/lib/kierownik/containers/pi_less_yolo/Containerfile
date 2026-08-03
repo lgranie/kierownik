@@ -61,12 +61,20 @@ ENV PATH="/pi-agent/npm-global/bin:${PATH}"
 # .npmrc sets prefix=/pi-agent/npm-global so extensions persist across restarts.
 # Written as a literal file because ENV HOME is not yet set to /home/piuser.
 RUN  <<'EORUN'
-    mkdir -p /home/piuser /home/piuser/.ssh
+    set -e
+
+    mkdir -p /home/piuser/{.ssh,.gnupg}
+
     chmod 1777 /home/piuser
+
     chmod 755 /home/piuser/.ssh
-    chmod a+w /etc/passwd
     touch /home/piuser/.ssh/known_hosts
     chmod 666 /home/piuser/.ssh/known_hosts
+
+    chmod 700 /home/piuser/.gnupg
+    echo "no-autostart" > /home/piuser/.gnupg/gpg-agent.conf
+
+    chmod a+w /etc/passwd
     echo "prefix=/pi-agent/npm-global" > /home/piuser/.npmrc
 EORUN
 
