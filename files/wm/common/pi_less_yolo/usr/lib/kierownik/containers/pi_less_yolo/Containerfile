@@ -2,10 +2,10 @@ FROM cgr.dev/chainguard/node:latest-dev
 
 # openssh-client: ssh binary for git-over-SSH (PI_SSH_AGENT=1) and ssh-add.
 USER root
-RUN apk add --no-cache curl ca-certificates git openssh-client
+RUN apk add --no-cache curl ca-certificates git jq openssh-client
 
 # Install mise
-RUN <<'EORUN'
+RUN <<EORUN
     set -e
 
     MISE_TAG=$(curl --silent --retry 3 "https://api.github.com/repos/jdx/mise/releases/latest" | jq -r '.tag_name // empty' 2>/dev/null || true)
@@ -21,7 +21,7 @@ EORUN
 ARG MISE_DATA_DIR=/usr/local/share/mise
 
 # Install uv via mise and expose uv and uvx on PATH.
-RUN <<'EORUN'
+RUN <<EORUN
     set -e
 
     mise install uv@0.11.16
@@ -32,7 +32,7 @@ EORUN
 ENV UV_PYTHON_INSTALL_DIR=/usr/local/share/uv/python
 
 # Install Python via uv and expose it on PATH
-RUN <<'EORUN'
+RUN <<EORUN
     set -e
 
     uv python install 3.14.4
@@ -40,7 +40,7 @@ RUN <<'EORUN'
 EORUN
 
 # Install pi globally
-RUN <<'EORUN'
+RUN <<EORUN
     set -e
 
     PI_RELEASE=$(curl --silent --retry 3 "https://api.github.com/repos/earendil-works/pi/releases/latest" | jq -r '.tag_name // empty' 2>/dev/null || true)
@@ -60,17 +60,19 @@ ENV PATH="/pi-agent/npm-global/bin:${PATH}"
 #   because --cap-drop=ALL and --no-new-privileges block privilege escalation.
 # .npmrc sets prefix=/pi-agent/npm-global so extensions persist across restarts.
 # Written as a literal file because ENV HOME is not yet set to /home/piuser.
-RUN  <<'EORUN'
+RUN  <<EORUN
     set -e
 
-    mkdir -p /home/piuser/{.ssh,.gnupg}
+    mkdir -p /home/piuser/.ssh,.gnupg}
 
     chmod 1777 /home/piuser
 
+    mkdir -p /home/piuser/.ssh
     chmod 755 /home/piuser/.ssh
     touch /home/piuser/.ssh/known_hosts
     chmod 666 /home/piuser/.ssh/known_hosts
 
+    mkdir -p /home/piuser/.gnupg
     chmod 700 /home/piuser/.gnupg
     echo "no-autostart" > /home/piuser/.gnupg/gpg-agent.conf
 
@@ -80,8 +82,8 @@ EORUN
 
 ENV HOME=/home/piuser
 
-COPY files/system/* /
-RUN <<'EORUN'
+COPY files/system/ /
+RUN <<EORUN
     chmod +x /usr/local/bin/entrypoint.sh
 EORUN
 
