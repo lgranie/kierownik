@@ -17,5 +17,7 @@ modules:
         - rack-v2-MindMeldModular
         - rack-v2-SurgeXTRack
         - rack-v2-Valley
+        # Graphic Dependencies
+        - glfw
         - zenity
 ...
