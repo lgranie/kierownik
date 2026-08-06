@@ -15,14 +15,14 @@ modules:
       install-weak-deps: false
       packages:
         - cardinal
-        # - Rack-v2
-        # - rack-v2-AudibleInstruments
-        # - rack-v2-Befaco
-        # - rack-v2-Bogaudio
-        # - rack-v2-Fundamental
-        # - rack-v2-ImpromptuModular
-        # - rack-v2-MindMeldModular
-        # - rack-v2-SurgeXTRack
-        # - rack-v2-Valley
-        # - zenity
+        - Rack-v2
+        - rack-v2-AudibleInstruments
+        - rack-v2-Befaco
+        - rack-v2-Bogaudio
+        - rack-v2-Fundamental
+        - rack-v2-ImpromptuModular
+        - rack-v2-MindMeldModular
+        - rack-v2-SurgeXTRack
+        - rack-v2-Valley
+        - zenity
 ...
