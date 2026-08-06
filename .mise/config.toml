@@ -1,7 +1,6 @@
 [tools]
 "cargo:blue-build" = "latest"
 "cargo:cargo-binstall" = "latest"
-"opencode" = "latest"
 rust = "latest"
 
 [settings]
