@@ -2,7 +2,7 @@
 Description=Voxtype push-to-talk voice-to-text daemon
 Documentation=man:voxtype(1)
 PartOf=graphical-session.target
-After=graphical-session.target pipewire.service pipewire-pulse.service
+After=graphical-session.target pipewire.service
 Wants=ydotool.service
 
 [Service]

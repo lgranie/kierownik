@@ -8,7 +8,7 @@ modules:
         - alsa-lib
         - pipewire
         - pipewire-alsa
-        - pipewire-pulseaudio
+        - pipewire-jack-audio-connection-kit
         - pipewire-utils
         - wireplumber
 
