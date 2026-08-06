@@ -8,11 +8,7 @@ modules:
         - alsa-lib
         - pipewire
         - pipewire-alsa
-        # sunshine
-        # voxtype
         - pipewire-pulseaudio
-        # vcvrack
-        - pipewire-jack-audio-connection-kit
         - pipewire-utils
         - wireplumber
 

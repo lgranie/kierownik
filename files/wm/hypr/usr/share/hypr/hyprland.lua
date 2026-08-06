@@ -36,7 +36,7 @@ hl.config({
 	},
 
     xwayland = {
-		enabled = true,
+		enabled = false,
         force_zero_scaling = true,
 	},
 })

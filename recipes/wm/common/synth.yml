@@ -1,12 +1,6 @@
 ---
 modules:
   - type: dnf
-    install:
-      install-weak-deps: false
-      packages:
-        - pipewire-jack-audio-connection-kit
-
-  - type: dnf
     repos:
       cleanup: true
       copr:
@@ -14,7 +8,6 @@ modules:
     install:
       install-weak-deps: false
       packages:
-        - cardinal
         - Rack-v2
         - rack-v2-AudibleInstruments
         - rack-v2-Befaco
