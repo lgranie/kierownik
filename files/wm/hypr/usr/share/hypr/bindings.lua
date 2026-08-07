@@ -20,8 +20,8 @@ hl.bind("SUPER + V", exec("wl-paste"))
 hl.bind("SUPER + CTRL + V", exec("cliphist decode | wl-paste"))
 
 -- 1. Applications
-hl.bind("SUPER + RETURN", exec("uwsm app -- footclient"), { description = "Open a Terminal: foot client" })
-hl.bind("SUPER + ALT + RETURN", exec("uwsm app -- footclient herdr"), { description = "Open a Terminal: foot client Herdr" })
+hl.bind("SUPER + RETURN", exec("systemd-run --user footclient"), { description = "Open a Terminal: foot client" })
+hl.bind("SUPER + ALT + RETURN", exec("systemd-run --user footclient herdr"), { description = "Open a Terminal: foot client Herdr" })
 hl.bind("SUPER + SHIFT + RETURN", exec("foot"), { description = "Open a Terminal: foot" })
 hl.bind("SUPER + SHIFT + SPACE", exec(ipc .. "panel-toggle launcher"), { description = "Run an Application: Menu" })
 hl.bind("SUPER + SPACE", exec("footclient --title=fsel fsel --config /etc/fsel/config.toml --detach"), { description = "Run an Application via fsel" })

@@ -2,5 +2,5 @@
 vt = 1
 
 [default_session]
-command = "noctalia-greeter-session -- --session hyprland-uwsm"
+command = "noctalia-greeter-session -- --session hyprland"
 user = "greetd"
