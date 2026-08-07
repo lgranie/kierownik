@@ -14,7 +14,7 @@ Kierownik ships with:
   * a collection of terminal tools ( lsd, zoxide, bat, tv, ... )
   * mise for dev and system tasks
 * graphical flavors : Hyprland with scrolling layout as default
-  * noctalia-shell
+  * noctalia / noctalia-greeter
   * flatpak / flathub / bazaar
   * foot terminal
   * some nerd fonts

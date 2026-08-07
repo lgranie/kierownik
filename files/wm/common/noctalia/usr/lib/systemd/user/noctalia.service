@@ -1,0 +1,18 @@
+[Unit]
+Description=Noctalia Shell.
+Documentation=https://docs.noctalia.dev/v5/
+# order startup after WM
+After=graphical-session.target wayland-session@hyprland.desktop.target
+
+[Service]
+Type=exec
+# Repurpose XDG Autostart filtering
+ExecCondition=/lib/systemd/systemd-xdg-autostart-condition "Hyprland" ""
+ExecStart=/usr/bin/noctalia
+ExecReload=kill -SIGUSR2 $MAINPID
+Restart=on-failure
+Slice=app-graphical.slice
+
+[Install]
+WantedBy=graphical-session.target
+WantedBy=wayland-session@hyprland.desktop.target
