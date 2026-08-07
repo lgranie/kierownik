@@ -1,0 +1,24 @@
+[Unit]
+Description=%i - A dynamic tiling Wayland compositor
+Documentation=man:%i(1)
+BindsTo=wayland-wm-session@%i.target
+Before=wayland-wm-session@%i.target graphical-session.target
+PropagatesStopTo=wayland-wm-session@%i.target graphical-session.target
+After=graphical-session-pre.target
+OnSuccess=wayland-wm-session-shutdown@%i.target
+OnSuccessJobMode=replace-irreversibly
+OnFailure=wayland-wm-session-shutdown@%i.target
+OnFailureJobMode=replace-irreversibly
+Conflicts=wayland-wm-session-shutdown@%i.target
+Before=wayland-wm-session-shutdown@%i.target
+CollectMode=inactive-or-failed
+
+[Service]
+Type=notify
+NotifyAccess=all
+ExecStart=/usr/bin/start-%i
+Restart=no
+TimeoutStartSec=60
+TimeoutStopSec=30
+SyslogIdentifier=%i
+Slice=session.slice
