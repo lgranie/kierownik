@@ -210,11 +210,6 @@ EOF
     pamu2fcfg -u $USERNAME --no-user-presence >> /etc/u2f_mappings
   fi
 
-  cat << EOF > /var/lib/AccountsService/users/$USERNAME
-[User]
-Icon=var/lib/AccountsService/icons/$USERNAME
-EOF
-
   unset NEWPASSWORD
   unset PASSWORD
 
