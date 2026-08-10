@@ -3,7 +3,9 @@
 #MISE description="Install user icon"
 set -euo pipefail
 
+USERNAME=$(id -nu)
 ICON_PATH=$(gum input --value "${HOME}/.dots/.face" --placeholder "Enter icon path")
+
 run0 cp -f ${ICON_PATH} /var/lib/AccountsService/icons/${USERNAME}
 
 run0 tee /var/lib/AccountsService/users/${USERNAME} >/dev/null <<EOF
