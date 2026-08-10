@@ -17,7 +17,7 @@ platforms:
 modules:
   - from-file: wsl/all.yml
 
-  - from-file: wm/base.yml
+  - from-file: wm/common.yml
 
   # finalize
   - from-file: finalize/container.yml

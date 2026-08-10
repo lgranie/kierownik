@@ -16,6 +16,6 @@ modules:
 
   - type: files
     files:
-      - source: wm/hypr
+      - source: wm/common/hypr
         destination: /
 ...
