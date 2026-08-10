@@ -64,17 +64,6 @@ hl.window_rule({
 	float = true,
 })
 
--- fsel menu
-hl.window_rule({
-	name = "fsel",
-	match = {
-		initial_title = "fsel",
-	},
-	float = true,
-	center = true,
-	workspace = "special:fsel",
-})
-
 -- Media Player
 hl.window_rule({
 	name = "media",
