@@ -25,7 +25,7 @@ hl.bind("SUPER + ALT + RETURN", exec("uwsm app -- footclient herdr"), { descript
 hl.bind("SUPER + SHIFT + RETURN", exec("foot"), { description = "Open a Terminal: foot" })
 hl.bind("SUPER + SPACE", exec(ipc .. "panel-toggle launcher"), { description = "Run an Application: Menu" })
 -- hl.bind("SUPER + B", exec(ipc .. "plugin noctalia/bookmarks all toggle"), { description = "Open Bookmark" })
-hl.bind("SUPER + ALT + L", exec("swaylock"), { description = "Lock the Screen: swaylock" })
+hl.bind("SUPER + ALT + L", exec(ipc "session lock"), { description = "Lock the Session" })
 
 -- 2. Window Management
 hl.bind("SUPER + W", window.close(), { description = "Close window" })
