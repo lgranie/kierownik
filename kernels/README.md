@@ -6,6 +6,7 @@ Each machine gets its own lean, hand-trimmed kernel config:
 | ---------- | ----------------------- | --------------------------------- | ----------------- |
 | `krw-5290` | Dell Latitude 5290 2-in-1 | Intel Kaby Lake, UHD 620        | `kernels/5290.config` |
 | `krw-8745` | Chuwi AuBox 8745        | AMD Ryzen 7 8745HS, Radeon 780M  | `kernels/8745.config` |
+| `krw-X4CXL`| Topton X4C-XL           | Intel N100 (Alder Lake-N) | `kernels/X4CXL.config` |
 
 ## How it works
 
