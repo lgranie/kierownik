@@ -12,11 +12,27 @@ image-version: 44
 platforms:
   - linux/amd64
 
+# Compile the machine-tuned kernel in a builder stage and package it into a
+# kernel-kierownik RPM. Shared logic: files/scripts/kernel/build-kernel-rpm.sh
+stages:
+  - name: kernel-builder
+    from: quay.io/fedora/fedora:44
+    modules:
+      - type: containerfile
+        snippets:
+          - "COPY kernels/X4CXL.config /tmp/kernelsrc/kernel.config"
+      - type: script
+        snippets:
+          - "/tmp/files/scripts/kernel/build-kernel-rpm.sh"
+
 # module configuration, executed in order
 # you can include multiple instances of the same module
 modules:
   - from-file: base/all.yml
   - from-file: cpu/intel.yml
 
+  - from-file: kernel/install.yml
+
+  # finalize
   - from-file: finalize/all.yml
 ...
