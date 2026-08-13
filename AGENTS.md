@@ -7,7 +7,7 @@ This is a BlueBuild/Fedora bootc OS configuration repository. Agents working her
 ### Using mise (recommended)
 ```bash
 # Build OCI image
-mise run build:oci N100      # Headless server
+mise run build:oci X4CXL     # Headless server
 mise run build:oci 8745      # Hyprland (AMD)
 mise run build:oci 5290      # Hyprland (Intel)
 
