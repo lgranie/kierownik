@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #MISE description="Run image in VM via virt-install"
-#USAGE arg "<target>" help="Target environment" { choices "N100" "8745" "5290" }
+#USAGE arg "<target>" help="Target environment" { choices "X4CXL" "8745" "5290" }
 set -oue pipefail
 
 run0 virt-install \
