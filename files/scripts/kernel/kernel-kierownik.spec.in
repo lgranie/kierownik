@@ -1,0 +1,24 @@
+# Template for the lean Kierownik kernel RPM. @KVER@ and @KREL@ are filled in
+# by files/scripts/kernel/build-kernel-rpm.sh before rpmbuild -bb.
+%global kver    @KVER@
+%global krel    1
+%global kverrel @KREL@
+
+Name:           kernel-kierownik
+Version:        %{kver}
+Release:        %{krel}%{?dist}
+Summary:        Kernel for Kierownik
+License:        GPL-2.0-only
+URL:            https://github.com/lgranie/kierownik
+%global debug_package %{nil}
+
+%description
+A minimal kernel built from the Fedora kernel SRPM with a machine-tuned
+kernels/<machine>.config. Ships as the only kernel in the image.
+
+%install
+mkdir -p %{buildroot}/usr/lib/modules
+cp -a %{_sourcedir}/stage/usr/lib/modules/%{kverrel} %{buildroot}/usr/lib/modules/
+
+%files
+/usr/lib/modules/%{kverrel}/
