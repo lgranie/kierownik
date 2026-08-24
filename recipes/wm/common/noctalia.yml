@@ -14,4 +14,9 @@ modules:
     files:
       - source: wm/common/noctalia
         destination: /
+
+  - type: systemd
+    user:
+      enabled:
+        - noctalia.service
 ...
