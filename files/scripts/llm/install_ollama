@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Download binary
+curl --silent --retry 3 -L --output /usr/bin/ollama https://ollama.com/download/ollama-linux-amd64
+chmod +x /usr/bin/ollama
+
+# Create user
+sudo useradd -r -s /bin/false -m -d /var/cache/ollama ollama
+sudo usermod -aG render,video ollama  # For AMD GPU access

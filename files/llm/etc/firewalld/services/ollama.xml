@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>ollama</short>
+  <description>Ollama</description>
+
+  <!-- Open WebUI -->
+  <port protocol="tcp" port="3000"/>
+
+  <!-- Ollama -->
+  <port protocol="tcp" port="11434"/>
+</service>
