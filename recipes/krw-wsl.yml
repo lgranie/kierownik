@@ -19,6 +19,5 @@ modules:
 
   - from-file: wm/common.yml
 
-  # finalize
   - from-file: finalize/container.yml
 ...

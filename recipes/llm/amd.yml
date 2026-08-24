@@ -1,0 +1,10 @@
+---
+modules:
+  - from-file: llm/common.yml
+
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - rocm
+...

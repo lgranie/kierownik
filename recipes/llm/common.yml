@@ -1,0 +1,13 @@
+---
+modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - nvtop
+
+  - type: files
+    files:
+      - source: llm
+        destination: /
+...
