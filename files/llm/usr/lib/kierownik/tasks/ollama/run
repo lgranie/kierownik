@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+#MISE description="Run a llm"
+#USAGE arg "<model>" help="The model to run" default="qwen2.5-coder:14b"
+set -euo pipefail
+
+ollama run ${usage_model}
