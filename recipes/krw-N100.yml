@@ -18,6 +18,5 @@ modules:
   - from-file: base/all.yml
   - from-file: cpu/intel.yml
 
-  # finalize
   - from-file: finalize/all.yml
 ...

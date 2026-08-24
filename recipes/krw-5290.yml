@@ -22,6 +22,5 @@ modules:
   - from-file: wm/common.yml
   - from-file: wm/5290.yml
 
-  # finalize
   - from-file: finalize/all.yml
 ...
