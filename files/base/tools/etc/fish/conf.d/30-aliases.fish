@@ -10,6 +10,7 @@ alias vim nvim
 
 # mise
 alias mup 'mise up'
+alias mr 'mise run'
 
 # Utils
 alias env 'env | sort'

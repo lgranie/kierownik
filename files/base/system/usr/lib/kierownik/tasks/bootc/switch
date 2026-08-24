@@ -7,4 +7,4 @@ set -euo pipefail
 image=$(run0 bash -c "bootc status --format json | jq -r '.spec.image.image'")
 image_base="${image%%:*}"
 
-run0 bash -c 'bootc switch ${image_base}:${usage_branch:-latest} --apply'
+run0 bash -c "bootc switch ${image_base}:${usage_branch:-latest} --apply"
