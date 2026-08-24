@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 #MISE description="Run pi read-only: project directory mounted read-only, file-modification tools disabled"
 #MISE raw=true
 #MISE dir="{{cwd}}"

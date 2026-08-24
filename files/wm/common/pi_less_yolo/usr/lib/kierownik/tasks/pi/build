@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 #MISE description="Build (or rebuild) the pi Podman image"
 set -euo pipefail
 

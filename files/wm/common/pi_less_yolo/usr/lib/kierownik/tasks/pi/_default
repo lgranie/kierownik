@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-        #MISE description="Run pi coding agent in a Podman container"
+
+#MISE description="Run pi coding agent in a Podman container"
 #MISE raw=true
 #MISE dir="{{cwd}}"
 set -euo pipefail

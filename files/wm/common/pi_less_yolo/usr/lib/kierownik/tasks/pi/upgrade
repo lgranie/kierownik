@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 #MISE description="Upgrade pi to the latest npm release and rebuild the image"
 set -euo pipefail
 

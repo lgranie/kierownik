@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 #MISE description="Open a bash shell in the pi container with the same mounts as the pi task"
 #MISE raw=true
 #MISE dir="{{cwd}}"
