@@ -2,7 +2,7 @@ FROM cgr.dev/chainguard/node:latest-dev
 
 # openssh-client: ssh binary for git-over-SSH (PI_SSH_AGENT=1) and ssh-add.
 USER root
-RUN apk add --no-cache curl ca-certificates git jq openssh-client
+RUN apk add --no-cache curl ca-certificates git jq fd ripgrep openssh-client
 
 # Install mise
 RUN <<EORUN
