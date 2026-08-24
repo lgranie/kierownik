@@ -63,8 +63,7 @@ ENV PATH="/pi-agent/npm-global/bin:${PATH}"
 RUN  <<EORUN
     set -e
 
-    mkdir -p /home/piuser/.ssh,.gnupg}
-
+    mkdir -p /home/piuser
     chmod 1777 /home/piuser
 
     mkdir -p /home/piuser/.ssh
