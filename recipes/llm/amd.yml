@@ -1,10 +1,14 @@
 ---
 modules:
-  - from-file: llm/common.yml
-
   - type: dnf
     install:
       install-weak-deps: false
       packages:
         - rocm
+
+  - type: script
+    scripts:
+      - llm/install_ollama_amd
+
+  - from-file: llm/common.yml
 ...
