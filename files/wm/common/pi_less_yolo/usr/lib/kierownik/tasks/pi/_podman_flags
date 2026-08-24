@@ -69,10 +69,10 @@ for var in "${PI_ENV_VARS[@]}"; do
   [ -n "${!var:-}" ] && PODMAN_FLAGS+=("--env" "$var=${!var}")
 done
 
-# Git identity: mount ~/.gitconfig read-only. Opt out with PI_NO_GITCONFIG=1.
+# Git identity: mount ~/.config/git read-only. Opt out with PI_NO_GITCONFIG=1.
 # Credential helpers (e.g. osxkeychain) are unavailable; git falls back to prompting.
-if [[ -z "${PI_NO_GITCONFIG:-}" && -f "${HOME}/.gitconfig" ]]; then
-  PODMAN_FLAGS+=("--volume" "${HOME}/.gitconfig:/home/piuser/.gitconfig:ro")
+if [[ -z "${PI_NO_GITCONFIG:-}" && -d "${HOME}/.config/git" ]]; then
+  PODMAN_FLAGS+=("--volume" "${HOME}/.config/git:/home/piuser/.config/git:ro")
 fi
 
 # Resource limits. Opt in by setting any of PI_MEMORY, PI_CPUS, or PI_PIDS_LIMIT.

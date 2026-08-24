@@ -85,12 +85,12 @@ fi
 # --- git identity -----------------------------------------------------------
 if [[ -n "${PI_NO_GITCONFIG:-}" ]]; then
   info "git identity disabled (PI_NO_GITCONFIG is set)"
-elif [[ -f "${HOME}/.gitconfig" ]]; then
+elif [[ -d "${HOME}/.config/git" ]]; then
   # shellcheck disable=SC2088
-  pass "~/.gitconfig found (will be mounted read-only)"
+  pass "~/.config/git found (will be mounted read-only)"
 else
   # shellcheck disable=SC2088
-  info "~/.gitconfig not found — git commits inside the container will have no author identity"
+  info "~/.config/git not found — git commits inside the container will have no author identity"
 fi
 
 # --- SSH agent forwarding ---------------------------------------------------
