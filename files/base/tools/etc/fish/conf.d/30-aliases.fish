@@ -11,6 +11,7 @@ alias vim nvim
 # mise
 alias mup 'mise up'
 alias mr 'mise run'
+alias krw 'mise run'
 
 # Utils
 alias env 'env | sort'
