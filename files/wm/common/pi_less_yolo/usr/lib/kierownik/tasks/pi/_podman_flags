@@ -120,3 +120,5 @@ if [[ -n "${PI_SSH_AGENT:-}" ]]; then
     echo "warning: PI_SSH_AGENT=1 but SSH_AUTH_SOCK is not set or is not a socket — SSH agent forwarding disabled" >&2
   fi
 fi
+
+echo ${PODMAN_FLAGS}
