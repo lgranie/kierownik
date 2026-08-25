@@ -5,7 +5,7 @@
 #MISE dir="{{cwd}}"
 set -euo pipefail
 
-_PI_WORKDIR_RO=1
+_PI_WORKDIR_RO="ro"
 # shellcheck source=tasks/pi/_podman_flags
 source "$(dirname "$0")/_podman_flags"
 
