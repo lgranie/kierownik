@@ -3,9 +3,17 @@ Version=1.0
 Name=Herdr
 GenericName=Terminal Workspace Manager
 Comment=Terminal workspace manager for AI coding agents
-Exec=footclient herdr
+TryExec=herdr
 Icon=utilities-terminal
-Terminal=false
+Terminal=true
 Type=Application
-Categories=Development;
-StartupNotify=true
+Categories=Utility;Development;
+StartupNotify=false
+
+[Desktop Action server-stop]
+Name=Stop Server
+Exec=herdr server stop
+
+[Desktop Action server-reload-config]
+Name=Stop Server
+Exec=herdr server reload-config
