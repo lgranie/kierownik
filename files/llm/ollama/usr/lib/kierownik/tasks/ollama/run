@@ -9,5 +9,3 @@ if ! systemctl is-active --quiet ollama; then
     gum style --border thick "Ollama is starting" 2>/dev/null
     sleep 5
 fi
-
-# ollama run ${usage_model}

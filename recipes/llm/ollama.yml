@@ -1,0 +1,18 @@
+---
+modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - nvtop
+
+  - type: files
+    files:
+      - source: llm/ollama
+        destination: /
+
+  - type: script
+    snippets:
+      - useradd -r -s /usr/sbin/nologin -m -d /var/cache/ollama ollama
+      - usermod -aG render,video ollama
+...
