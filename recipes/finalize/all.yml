@@ -2,7 +2,7 @@
 modules:
   - type: script
     snippets:
-      - "chmod -R +x /usr/lib/kierownik"
+      - "chmod -R +x /usr/lib/kierownik/tasks"
 
   - from-file: finalize/container.yml
   - from-file: finalize/bootc.yml

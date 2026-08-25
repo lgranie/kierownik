@@ -9,6 +9,7 @@ modules:
   - from-file: wm/common/greetd.yml
   - from-file: wm/common/hypr.yml
   - from-file: wm/common/noctalia.yml
+  - from-file: wm/common/pi_less_yolo.yml
   - from-file: wm/common/printer.yml
   - from-file: wm/common/synth.yml
   - from-file: wm/common/uwsm.yml

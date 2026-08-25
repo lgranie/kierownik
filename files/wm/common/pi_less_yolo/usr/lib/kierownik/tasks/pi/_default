@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+#MISE description="Run pi coding agent in a Podman container"
+#MISE raw=true
+#MISE dir="{{cwd}}"
+set -euo pipefail
+
+# shellcheck source=tasks/pi/_podman_flags
+source "$(dirname "$0")/_podman_flags"
+
+FLAGS+=("--interactive")
+[ -t 0 ] && [ -t 1 ] && FLAGS+=("--tty")
+
+PI_ARGS=()
+if [[ -z "${PI_NO_CONTAINER_PROMPT:-}" ]]; then
+  PI_ARGS+=(
+    "--append-system-prompt"
+    "You are running inside a Podman container as a non-root user. No Podman socket, sudo, or system package installation (apk requires root) is available."
+  )
+fi
+
+podman run "${FLAGS[@]}" "${PI_IMAGE}" "${PI_ARGS[@]}" "$@"

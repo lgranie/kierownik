@@ -16,5 +16,6 @@ modules:
     arch: x86_64
     kargs:
       - quiet splash rhgb
+      - plymouth.nolog
       - plymouth.use-simpledrm=0
 ...

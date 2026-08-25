@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+#MISE description="Build (or rebuild) the pi Podman image"
+set -euo pipefail
+
+systemctl --user start pi_less_yolo-build.service
+
+echo "Image 'pi-less-yolo:latest' built successfully."

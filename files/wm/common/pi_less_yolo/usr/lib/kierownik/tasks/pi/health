@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+
+#MISE description="Check the pi container setup for problems"
+set -euo pipefail
+
+PASS="[PASS]"
+WARN="[WARN]"
+FAIL="[FAIL]"
+INFO="[INFO]"
+STATUS=0
+
+pass() { echo "  ${PASS} $*"; }
+warn() { echo "  ${WARN} $*"; }
+fail() { echo "  ${FAIL} $*"; STATUS=1; }
+info() { echo "  ${INFO} $*"; }
+
+# ---------------------------------------------------------------------------
+# Semver comparison: returns 0 if $1 >= $2
+# ---------------------------------------------------------------------------
+version_gte() {
+  printf '%s\n%s' "$2" "$1" | sort -C -V
+}
+
+echo "pi-less-yolo health check"
+echo "========================="
+echo ""
+
+# --- container runtime binary -----------------------------------------------
+if command -v podman > /dev/null 2>&1; then
+  pass "podman available"
+else
+  fail "podman not found — install Podman: https://podman.io/getting-started/installation"
+fi
+
+# --- container runtime daemon -----------------------------------------------
+if podman info > /dev/null 2>&1; then
+  pass "podman socket running"
+else
+  fail "podman socket not running — start the Podman socket"
+fi
+
+# --- image ------------------------------------------------------------------
+if podman image inspect "pi-less-yolo:latest" > /dev/null 2>&1; then
+  pass "image pi-less-yolo:latest exists"
+else
+  warn "image pi-less-yolo:latest not found — run: mise run pi:build"
+fi
+
+# --- conf.d entry -----------------------------------------------------------
+CONF_D="${XDG_CONFIG_HOME:-${HOME}/.config}/mise/conf.d"
+CONF_FILE="${CONF_D}/pi-less-yolo.toml"
+if [[ -f "${CONF_FILE}" ]]; then
+  pass "global config ${CONF_FILE}"
+else
+  fail "global config not found — run: mise run install (from the pi-less-yolo repo)"
+fi
+
+# --- task files -------------------------------------------------------------
+echo ""
+echo "  Task files:"
+TASKS_DIR="${MISE_TASK_DIR}"
+for NAME in _default build shell upgrade health; do
+  if [[ -x "${TASKS_DIR}/${NAME}" ]]; then
+    pass "  tasks/pi/${NAME}"
+  else
+    fail "  tasks/pi/${NAME} missing or not executable"
+  fi
+done
+
+# --- ~/.pi/agent ------------------------------------------------------------
+if [[ -d "${HOME}/.pi/agent" ]]; then
+  _agent_owner=$(stat -c '%u' "${HOME}/.pi/agent" 2>/dev/null || stat -f '%u' "${HOME}/.pi/agent" 2>/dev/null)
+  if [[ "${_agent_owner}" == "$(id -u)" ]]; then
+    # shellcheck disable=SC2088
+    pass "~/.pi/agent exists and is owned by current user"
+  else
+    # shellcheck disable=SC2088
+    fail "~/.pi/agent is owned by UID ${_agent_owner}, not $(id -u) — run: sudo chown -R \"\$(id -u):\$(id -g)\" ~/.pi/agent"
+  fi
+else
+  # shellcheck disable=SC2088
+  warn "~/.pi/agent does not exist — it will be created on first run"
+fi
+
+# --- git identity -----------------------------------------------------------
+if [[ -n "${PI_NO_GITCONFIG:-}" ]]; then
+  info "git identity disabled (PI_NO_GITCONFIG is set)"
+elif [[ -d "${HOME}/.config/git" ]]; then
+  # shellcheck disable=SC2088
+  pass "~/.config/git found (will be mounted read-only)"
+else
+  # shellcheck disable=SC2088
+  info "~/.config/git not found — git commits inside the container will have no author identity"
+fi
+
+# --- SSH agent forwarding ---------------------------------------------------
+if [[ -n "${PI_SSH_AGENT:-}" ]]; then
+  if [[ -S "${SSH_AUTH_SOCK:-}" ]]; then
+    pass "SSH agent forwarding enabled (SSH_AUTH_SOCK=${SSH_AUTH_SOCK:-})"
+  else
+    warn "PI_SSH_AGENT=1 but SSH_AUTH_SOCK is not set or is not a socket — start ssh-agent or ensure your keychain agent is running"
+  fi
+else
+  info "SSH agent forwarding disabled (set PI_SSH_AGENT=1 to enable for SSH-based git remotes)"
+fi
+
+# --- local model servers ---------------------------------------------------
+MODELS_JSON="${HOME}/.pi/agent/models.json"
+_has_local_urls=0
+[[ -f "${MODELS_JSON}" ]] && grep -qE "localhost|127\.0\.0\.1" "${MODELS_JSON}" && _has_local_urls=1
+if [[ -n "${PI_LOCAL_MODELS:-}" ]]; then
+  if [[ "${_has_local_urls}" -eq 1 ]]; then
+    pass "local model servers: --network=host active (PI_LOCAL_MODELS=1)"
+  else
+    warn "PI_LOCAL_MODELS=1 is set but no localhost URLs found in models.json"
+  fi
+elif [[ "${_has_local_urls}" -eq 1 ]]; then
+  warn "local model URLs found in models.json but PI_LOCAL_MODELS=1 is not set — they will not be reachable inside the container"
+else
+  info "local model host access inactive (set PI_LOCAL_MODELS=1 to enable)"
+fi
+
+# --- platform note ----------------------------------------------------------
+echo ""
+echo ""
+if [[ "${STATUS}" -eq 0 ]]; then
+  echo "All checks passed."
+else
+  echo "One or more checks failed. See [FAIL] items above."
+fi
+echo ""
+
+exit "${STATUS}"

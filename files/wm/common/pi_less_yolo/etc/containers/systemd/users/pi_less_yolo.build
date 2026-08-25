@@ -1,0 +1,11 @@
+[Unit]
+Description=Build Pi Less Yolo Image
+Wants=network-online.target
+After=network-online.target
+
+[Build]
+Pull=newer
+Network=host
+ImageTag=localhost/pi_less_yolo:latest
+File=/usr/lib/kierownik/containers/pi_less_yolo/Containerfile
+SetWorkingDirectory=/usr/lib/kierownik/containers/pi_less_yolo
