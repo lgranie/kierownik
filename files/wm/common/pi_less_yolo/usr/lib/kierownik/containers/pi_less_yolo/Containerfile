@@ -60,7 +60,7 @@ ENV PATH="/pi-agent/npm-global/bin:${PATH}"
 #   because --cap-drop=ALL and --no-new-privileges block privilege escalation.
 # .npmrc sets prefix=/pi-agent/npm-global so extensions persist across restarts.
 # Written as a literal file because ENV HOME is not yet set to /home/piuser.
-RUN  <<EORUN
+RUN <<EORUN
     set -e
 
     mkdir -p /home/piuser

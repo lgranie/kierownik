@@ -1,7 +1,7 @@
 # Builds PODMAN_FLAGS for pi container tasks. Source this file; do not execute directly.
 # Usage: source "$(dirname "$0")/_podman_flags"
 
-PI_IMAGE="pi-less-yolo:latest"
+PI_IMAGE="pi_less_yolo:latest"
 
 podman image inspect "${PI_IMAGE}" > /dev/null 2>&1 || mise run pi:build
 
