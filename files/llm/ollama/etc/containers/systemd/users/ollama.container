@@ -6,7 +6,7 @@ After=local-fs.target
 ContainerName=ollama-rocm
 Image=docker.io/ollama/ollama:rocm
 PublishPort=11434:11434
-Volume=/var/cache/ollama:/root/.ollama:Z
+Volume=%h/.cache/ollama:/root/.ollama:Z
 PodmanArgs=--device /dev/kfd --device /dev/dri --group-add keep-groups --security-opt label=type:container_runtime_t
 
 Environment="HOME=/var/cache/ollama"
@@ -19,8 +19,6 @@ Environment="OLLAMA_IGPU_ENABLE=1"
 Environment="HSA_OVERRIDE_GFX_VERSION=11.0.0"
 
 [Service]
-User=ollama
-Group=ollama
 Restart=always
 
 [Install]

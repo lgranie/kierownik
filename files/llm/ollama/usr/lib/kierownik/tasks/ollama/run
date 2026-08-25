@@ -4,8 +4,8 @@
 #USAGE arg "<model>" help="The model to run" default="qwen2.5-coder:14b"
 set -euo pipefail
 
-if ! systemctl is-active --quiet ollama; then
-    systemctl start ollama.service
+if ! systemctl --user is-active --quiet ollama; then
+    systemctl --user start ollama.service
     gum style --border thick "Ollama is starting" 2>/dev/null
     sleep 5
 fi
