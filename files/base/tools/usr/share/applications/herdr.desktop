@@ -4,6 +4,7 @@ Name=Herdr
 GenericName=Terminal Workspace Manager
 Comment=Terminal workspace manager for AI coding agents
 TryExec=herdr
+Exec=herdr
 Icon=utilities-terminal
 Terminal=true
 Type=Application
