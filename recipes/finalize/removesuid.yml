@@ -2,5 +2,5 @@
 modules:
   - type: script
     scripts:
-      - finalize/removesuid
+      - finalize/removesuid.sh
 ...

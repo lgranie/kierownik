@@ -2,5 +2,5 @@
 modules:
   - type: script
     scripts:
-      - wm/common/zed/install
+      - wm/common/zed/install.sh
 ...

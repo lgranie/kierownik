@@ -2,7 +2,7 @@
 modules:
   - type: script
     scripts:
-      - wm/common/voxtype/install
+      - wm/common/voxtype/install.sh
 
   - type: dnf
     install:

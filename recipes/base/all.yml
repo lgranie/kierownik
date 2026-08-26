@@ -31,5 +31,5 @@ modules:
 
   - type: script
     scripts:
-      - base/bootc-update
+      - base/bootc-update.sh
 ...
