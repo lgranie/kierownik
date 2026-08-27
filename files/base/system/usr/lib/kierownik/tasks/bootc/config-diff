@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+#MISE description="Config diff"
+set -euo pipefail
+
+run0 bash -c 'ostree admin config-diff'

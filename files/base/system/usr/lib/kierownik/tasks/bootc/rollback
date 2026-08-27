@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+#MISE description="Rollback"
+set -euo pipefail
+
+run0 bash -c 'bootc rollback --apply'
