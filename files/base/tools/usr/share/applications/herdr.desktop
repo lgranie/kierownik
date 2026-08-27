@@ -10,11 +10,12 @@ Terminal=true
 Type=Application
 Categories=Utility;Development;
 StartupNotify=false
+Actions=server-stop;reload-config
 
 [Desktop Action server-stop]
 Name=Stop Server
 Exec=herdr server stop
 
-[Desktop Action server-reload-config]
-Name=Stop Server
+[Desktop Action reload-config]
+Name=Reload Config
 Exec=herdr server reload-config
