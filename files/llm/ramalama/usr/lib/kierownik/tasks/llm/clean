@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+#MISE description="Clean ramalama models"
+#USAGE flag "--all" help="Remove all models"
+set -oue pipefail
+
+if [[ "${usage_all:-false}" == "true" ]]; then
+    echo "Removing all models..."
+    ramalama rm --all
+else
+    models=$(ramalama list 2>/dev/null | awk 'NR>1 {print $1}')
+    if [[ -z "$models" ]]; then
+        echo "No models downloaded."
+        exit 0
+    fi
+    selected=$(echo "$models" | gum choose --no-limit --header "Select models to remove")
+    if [[ -n "$selected" ]]; then
+        while IFS= read -r model; do
+            ramalama rm "$model"
+        done <<< "$selected"
+    fi
+fi

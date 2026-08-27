@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+#MISE description="Toggle hugepages for LLM workloads"
+#USAGE arg "<action>" help="Action to perform" { choices "on" "off" "status" }
+set -oue pipefail
+
+THP_PATH="/sys/kernel/mm/transparent_hugepage/enabled"
+HUGEPAGES_PATH="/proc/sys/vm/nr_hugepages"
+HUGEPAGE_SIZE_KB=$(grep Hugepagesize /proc/meminfo | awk '{print $2}')
+
+get_total_ram_kb() {
+    awk '/MemTotal/ {print $2}' /proc/meminfo
+}
+
+get_free_ram_kb() {
+    awk '/MemAvailable/ {print $2}' /proc/meminfo
+}
+
+enable_static_hugepages() {
+    local total_kb
+    local free_kb
+    local target_pages
+
+    total_kb=$(get_total_ram_kb)
+    free_kb=$(get_free_ram_kb)
+
+    target_pages=$(( free_kb / 2 / HUGEPAGE_SIZE_KB ))
+
+    echo "Total RAM: $(( total_kb / 1024 / 1024 ))GB"
+    echo "Available RAM: $(( free_kb / 1024 / 1024 ))GB"
+    echo "Hugepage size: $(( HUGEPAGE_SIZE_KB / 1024 ))MB"
+    echo "Allocating $target_pages pages ($(( target_pages * HUGEPAGE_SIZE_KB / 1024 / 1024 ))GB)..."
+
+    run0 sh -c "echo never > $THP_PATH"
+    run0 sh -c "echo $target_pages > $HUGEPAGES_PATH"
+
+    echo "Static hugepages enabled."
+}
+
+disable_static_hugepages() {
+    echo "Reverting to transparent hugepages..."
+    run0 sh -c "echo always > $THP_PATH"
+    run0 sh -c "echo 0 > $HUGEPAGES_PATH"
+}
+
+show_status() {
+    echo "Transparent hugepages: $(cat "$THP_PATH")"
+    echo "Static hugepages: $(awk '/HugePages_Total/ {print $2}' /proc/meminfo)"
+    echo "Hugepage size: $(( HUGEPAGE_SIZE_KB / 1024 ))MB"
+}
+
+case "${usage_action}" in
+    on)     enable_static_hugepages ;;
+    off)    disable_static_hugepages ;;
+    status) show_status ;;
+esac

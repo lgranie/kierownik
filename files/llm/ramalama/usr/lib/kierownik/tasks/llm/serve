@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+#MISE description="Toggle hugepages and launch ramalama"
+#USAGE arg "[model]" help="Model to run"
+set -oue pipefail
+
+get_model_description() {
+    local model="$1"
+    local shortnames="/usr/share/ramalama/shortnames.conf"
+    local desc=""
+
+    while IFS= read -r line; do
+        if [[ "$line" == "#"* ]]; then
+            desc="${line#\# }"
+        elif [[ "$line" == *"\"$model\""* ]]; then
+            echo "$desc"
+            return
+        fi
+    done < "$shortnames"
+    echo ""
+}
+
+if [[ -z "${usage_target:-}" ]]; then
+    models=$(grep -oP '^"\K[^"]+(?=")' /usr/share/ramalama/shortnames.conf | sort -u)
+    model=$(echo "$models" | while read -r m; do
+        desc=$(get_model_description "$m")
+        echo "$m - $desc"
+    done | gum choose --header "Select model" --selected "${LLM_DEFAULT_MODEL:-qwen3-coder:30b}")
+    usage_target=$(echo "$model" | awk '{print $1}')
+fi
+
+cleanup() {
+    mise run llm:hugepages off
+}
+trap cleanup EXIT
+
+mise run llm:hugepages on
+echo "Serving ramalama with model: ${usage_target}"
+ramalama serve "${usage_target}"
