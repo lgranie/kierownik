@@ -5,9 +5,10 @@ modules:
       install-weak-deps: false
       packages:
         - nvtop
+        - ramalama
 
   - type: files
     files:
-      - source: llm/ollama
+      - source: llm/ramalama
         destination: /
 ...
