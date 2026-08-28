@@ -1,11 +1,10 @@
 ---
+# Hibernation configuration
 modules:
-  - type: dnf
-    install:
-      install-weak-deps: false
-      packages:
-        - usbutils
-        - kernel-tools
+  - type: kargs
+    arch: x86_64
+    kargs:
+      - mem_sleep_default=deep
 
   - type: files
     files:

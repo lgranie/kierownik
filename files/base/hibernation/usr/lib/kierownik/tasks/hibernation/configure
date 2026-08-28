@@ -48,12 +48,13 @@ update_cmdline() {
 
 # Function to check if system supports hibernation
 check_hibernation_support() {
-    # Check if swap is large enough
-    local swap_size=$(swapon --show=SIZE --bytes | awk '{sum+=$1} END {print sum}')
+    # Total size (bytes) of block-device swap; zram is excluded because it is
+    # volatile and cannot be used for hibernation.
+    local swap_size=$(swapon --show=NAME,SIZE --noheadings --bytes | awk '/^\/dev\/zram/ {next} {sum+=$2} END {print sum+0}')
     local mem_total=$(free -b | awk '/^Mem:/ {print $2}')
-    
+
     if [ -z "$swap_size" ] || [ "$swap_size" -lt "$mem_total" ]; then
-        echo "Warning: Swap size ($swap_size bytes) is smaller than memory ($mem_total bytes). Hibernation may not work properly." >&2
+        echo "Warning: Disk swap size ($swap_size bytes) is smaller than memory ($mem_total bytes). Hibernation may not work properly." >&2
         return 1
     fi
     

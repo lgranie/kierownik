@@ -4,26 +4,34 @@
 
 set -oue pipefail
 
+# Total size (bytes) of block-device swap (partitions/LVs).
+# zram is excluded because it is volatile and cannot be used for hibernation.
+get_swap_size() {
+    swapon --show=NAME,SIZE --noheadings --bytes | awk '/^\/dev\/zram/ {next} {sum+=$2} END {print sum+0}'
+}
+
 # Function to check if hibernation is supported
 check_hibernation_support() {
     local mem_total=$(free -b | awk '/^Mem:/ {print $2}')
-    local swap_size=$(swapon --show=SIZE --bytes | awk '{sum+=$1} END {print sum}')
-    
+    local swap_size=$(get_swap_size)
+
     echo "Memory total: $mem_total bytes"
-    echo "Swap size: $swap_size bytes"
-    
-    # Check if swap is large enough
-    if [ -z "$swap_size" ]; then
-        echo "Error: No swap space found." >&2
+    echo "Disk swap size: $swap_size bytes"
+
+    # Check if a real swap partition exists
+    if [ "$swap_size" -eq 0 ]; then
+        echo "Error: No block-device swap partition found." >&2
+        echo "zram swap cannot be used for hibernation; a swap partition >= RAM is required." >&2
         return 1
     fi
-    
+
+    # Check if swap is large enough
     if [ "$swap_size" -lt "$mem_total" ]; then
         echo "Error: Swap size ($swap_size bytes) is smaller than memory ($mem_total bytes)." >&2
-        echo "Hibernation requires swap to be at least as large as RAM." >&2
+        echo "Hibernation requires a swap partition at least as large as RAM." >&2
         return 1
     fi
-    
+
     echo "Hibernation is supported."
     return 0
 }

@@ -24,6 +24,5 @@ modules:
       - i915.enable_guc=2
       - i915.enable_psr=2
 
-  - from-file: cpu/common/hibernation.yml
   - from-file: cpu/common/realtime.yml
 ...
