@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2025-2026 The Secureblue Authors
+# SPDX-License-Identifier: MIT
+
+set -oue pipefail
+
+# Function to check if hibernation is supported
+check_hibernation_support() {
+    local mem_total=$(free -b | awk '/^Mem:/ {print $2}')
+    local swap_size=$(swapon --show=SIZE --bytes | awk '{sum+=$1} END {print sum}')
+    
+    echo "Memory total: $mem_total bytes"
+    echo "Swap size: $swap_size bytes"
+    
+    # Check if swap is large enough
+    if [ -z "$swap_size" ]; then
+        echo "Error: No swap space found." >&2
+        return 1
+    fi
+    
+    if [ "$swap_size" -lt "$mem_total" ]; then
+        echo "Error: Swap size ($swap_size bytes) is smaller than memory ($mem_total bytes)." >&2
+        echo "Hibernation requires swap to be at least as large as RAM." >&2
+        return 1
+    fi
+    
+    echo "Hibernation is supported."
+    return 0
+}
+
+main() {
+    if check_hibernation_support; then
+        echo "Hibernation support check passed."
+        exit 0
+    else
+        echo "Hibernation is not supported on this system." >&2
+        exit 1
+    fi
+}
+
+main

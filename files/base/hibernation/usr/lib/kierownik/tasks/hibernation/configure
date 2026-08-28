@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2025-2026 The Secureblue Authors
+# SPDX-License-Identifier: MIT
+
+set -oue pipefail
+
+# Function to detect swap partition
+get_swap_uuid() {
+    local swap_uuid=""
+    
+    # Try to find swap partition
+    if [ -f /etc/fstab ]; then
+        swap_uuid=$(grep -E "^UUID=" /etc/fstab | grep -i swap | awk '{print $1}' | sed 's/UUID=//')
+    fi
+    
+    # If not found in fstab, try to find swap from blkid
+    if [ -z "$swap_uuid" ]; then
+        swap_uuid=$(blkid -l -t TYPE=swap -o value -s UUID 2>/dev/null | head -1)
+    fi
+    
+    echo "$swap_uuid"
+}
+
+# Function to update cmdline with resume parameter
+update_cmdline() {
+    local swap_uuid="$1"
+    local cmdline_file="/etc/kernel/cmdline"
+    
+    if [ -z "$swap_uuid" ]; then
+        echo "No swap UUID found, cannot configure hibernation." >&2
+        return 1
+    fi
+    
+    if [ ! -f "$cmdline_file" ]; then
+        echo "$cmdline_file not found." >&2
+        return 1
+    fi
+    
+    # Replace or add resume parameter
+    if grep -q "^resume=" "$cmdline_file"; then
+        sed -i "s/^resume=.*/resume=UUID=$swap_uuid/" "$cmdline_file"
+    else
+        echo "resume=UUID=$swap_uuid" >> "$cmdline_file"
+    fi
+    
+    echo "Updated cmdline with resume parameter: UUID=$swap_uuid"
+}
+
+# Function to check if system supports hibernation
+check_hibernation_support() {
+    # Check if swap is large enough
+    local swap_size=$(swapon --show=SIZE --bytes | awk '{sum+=$1} END {print sum}')
+    local mem_total=$(free -b | awk '/^Mem:/ {print $2}')
+    
+    if [ -z "$swap_size" ] || [ "$swap_size" -lt "$mem_total" ]; then
+        echo "Warning: Swap size ($swap_size bytes) is smaller than memory ($mem_total bytes). Hibernation may not work properly." >&2
+        return 1
+    fi
+    
+    # Check if resume parameter is set
+    if [ -f /etc/kernel/cmdline ] && grep -q "^resume=" /etc/kernel/cmdline; then
+        return 0
+    fi
+    
+    return 1
+}
+
+main() {
+    # Detect swap UUID
+    local swap_uuid=$(get_swap_uuid)
+    
+    if [ -n "$swap_uuid" ]; then
+        echo "Found swap UUID: $swap_uuid"
+        
+        # Update cmdline
+        update_cmdline "$swap_uuid"
+        
+        # Check support
+        if check_hibernation_support; then
+            echo "Hibernation is properly configured."
+            exit 0
+        else
+            echo "Hibernation configuration complete, but support check failed."
+            exit 1
+        fi
+    else
+        echo "No swap partition found. Hibernation cannot be configured." >&2
+        exit 1
+    fi
+}
+
+main

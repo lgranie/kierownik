@@ -1,0 +1,13 @@
+[Unit]
+Description=Check hibernation support
+DefaultDependencies=no
+After=local-fs.target
+Before=firstboot.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=mise run hibernation:check-support
+
+[Install]
+WantedBy=firstboot.service

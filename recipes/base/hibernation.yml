@@ -1,0 +1,13 @@
+---
+modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - usbutils
+        - kernel-tools
+
+  - type: files
+    files:
+      - source: base/hibernation
+        destination: /

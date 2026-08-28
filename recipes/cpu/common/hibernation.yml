@@ -1,0 +1,7 @@
+---
+# Intel-specific hibernation configuration
+modules:
+  - type: kargs
+    arch: x86_64
+    kargs:
+      - mem_sleep_default=deep

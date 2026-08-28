@@ -60,3 +60,5 @@ hl.bind("SUPER + ALT + S", window.move({ workspace = "special:scratchpad", silen
 hl.bind("SUPER + M", function()
     hl.dispatch(worksp.toggle_special("media"))
 end, { description = "Toggle media" })
+
+

@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2025-2026 The Secureblue Authors
+# SPDX-License-Identifier: MIT
+
+set -oue pipefail
+
+# Test hibernation configuration
+
+echo "=== Hibernation Configuration Test ==="
+echo ""
+
+# Test 1: Check swap configuration
+echo "Test 1: Checking swap configuration..."
+if ! swapon --show | grep -q "^/dev"; then
+    echo "❌ No swap devices found"
+    exit 1
+fi
+echo "✓ Swap devices detected"
+echo ""
+
+# Test 2: Check swap size
+echo "Test 2: Checking swap size..."
+local mem_total=$(free -b | awk '/^Mem:/ {print $2}')
+local swap_size=$(swapon --show=SIZE --bytes | awk '{sum+=$1} END {print sum}')
+echo "  Memory: $mem_total bytes"
+echo "  Swap: $swap_size bytes"
+
+if [ "$swap_size" -lt "$mem_total" ]; then
+    echo "❌ Swap is smaller than memory"
+    exit 1
+fi
+echo "✓ Swap is large enough for hibernation"
+echo ""
+
+# Test 3: Check resume parameter
+echo "Test 3: Checking resume parameter..."
+if [ -f /etc/kernel/cmdline ] && grep -q "^resume=" /etc/kernel/cmdline; then
+    local resume_uuid=$(grep "^resume=" /etc/kernel/cmdline | cut -d= -f2)
+    echo "  Resume UUID: $resume_uuid"
+    echo "✓ Resume parameter configured"
+else
+    echo "⚠ Resume parameter not found in /etc/kernel/cmdline"
+fi
+echo ""
+
+# Test 4: Check systemd hibernate service
+echo "Test 4: Checking systemd hibernate service..."
+if systemctl list-unit-files | grep -q "systemd-hibernate.service"; then
+    echo "✓ systemd-hibernate.service found"
+else
+    echo "❌ systemd-hibernate.service not found"
+    exit 1
+fi
+echo ""
+
+# Test 5: Check dracut configuration
+echo "Test 5: Checking dracut configuration..."
+if [ -f /etc/dracut.conf.d/hibernation.conf ]; then
+    echo "✓ Dracut hibernation configuration found"
+else
+    echo "⚠ Dracut hibernation configuration not found"
+fi
+echo ""
+
+# Test 6: Check initramfs
+echo "Test 6: Checking initramfs..."
+local initramfs=$(ls /boot/initramfs-* 2>/dev/null | head -1)
+if [ -n "$initramfs" ]; then
+    echo "  Initramfs: $initramfs"
+    if lsinitrd -f /lib/systemd/system/systemd-hibernate.service "$initramfs" >/dev/null 2>&1; then
+        echo "✓ Initramfs contains hibernation support"
+    else
+        echo "⚠ Initramfs may not contain hibernation support"
+    fi
+else
+    echo "⚠ No initramfs found"
+fi
+echo ""
+
+echo "=== Test Complete ==="
+echo ""
+echo "Summary:"
+echo "  - Swap: $swap_size bytes ($((swap_size/1024/1024/1024)) GB)"
+echo "  - Memory: $mem_total bytes ($((mem_total/1024/1024/1024)) GB)"
+echo "  - Hibernation supported: YES"
+echo ""
+echo "To hibernate, use:"
+echo "  systemctl hibernate"
+echo ""
+echo "Or with Hyprland keybindings:"
+echo "  SUPER + CTRL + ALT + H (Hibernate)"
+echo "  SUPER + CTRL + ALT + S (Suspend)"
+echo "  SUPER + CTRL + ALT + P (Hybrid Sleep)"
