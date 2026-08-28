@@ -1,22 +1,37 @@
 #!/usr/bin/env bash
-#MISE description="Generate bootable ISO"
+#MISE description="Build unattended bootc installer ISO (live installer via bootc-generic-iso)"
 #USAGE arg "<target>" help="Target profile" { choices "N100" "8745" "5290" }
 set -oue pipefail
 
-run0 bash -c "podman run \
-    --privileged \
-    --network=host \
-    --rm \
-    --volume /var/home/lgranie/Projects/kierownik:/build-container-installer/build \
-    --volume dnf-cache:/cache/dnf/ \
-    ghcr.io/jasonn3/build-container-installer:v1.5.0 \
-    VARIANT=Kinoite \
-    ISO_NAME=build/krw-${usage_target}.iso \
-    DNF_CACHE=/cache/dnf \
-    SECURE_BOOT_KEY_URL=https://github.com/ublue-os/bazzite/raw/main/secure_boot.der \
-    ENROLLMENT_PASSWORD=universalblue \
-    WEB_UI=false \
-    IMAGE_REPO=ghcr.io/lgranie \
-    IMAGE_NAME=krw-${usage_target} \
-    IMAGE_TAG=latest \
-    VERSION=44"
+IMGREF="ghcr.io/lgranie/krw-${usage_target}:latest"
+CONTEXT="/tmp/output/iso-bootc-context"
+BUILD_DIR="/tmp/output/iso"
+
+mkdir -p "$CONTEXT" "$BUILD_DIR"
+
+# Stage the installer container build context with the per-target kickstart
+cp -a ./bib/installer/. "$CONTEXT/"
+sed "s|__IMGREF__|${IMGREF}|g" ./bib/installer/src/interactive-defaults.ks \
+    > "$CONTEXT/src/interactive-defaults.ks"
+
+echo "Pulling payload image $IMGREF"
+run0 podman pull "$IMGREF"
+
+echo "Building installer-environment container krw-${usage_target}-installer"
+run0 podman build --pull=newer -t "krw-${usage_target}-installer" "$CONTEXT"
+
+echo "Building bootc-generic-iso installer for $IMGREF"
+run0 podman run --rm --privileged --pull=newer \
+    --security-opt label=type:unconfined_t \
+    -v "$BUILD_DIR":/output \
+    -v /var/lib/containers/storage:/var/lib/containers/storage \
+    -v /boot:/boot \
+    "${IMAGE_BUILDER}" \
+    build \
+    --output-dir /output \
+    --bootc-ref "localhost/krw-${usage_target}-installer" \
+    --bootc-installer-payload-ref "$IMGREF" \
+    --bootc-default-fs btrfs \
+    bootc-generic-iso
+
+echo "Done: $BUILD_DIR/install.iso"

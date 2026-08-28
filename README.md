@@ -42,26 +42,39 @@ run0 bash -c 'bootc switch ghcr.io/lgranie/krw-5290:latest --apply'
 
 ### ISO
 
-If building on Fedora Atomic, you can generate an offline ISO with the instructions available [here](https://blue-build.org/how-to/generate-iso/#_top). These ISOs cannot unfortunately be distributed on GitHub for free due to large sizes, so for public projects something else has to be used for hosting.
+Two installer ISO methods are provided. Both wipe the **first disk** they find,
+so only boot them on the target machine. Both create a dedicated swap partition
+(>= RAM) required for hibernation (zram cannot be used to hibernate).
 
-#### From a recipe
+#### bootc-generic-iso (image-builder, recommended)
 
-if you got sudo command
+A live installer ISO built from a small installer-environment container via the
+`bootc-generic-iso` image type in `image-builder` (the successor to the
+deprecated `anaconda-iso` -- `bootc-image-builder`). The payload image is
+embedded (`--bootc-installer-payload-ref`), so install works offline; leftover
+`inst.stage2` / kernel args boot a text Anaconda that applies
+`bib/installer/src/interactive-defaults.ks`.
+
 ```bash
-bluebuild generate-iso --iso-name krw-5290.iso recipe recipes/krw-5290.yml
+mise run build:iso 5290        # -> /tmp/output/iso/install.iso
 ```
 
-#### From an image
+Installer container: `bib/installer/` (Containerfile + src).
 
-if you have sudo command
+#### bootc-native (generic Fedora installer + registry pull)
+
+Downloads a generic Fedora 44+ installer ISO, injects a kickstart using the
+explicit `bootc` kickstart command, and pulls the image from the registry over
+the network at install time.
+
 ```bash
-bluebuild generate-iso --iso-name krw-5290.iso image ghcr.io/lgranie/krw-5290:latest
+mise run build:iso-bootc 5290  # -> /tmp/output/iso-bootc
 ```
 
-or use mise taks ( use run0 )
-```bash
-mise run build:iso 5290
-```
+Kickstart: `bib/ks/bootc.ks`. Install time requires access to
+`ghcr.io/lgranie`. Note: the `bootc` command does not yet support `/boot/efi`
+as an explicit mount point (handled via `reqpart --add-boot`), and does not
+support installing from authenticated registries.
 
 ### WSL
 

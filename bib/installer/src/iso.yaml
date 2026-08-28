@@ -1,0 +1,7 @@
+label: "Kierownik-Installer"
+grub2:
+  default: "Install Kierownik"
+  entries:
+    - name: "Install Kierownik"
+      linux: "/images/pxeboot/vmlinuz inst.stage2=hd:LABEL=Kierownik-Installer console=tty0 inst.text selinux=0"
+      initrd: "/images/pxeboot/initrd.img"
