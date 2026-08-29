@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
-
 #MISE description="Initialize gopass"
-
 set -euo pipefail
 
+REMOTE=$(gum input --value "" --placeholder "Enter the repo url")
+if [[ -n "${REMOTE}"]]; then
+    REMOTE="--remote ${REMOTE}"
+fi
+gopass setup ${REMOTE}
+
+# Configure connection to browser
+gopass-jsonapi configure --browser brave \
+                         --path ~/.config/gopass/ \
+                         --manifest-path ~/.config/BraveSoftware/Brave-Browser/NativeMessagingHosts/com.justwatch.gopass.json \
+                         --global false
