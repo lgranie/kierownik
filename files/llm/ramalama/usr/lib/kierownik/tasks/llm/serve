@@ -28,11 +28,15 @@ if [[ -z "${usage_target:-}" ]]; then
     usage_target=$(echo "$model" | awk '{print $1}')
 fi
 
+# Defaults tuned for 8745HS (32GB shared RAM, Radeon 860M iGPU)
+LLM_CONTEXT="${LLM_CONTEXT:-8192}"
+LLM_GPU_LAYERS="${LLM_GPU_LAYERS:-40}"
+
 cleanup() {
     mise run llm:hugepages off
 }
 trap cleanup EXIT
 
 mise run llm:hugepages on
-echo "Serving ramalama with model: ${usage_target}"
-ramalama serve "${usage_target}"
+echo "Serving ramalama with model: ${usage_target} (ctx=${LLM_CONTEXT}, ngl=${LLM_GPU_LAYERS})"
+ramalama serve "${usage_target}" -c "${LLM_CONTEXT}" --ngl "${LLM_GPU_LAYERS}"
