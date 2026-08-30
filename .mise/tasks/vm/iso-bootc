@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+#MISE description="Test the bootc-installer ISO in a VM via virt-install"
+#USAGE arg "<target>" help="Target environment" { choices "N100" "8745" "5290" }
+set -oue pipefail
+
+ISO="/tmp/output/iso-bootc/krw-${usage_target}.iso"
+NAME="krw-${usage_target}-install"
+
+if [ ! -f "$ISO" ]; then
+    echo "ISO not found: $ISO (build it first with: mise run build:iso-bootc ${usage_target})" >&2
+    exit 1
+fi
+
+run0 virt-install \
+    --name "$NAME" \
+    --boot uefi,firmware.feature0.name=secure-boot,firmware.feature0.enabled=no \
+    --memory 8192 \
+    --vcpus 8 \
+    --disk size=8,format=qcow2 \
+    --cdrom "$ISO" \
+    --os-variant fedora44 \
+    --network bridge=virbr0 \
+    --graphics spice,gl=on \
+    --video virtio,accel3d=on \
+    --xml './devices/graphics/listen/@type=none' \
+    --noautoconsole

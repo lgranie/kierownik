@@ -18,7 +18,7 @@ mise run build:iso 5290
 mise run build:qcow2 5290
 
 # Run in VM
-mise run vm 5290
+mise run vm:qcow2 5290
 
 # Build WSL image
 mise run build:wsl

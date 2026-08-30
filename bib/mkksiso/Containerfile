@@ -3,10 +3,7 @@
 #
 # mkksiso (from lorax) shells out to xorriso/osirrox, implantisomd5 and
 # mkefiboot, so we bundle those here to avoid installing them on the host.
-FROM registry.fedoraproject.org/fedora:44
+# The `lorax` package brings in xorriso + isomd5sum as dependencies.
+FROM registry.fedoraproject.org/fedora-minimal:44
 
-RUN dnf install -y \
-        python3-lorax \
-        xorriso \
-        isomd5sum \
-    && dnf clean all
+RUN microdnf install -y lorax && microdnf clean all

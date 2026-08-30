@@ -1,4 +1,4 @@
-build/
+/build/
 cosign.key
 /Containerfile
 /.bluebuild-scripts_*
