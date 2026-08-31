@@ -14,8 +14,8 @@ The following keybindings are available for power management:
 
 ## Requirements
 
-1. **Swap Partition**: You must have a swap partition that is at least as large as your RAM.
-2. **UUID Configuration**: The swap partition must be configured for resume.
+1. **Swap Partition**: You must have a block-device swap partition that is at least as large as your RAM.
+2. **UEFI Boot**: Hibernation location is detected automatically by systemd via the `HibernateLocation` EFI variable, which requires booting via UEFI.
 
 ## Checking Support
 
@@ -28,7 +28,7 @@ sudo /usr/lib/kierownik/tasks/hibernation/test
 This will show:
 - Swap configuration
 - Memory and swap sizes
-- Resume parameter
+- Systemd hibernate-resume support
 - Systemd hibernate service
 - Initramfs configuration
 
@@ -49,9 +49,9 @@ systemctl hibernate
    journalctl -b -0 | grep -i hibernate
    ```
 
-2. Verify resume parameter:
+2. Verify the HibernateLocation EFI variable was set:
    ```bash
-   cat /proc/cmdline | grep resume
+   efivar -p -n 4a67b082-0a4c-41cf-b6c7-440b29bb8c4f-HibernateLocation 2>/dev/null || ls /sys/firmware/efi/efivars/ | grep -i HibernateLocation
    ```
 
 3. Check swap configuration:

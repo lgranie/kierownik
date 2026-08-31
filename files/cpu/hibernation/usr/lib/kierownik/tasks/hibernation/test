@@ -32,14 +32,14 @@ fi
 echo "✓ Swap is large enough for hibernation"
 echo ""
 
-# Test 3: Check resume parameter
-echo "Test 3: Checking resume parameter..."
-if [ -f /etc/kernel/cmdline ] && grep -q "^resume=" /etc/kernel/cmdline; then
-    local resume_uuid=$(grep "^resume=" /etc/kernel/cmdline | cut -d= -f2)
-    echo "  Resume UUID: $resume_uuid"
-    echo "✓ Resume parameter configured"
+# Test 3: Check HibernateLocation support (systemd auto-detection)
+echo "Test 3: Checking systemd HibernateLocation support..."
+if systemctl is-enabled systemd-hibernate-resume.service >/dev/null 2>&1; then
+    echo "✓ systemd-hibernate-resume.service enabled"
+elif [ -x /usr/lib/systemd/system-generators/systemd-hibernate-resume-generator ]; then
+    echo "✓ systemd-hibernate-resume-generator available"
 else
-    echo "⚠ Resume parameter not found in /etc/kernel/cmdline"
+    echo "⚠ systemd-hibernate-resume generator not found"
 fi
 echo ""
 
