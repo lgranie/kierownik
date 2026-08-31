@@ -7,7 +7,7 @@ Before=firstboot.service
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=mise run hibernation:configure
+ExecStart=/usr/bin/hibernation-configure
 
 [Install]
 WantedBy=firstboot.service

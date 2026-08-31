@@ -7,7 +7,7 @@ Before=firstboot.service
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=mise run hibernation:check-support
+ExecStart=/usr/bin/hibernation-check_support
 
 [Install]
 WantedBy=firstboot.service
