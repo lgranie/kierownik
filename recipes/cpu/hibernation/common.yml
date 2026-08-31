@@ -8,5 +8,11 @@ modules:
 
   - type: files
     files:
-      - source: base/hibernation
+      - source: cpu/hibernation
         destination: /
+
+  - type: systemd
+    system:
+      enabled:
+        - hibernation-configure.service
+        - hibernation-check.service

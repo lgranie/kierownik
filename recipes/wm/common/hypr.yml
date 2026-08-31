@@ -8,10 +8,8 @@ modules:
     install:
       install-weak-deps: false
       packages:
-        - hypridle
         - hyprland
         - hyprland-guiutils
-        - hyprlock
         - xdg-desktop-portal-hyprland
 
   - type: files

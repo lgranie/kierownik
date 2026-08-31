@@ -1,0 +1,9 @@
+---
+modules:
+  - type: kargs
+    arch: x86_64
+    kargs:
+      - intel_idle.max_cstate=2
+      - intel_idle.min_cstate=2
+      - nvme_core.default_ps_max_latency_us=0
+      - pcie_aspm=powersupersave

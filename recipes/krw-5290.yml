@@ -19,7 +19,8 @@ modules:
   - from-file: base/wifi.yml
   - from-file: cpu/intel.yml
 
-  - from-file: base/hibernation.yml
+  - from-file: cpu/hibernation/common.yml
+  - from-file: cpu/hibernation/intel.yml
 
   - from-file: wm/common.yml
   - from-file: wm/5290.yml
