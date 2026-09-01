@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
-#MISE description="Run image in VM via virt-install"
+#MISE description="Run image in VM via qemu"
 #USAGE arg "<target>" help="Target environment" { choices "X4CXL" "8745" "5290" }
 set -oue pipefail
 
-run0 virt-install \
-    --name krw-"${usage_target}" \
-    --boot uefi,firmware.feature0.name=secure-boot,firmware.feature0.enabled=no \
-    --memory 8192 \
-    --vcpus 8 \
-    --disk path=/tmp/output/qcow2/disk-"${usage_target}".qcow2,size=8 \
-    --os-variant fedora41 \
-    --network bridge=virbr0 \
-    --graphics spice,gl=on \
-    --video virtio,accel3d=on \
-    --xml './devices/graphics/listen/@type=none' \
-    --noautoconsole
+qemu-system-x86_64 \
+    -machine q35,accel=kvm \
+    -cpu host \
+    -m 8192 \
+    -smp 8 \
+    -drive file=/tmp/output/qcow2/disk-"${usage_target}".qcow2,format=qcow2 \
+    -bios /usr/share/edk2/ovmf/OVMF_CODE.fd \
+    -netdev bridge,id=net0,br=virbr0 \
+    -device virtio-net-pci,netdev=net0 \
+    -spice gl=on,unix=on,addr=/tmp/spice-"${usage_target}".sock \
+    -device virtio-vga-gl \
+    -display none
