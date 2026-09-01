@@ -1,0 +1,12 @@
+---
+# Hibernation configuration
+modules:
+  - type: kargs
+    arch: x86_64
+    kargs:
+      - mem_sleep_default=deep
+
+  - type: files
+    files:
+      - source: cpu/hibernation
+        destination: /
