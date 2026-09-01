@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #MISE description="Build OCI image"
-#USAGE arg "<target>" help="Target profile" { choices "N100" "8745" "5290" }
+#USAGE arg "<target>" help="Target profile" { choices "X4CXL" "8745" "5290" }
 
 set -oue pipefail
 

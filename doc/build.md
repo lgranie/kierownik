@@ -9,13 +9,13 @@ Install tooling from `.mise/config.toml`:
 mise install
 ```
 
-Targets: `5290` (Dell Latitude), `8745` (Chuwi AuBox), `N100` (headless server),
+Targets: `5290` (Dell Latitude), `8745` (Chuwi AuBox), `X4CXL` (headless server),
 `wsl`.
 
 ## Build an OCI image
 
 ```bash
-mise run build:oci 8745          # or 5290 / N100
+mise run build:oci 8745          # or 5290 / X4CXL
 ```
 
 Runs `bluebuild build recipes/krw-<target>.yml`. Result:

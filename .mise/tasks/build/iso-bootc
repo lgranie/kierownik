@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #MISE description="Build bootc-native installer ISO (registry-based, needs network at install time)"
-#USAGE arg "<target>" help="Target profile" { choices "N100" "8745" "5290" }
+#USAGE arg "<target>" help="Target profile" { choices "X4CXL" "8745" "5290" }
 set -oue pipefail
 
 IMGREF="ghcr.io/lgranie/krw-${usage_target}:latest"

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #MISE description="Test the bootc-installer ISO in a VM via qemu"
-#USAGE arg "<target>" help="Target environment" { choices "N100" "8745" "5290" }
+#USAGE arg "<target>" help="Target environment" { choices "X4CXL" "8745" "5290" }
 set -oue pipefail
 
 ISO="/tmp/output/iso-bootc/krw-${usage_target}.iso"
