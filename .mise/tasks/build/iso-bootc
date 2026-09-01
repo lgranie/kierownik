@@ -6,13 +6,11 @@ set -oue pipefail
 IMGREF="ghcr.io/lgranie/krw-${usage_target}:latest"
 FEDORA_VERSION="${FEDORA_VERSION:-44}"
 ISO_DIR="/tmp/output/iso-bootc"
-KICKSTART_TMP="$(mktemp)"
-trap 'rm -f "$KICKSTART_TMP"' EXIT
 
 mkdir -p "$ISO_DIR"
 
 # Render the kickstart with the per-target image reference
-sed "s|__IMGREF__|${IMGREF}|g" ./bib/ks/bootc.ks > "$KICKSTART_TMP"
+sed "s|__IMGREF__|${IMGREF}|g" ./bib/ks/bootc.ks > "$ISO_DIR/kickstart.ks"
 
 # Obtain a generic Fedora installer ISO (Anaconda >= 44 supports the bootc command)
 if [ -n "${FEDORA_ISO_URL:-}" ]; then
@@ -37,17 +35,17 @@ fi
 
 # Inject the kickstart using mkksiso inside a container (avoids host installs
 # of lorax/xorriso/isomd5sum). Runs as root for the UEFI efiboot rebuild.
-echo "Injecting kickstart (imgref: $IMGREF) into $BASE_ISO"
-cp "$KICKSTART_TMP" "$ISO_DIR/kickstart.ks"
 run0 podman build -t localhost/krw-mkksiso -f Containerfile bib/mkksiso
-run0 podman run --rm --privileged \
-    --security-opt label=type:unconfined_t \
+if [ ! -e /dev/loop0 ]; then
+    echo "No loop devices available. Creating loop devices" >&2
+    for i in $(seq 0 7); do run0 mknod -m 0660 /dev/loop$i b 7 $i 2>/dev/null || true; done
+fi
+run0 podman run --rm \
+    --privileged \
     -v /dev:/dev \
-    -v "$ISO_DIR":/output \
+    -v "$ISO_DIR":/output:z \
     localhost/krw-mkksiso \
-    mkksiso /output/kickstart.ks \
-    "/output/$BASE_ISO" \
-    "/output/krw-${usage_target}.iso"
+    mkksiso /output/kickstart.ks "/output/$BASE_ISO" "/output/krw-${usage_target}.iso"
 rm -f "$ISO_DIR/kickstart.ks"
 
 echo "Done: $ISO_DIR/krw-${usage_target}.iso"
