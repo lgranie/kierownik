@@ -6,4 +6,4 @@
 # The `lorax` package brings in xorriso + isomd5sum as dependencies.
 FROM registry.fedoraproject.org/fedora-minimal:44
 
-RUN microdnf install -y lorax && microdnf clean all
+RUN microdnf install --setopt=install_weak_deps=False -y lorax && microdnf clean all
