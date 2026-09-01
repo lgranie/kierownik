@@ -2,7 +2,7 @@
 #
 # image-builder (bootc-generic-iso) requires the `--bootc-ref` container to be
 # a LIVE environment conforming to the image-builder ISO contract:
-#   - x86_64 UEFI+legacy boot via shim/GRUB2 and a kernel+initramfs at
+#   - x86_64 UEFI boot via shim/GRUB2 and a kernel+initramfs at
 #     /images/pxeboot/{vmlinuz,initrd.img}
 #   - /usr/lib/bootc-image-builder/iso.yaml with the GRUB2 menu + ISO label
 #   - anaconda installed and set as the default boot target (this tui
@@ -10,6 +10,44 @@
 #   - the build tools xorriso/mksquashfs present
 FROM quay.io/fedora/fedora-bootc:44
 
-COPY src/ /src/
+COPY files/system/ /
 
-RUN bash /src/build.sh && rm -rf /src
+RUN --mount=type=tmpfs,target=/var/cache/dnf <<EORUN
+set -exo pipefail
+
+dnf install -qy \
+    anaconda \
+    anaconda-install-img-deps \
+    anaconda-dracut \
+    dracut-config-generic \
+    dracut-network \
+    net-tools \
+    grub2-efi-x64-cdboot \
+    jq \
+    xorrisofs \
+    squashfs-tools
+
+mkdir -p /boot/efi \
+    && cp -ra /usr/lib/efi/*/*/EFI /boot/efi
+
+echo "install:x:0:0:root:/root:/usr/libexec/anaconda/run-anaconda" >> /etc/passwd
+echo "install::14438:0:99999:7:::" >> /etc/shadow
+passwd -d root
+
+mv /usr/share/anaconda/list-harddrives-stub /usr/bin/list-harddrives
+mv /etc/yum.repos.d /etc/anaconda.repos.d
+ln -s /lib/systemd/system/anaconda.target /etc/systemd/system/default.target
+rm -v /usr/lib/systemd/system-generators/systemd-gpt-auto-generator
+
+rm /usr/lib/systemd/system/autovt@.service
+ln -s /usr/lib/systemd/system/anaconda-shell@.service /usr/lib/systemd/system/autovt@.service
+
+mkdir -p /usr/lib/systemd/logind.conf.d
+printf '[Login]\nReserveVT=2\n' > /usr/lib/systemd/logind.conf.d/anaconda-shell.conf
+
+mkdir -p "$(realpath /root)"
+kernel=$(kernel-install list --json pretty | jq -r '.[] | select(.has_kernel == true) | .version' | head -n1)
+DRACUT_NO_XATTR=1 dracut -v --force --zstd --reproducible --no-hostonly \
+  --add "anaconda" \
+    "/usr/lib/modules/${kernel}/initramfs.img" "${kernel}"
+EORUN
