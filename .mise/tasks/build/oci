@@ -7,7 +7,15 @@ set -oue pipefail
 
 bluebuild build recipes/krw-"${usage_target}".yml
 
+branch=$(git branch --show-current)
+if [ "$branch" != "main" ] && [ -n "$branch" ]; then
+  podman tag ghcr.io/lgranie/krw-"${usage_target}":latest ghcr.io/lgranie/krw-"${usage_target}":"${branch}"
+fi
+
 if [ "$(id -u)" -ne 0 ]; then
-  username=$(id -un)
-  run0 bash -c "podman image scp ${username}@localhost::ghcr.io/lgranie/krw-${usage_target}:latest root@localhost::"
+  tag="latest"
+  if [ "$branch" != "main" ] && [ -n "$branch" ]; then
+    tag="$branch"
+  fi
+  timeout 1800 podman save ghcr.io/lgranie/krw-"${usage_target}":"${tag}" | run0 --pipe podman load
 fi

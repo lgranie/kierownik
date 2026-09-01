@@ -26,6 +26,8 @@ run0 podman run --rm --privileged --pull=newer \
     -v "$BUILD_DIR":/output \
     -v /var/lib/containers/storage:/var/lib/containers/storage \
     -v /boot:/boot \
+    -v /run/dbus/system_bus_socket:/run/dbus/system_bus_socket \
+    -v /run/systemd:/run/systemd \
     "${IMAGE_BUILDER}" \
     build \
     --output-dir /output \

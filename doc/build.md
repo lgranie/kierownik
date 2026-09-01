@@ -18,8 +18,7 @@ Targets: `5290` (Dell Latitude), `8745` (Chuwi AuBox), `N100` (headless server),
 mise run build:oci 8745          # or 5290 / N100
 ```
 
-Runs `bluebuild build recipes/krw-<target>.yml`; as non-root, copies the built
-image into the root podman store via `podman image scp`. Result:
+Runs `bluebuild build recipes/krw-<target>.yml`. Result:
 `ghcr.io/lgranie/krw-<target>:latest`.
 
 ## Generate an ISO
