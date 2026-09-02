@@ -15,6 +15,7 @@ done
 declare -A bins=(
   # ["bluetui"]=https://github.com/pythops/bluetui/releases/latest/download/bluetui-x86_64-linux-musl
   ["herdr"]=https://github.com/ogulcancelik/herdr/releases/latest/download/herdr-linux-x86_64
+  ["cliamp"]=https://github.com/bjarneo/cliamp/releases/latest/download/cliamp-linux-amd64
   # ["impala"]=https://github.com/pythops/impala/releases/latest/download/impala-x86_64-unknown-linux-musl
 )
 for bin in "${!bins[@]}"; do
