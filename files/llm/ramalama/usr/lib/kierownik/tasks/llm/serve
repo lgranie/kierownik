@@ -19,18 +19,38 @@ get_model_description() {
     echo ""
 }
 
+extract_context_from_desc() {
+    local desc="$1"
+    echo "$desc" | grep -oP 'LLM_CONTEXT=\K[0-9]+' || echo "8192"
+}
+
+extract_tuning_from_desc() {
+    local desc="$1"
+    local val=""
+    val=$(echo "$desc" | grep -oP 'LLM_TEMPERATURE=\K[0-9.]+' || echo "0.7")
+    echo "$val"
+}
+
 if [[ -z "${usage_target:-}" ]]; then
     models=$(grep -oP '^"\K[^"]+(?=")' /usr/share/ramalama/shortnames.conf | sort -u)
     model=$(echo "$models" | while read -r m; do
         desc=$(get_model_description "$m")
-        echo "$m - $desc"
-    done | gum choose --header "Select model" --selected "${LLM_DEFAULT_MODEL:-qwen3-coder:30b}")
+        ctx=$(extract_context_from_desc "$desc")
+        temp=$(extract_tuning_from_desc "$desc")
+        echo "$m - $desc (ctx=${ctx}, temp=${temp})"
+    done | gum choose --header "Select model" --selected "${LLM_DEFAULT_MODEL:-qwen3-coder:q3_k_m}")
     usage_target=$(echo "$model" | awk '{print $1}')
+    selected_desc=$(get_model_description "$usage_target")
+    LLM_CONTEXT="${LLM_CONTEXT:-$(extract_context_from_desc "$selected_desc")}"
+    LLM_TEMPERATURE="${LLM_TEMPERATURE:-$(extract_tuning_from_desc "$selected_desc")}"
 fi
 
 # Defaults tuned for 8745HS (32GB shared RAM, Radeon 860M iGPU)
 LLM_CONTEXT="${LLM_CONTEXT:-8192}"
 LLM_GPU_LAYERS="${LLM_GPU_LAYERS:-40}"
+LLM_TOP_P="${LLM_TOP_P:-0.95}"
+LLM_TEMPERATURE="${LLM_TEMPERATURE:-0.7}"
+LLM_REPEAT_PENALTY="${LLM_REPEAT_PENALTY:-1.1}"
 
 cleanup() {
     mise run llm:hugepages off
@@ -38,5 +58,5 @@ cleanup() {
 trap cleanup EXIT
 
 mise run llm:hugepages on
-echo "Serving ramalama with model: ${usage_target} (ctx=${LLM_CONTEXT}, ngl=${LLM_GPU_LAYERS})"
-ramalama serve "${usage_target}" -c "${LLM_CONTEXT}" --ngl "${LLM_GPU_LAYERS}"
+echo "Serving ramalama with model: ${usage_target} (ctx=${LLM_CONTEXT}, temp=${LLM_TEMPERATURE}, top_p=${LLM_TOP_P}, ngl=${LLM_GPU_LAYERS})"
+ramalama serve "${usage_target}" -c "${LLM_CONTEXT}" --ngl "${LLM_GPU_LAYERS}" --temp "${LLM_TEMPERATURE}" --runtime-args "--top-p ${LLM_TOP_P} --repeat-penalty ${LLM_REPEAT_PENALTY}"
