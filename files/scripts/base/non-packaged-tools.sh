@@ -22,14 +22,6 @@ for bin in "${!bins[@]}"; do
   chmod +x "/usr/bin/${bin}"
 done
 
-# Install television
-TV_VERSION=$(/tmp/files/scripts/common/fetch_gh_latest_tag "alexpasmantier/television")
-if [[ -n "$TV_VERSION" ]]; then
-  curl --silent --retry 3 -L --output - "https://github.com/alexpasmantier/television/releases/latest/download/tv-${TV_VERSION}-x86_64-unknown-linux-gnu.tar.gz" |
-    tar -xzf - --strip-components=1 \
-      -C /usr/bin/ "tv-${TV_VERSION}-x86_64-unknown-linux-gnu/tv"
-fi
-
 # Install lazygit
 LAZYGIT_TAG=$(/tmp/files/scripts/common/fetch_gh_latest_tag "jesseduffield/lazygit")
 if [[ -n "$LAZYGIT_TAG" ]]; then
