@@ -48,6 +48,17 @@ set -oue pipefail
 # Your code here
 ```
 
+### User Interaction (gum)
+- In scripts, mise tasks (`.mise/tasks/`) and kierownik tasks (`files/**/tasks/*`), use `gum` — never `echo`/`read -p` — when interacting with the user
+- Mapping:
+  - Status/info: `gum log --time=false --level info "message"`
+  - Warnings/errors: `gum log --time=false --level warn|error "message"`
+  - Banners/summaries: `gum style --border thick "line 1" "line 2"`
+  - Prompts: `gum input --prompt "..."`, `gum choose`, `gum confirm`, `gum filter`
+  - Data to display verbatim (keys, tokens): `gum style "${var}"` (no log prefix, stays copy-pasteable)
+- Keep plumbing `echo` as-is: pipes (`echo "$x" | ...`), redirects/file appends (`>> file`, `> /sys/...`, `run0 sh -c "echo ... > ..."`), `echo $?`, `echo quit | openssl`
+- `gum` is available in the image (`recipes/base/tools.yml`) and on the host via mise (`.mise/config.toml`); do NOT use it in build-time finalize scripts (`files/scripts/finalize/`), which run before packages are installed
+
 ### YAML Recipes
 - Use BlueBuild recipe schema: `https://schema.blue-build.org/recipe-v1.json`
 - Recipe structure:
