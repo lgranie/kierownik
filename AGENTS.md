@@ -51,8 +51,8 @@ set -oue pipefail
 ### User Interaction (gum)
 - In scripts, mise tasks (`.mise/tasks/`) and kierownik tasks (`files/**/tasks/*`), use `gum` — never `echo`/`read -p` — when interacting with the user
 - Mapping:
-  - Status/info: `gum log --time=false --level info "message"`
-  - Warnings/errors: `gum log --time=false --level warn|error "message"`
+  - Status/info: `gum log -sl info "message"`
+  - Warnings/errors: `gum log -sl warn|error "message"`
   - Banners/summaries: `gum style --border thick "line 1" "line 2"`
   - Prompts: `gum input --prompt "..."`, `gum choose`, `gum confirm`, `gum filter`
   - Data to display verbatim (keys, tokens): `gum style "${var}"` (no log prefix, stays copy-pasteable)

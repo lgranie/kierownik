@@ -9,71 +9,71 @@ set -oue pipefail
 gum style --border thick "=== Hibernation Configuration Test ==="
 
 # Test 1: Check swap configuration
-gum log --time=false --level info "Test 1: Checking swap configuration..."
+gum log -sl info "Test 1: Checking swap configuration..."
 if ! swapon --show=NAME --noheadings | grep -v '^/dev/zram' | grep -q '^/dev/'; then
-    gum log --time=false --level error "❌ No block-device swap partition found (zram cannot be used for hibernation)"
+    gum log -sl error "❌ No block-device swap partition found (zram cannot be used for hibernation)"
     exit 1
 fi
-gum log --time=false --level info "✓ Swap partition detected"
+gum log -sl info "✓ Swap partition detected"
 
 # Test 2: Check swap size
-gum log --time=false --level info "Test 2: Checking swap size..."
+gum log -sl info "Test 2: Checking swap size..."
 local mem_total=$(free -b | awk '/^Mem:/ {print $2}')
 local swap_size=$(swapon --show=NAME,SIZE --noheadings --bytes | awk '/^\/dev\/zram/ {next} {sum+=$2} END {print sum+0}')
-gum log --time=false --level info "  Memory: $mem_total bytes"
-gum log --time=false --level info "  Swap: $swap_size bytes"
+gum log -sl info "  Memory: $mem_total bytes"
+gum log -sl info "  Swap: $swap_size bytes"
 
 if [ "$swap_size" -lt "$mem_total" ]; then
-    gum log --time=false --level error "❌ Swap is smaller than memory"
+    gum log -sl error "❌ Swap is smaller than memory"
     exit 1
 fi
-gum log --time=false --level info "✓ Swap is large enough for hibernation"
+gum log -sl info "✓ Swap is large enough for hibernation"
 
 # Test 3: Check HibernateLocation support (systemd auto-detection)
-gum log --time=false --level info "Test 3: Checking systemd HibernateLocation support..."
+gum log -sl info "Test 3: Checking systemd HibernateLocation support..."
 if systemctl is-enabled systemd-hibernate-resume.service >/dev/null 2>&1; then
-    gum log --time=false --level info "✓ systemd-hibernate-resume.service enabled"
+    gum log -sl info "✓ systemd-hibernate-resume.service enabled"
 elif [ -x /usr/lib/systemd/system-generators/systemd-hibernate-resume-generator ]; then
-    gum log --time=false --level info "✓ systemd-hibernate-resume-generator available"
+    gum log -sl info "✓ systemd-hibernate-resume-generator available"
 else
-    gum log --time=false --level warn "⚠ systemd-hibernate-resume generator not found"
+    gum log -sl warn "⚠ systemd-hibernate-resume generator not found"
 fi
 
 # Test 4: Check systemd hibernate service
-gum log --time=false --level info "Test 4: Checking systemd hibernate service..."
+gum log -sl info "Test 4: Checking systemd hibernate service..."
 if systemctl list-unit-files | grep -q "systemd-hibernate.service"; then
-    gum log --time=false --level info "✓ systemd-hibernate.service found"
+    gum log -sl info "✓ systemd-hibernate.service found"
 else
-    gum log --time=false --level error "❌ systemd-hibernate.service not found"
+    gum log -sl error "❌ systemd-hibernate.service not found"
     exit 1
 fi
 
 # Test 5: Check dracut configuration
-gum log --time=false --level info "Test 5: Checking dracut configuration..."
+gum log -sl info "Test 5: Checking dracut configuration..."
 if [ -f /etc/dracut.conf.d/hibernation.conf ]; then
-    gum log --time=false --level info "✓ Dracut hibernation configuration found"
+    gum log -sl info "✓ Dracut hibernation configuration found"
 else
-    gum log --time=false --level warn "⚠ Dracut hibernation configuration not found"
+    gum log -sl warn "⚠ Dracut hibernation configuration not found"
 fi
 
 # Test 6: Check initramfs
-gum log --time=false --level info "Test 6: Checking initramfs..."
+gum log -sl info "Test 6: Checking initramfs..."
 local initramfs=$(ls /boot/initramfs-* 2>/dev/null | head -1)
 if [ -n "$initramfs" ]; then
-    gum log --time=false --level info "  Initramfs: $initramfs"
+    gum log -sl info "  Initramfs: $initramfs"
     if lsinitrd -f /lib/systemd/system/systemd-hibernate.service "$initramfs" >/dev/null 2>&1; then
-        gum log --time=false --level info "✓ Initramfs contains hibernation support"
+        gum log -sl info "✓ Initramfs contains hibernation support"
     else
-        gum log --time=false --level warn "⚠ Initramfs may not contain hibernation support"
+        gum log -sl warn "⚠ Initramfs may not contain hibernation support"
     fi
 else
-    gum log --time=false --level warn "⚠ No initramfs found"
+    gum log -sl warn "⚠ No initramfs found"
 fi
 
 gum style --border thick "=== Test Complete ==="
-gum log --time=false --level info "Summary:"
-gum log --time=false --level info "  - Swap: $swap_size bytes ($((swap_size/1024/1024/1024)) GB)"
-gum log --time=false --level info "  - Memory: $mem_total bytes ($((mem_total/1024/1024/1024)) GB)"
-gum log --time=false --level info "  - Hibernation supported: YES"
+gum log -sl info "Summary:"
+gum log -sl info "  - Swap: $swap_size bytes ($((swap_size/1024/1024/1024)) GB)"
+gum log -sl info "  - Memory: $mem_total bytes ($((mem_total/1024/1024/1024)) GB)"
+gum log -sl info "  - Hibernation supported: YES"
 
 gum style --border thick "To hibernate, use:" "  systemctl hibernate" "" "Or with Hyprland keybindings:" "  SUPER + CTRL + ALT + H (Hibernate)" "  SUPER + CTRL + ALT + S (Suspend)" "  SUPER + CTRL + ALT + P (Hybrid Sleep)"

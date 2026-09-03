@@ -4,12 +4,12 @@
 set -oue pipefail
 
 if [[ "${usage_all:-false}" == "true" ]]; then
-    gum log --time=false --level info "Removing all models..."
+    gum log -sl info "Removing all models..."
     ramalama rm --all
 else
     models=$(ramalama list 2>/dev/null | awk 'NR>1 {print $1}')
     if [[ -z "$models" ]]; then
-        gum log --time=false --level warn "No models downloaded."
+        gum log -sl warn "No models downloaded."
         exit 0
     fi
     selected=$(echo "$models" | gum choose --no-limit --header "Select models to remove")

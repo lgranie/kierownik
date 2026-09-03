@@ -6,7 +6,7 @@ set -euo pipefail
 gpg_key_id=$(gpg2 --list-secret-keys --keyid-format LONG | grep ssb | grep '[S]' | sed -E 's/.*\/([0-9A-Z]*) .*\[S\]/\1/')
 
 gpg_pubkey=$(gpg --armor --export "${gpg_key_id}")
-gum log --time=false --level info "Your gpg pub key is"
+gum log -sl info "Your gpg pub key is"
 gum style "${gpg_pubkey}"
 
 gum confirm "Copy to clipboard?" && gpg --armor --export "${gpg_key_id}" | wl-copy

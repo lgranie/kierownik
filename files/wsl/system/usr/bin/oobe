@@ -19,7 +19,7 @@ function create_user() {
     username=$(gum input --prompt "Create a default Unix user account: " --placeholder "username" || true)
 
     if [[ -z "${username:-}" ]]; then
-      gum log --time=false --level error "Username cannot be empty."
+      gum log -sl error "Username cannot be empty."
       continue
     fi
 
@@ -34,19 +34,19 @@ function create_user() {
       # 3: invalid argument to option
       # 19: Bad login name (since Fedora 42)
       3 | 19)
-        gum log --time=false --level error "Invalid username. A valid username must start with a letter or underscore, and can contain letters, digits, underscores, dots, dashes and a dollar sign at the end."
+        gum log -sl error "Invalid username. A valid username must start with a letter or underscore, and can contain letters, digits, underscores, dots, dashes and a dollar sign at the end."
         continue
         ;;
       # 9: username or group name already in use
       9)
-        gum log --time=false --level warn "User \"$username\" already exists"
+        gum log -sl warn "User \"$username\" already exists"
         continue
         ;;
       0)
         break
         ;;
       *)
-        gum log --time=false --level error "Unexpected error code from useradd: $rc"
+        gum log -sl error "Unexpected error code from useradd: $rc"
         break
         ;;
     esac
@@ -56,7 +56,7 @@ function create_user() {
 # When `cloud-init-main` is enabled it might take care of user creation and other bits, depending on its
 # configuration contained within the WSL image; or the WSL configuration as provided by the host.
 if systemctl is-enabled cloud-init-main.service > /dev/null ; then
-  gum log --time=false --level info 'cloud-init-main is enabled, skipping user account creation. Waiting for cloud-init to finish.'
+  gum log -sl info 'cloud-init-main is enabled, skipping user account creation. Waiting for cloud-init to finish.'
 
   # We need to run cloud-init in a sub-shell that disables errexit so we can inspect its error code
   # Without the script exiting.
@@ -69,7 +69,7 @@ if systemctl is-enabled cloud-init-main.service > /dev/null ; then
   # be ignored and happens commonly, for example when there is a default configuration but the fallback
   # data source was used.
   if [ "${cloud_status}" -eq 1 ]; then
-    gum log --time=false --level error 'cloud-init failed unrecoverably. Failed to provision system.'
+    gum log -sl error 'cloud-init failed unrecoverably. Failed to provision system.'
     cloud-init status --long
     exit 1
   fi
@@ -78,7 +78,7 @@ if systemctl is-enabled cloud-init-main.service > /dev/null ; then
 fi
 
 if getent passwd $DEFAULT_USER_ID > /dev/null ; then
-  gum log --time=false --level info 'User account already exists, skipping creation'
+  gum log -sl info 'User account already exists, skipping creation'
   exit 0
 fi
 

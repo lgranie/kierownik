@@ -9,10 +9,10 @@ FAIL="[FAIL]"
 INFO="[INFO]"
 STATUS=0
 
-pass() { gum log --time=false --level info "  ${PASS} $*"; }
-warn() { gum log --time=false --level warn "  ${WARN} $*"; }
-fail() { gum log --time=false --level error "  ${FAIL} $*"; STATUS=1; }
-info() { gum log --time=false --level info "  ${INFO} $*"; }
+pass() { gum log -sl info "  ${PASS} $*"; }
+warn() { gum log -sl warn "  ${WARN} $*"; }
+fail() { gum log -sl error "  ${FAIL} $*"; STATUS=1; }
+info() { gum log -sl info "  ${INFO} $*"; }
 
 # ---------------------------------------------------------------------------
 # Semver comparison: returns 0 if $1 >= $2
@@ -54,7 +54,7 @@ else
 fi
 
 # --- task files -------------------------------------------------------------
-gum log --time=false --level info "  Task files:"
+gum log -sl info "  Task files:"
 TASKS_DIR="${MISE_TASK_DIR}"
 for NAME in _default build shell upgrade health; do
   if [[ -x "${TASKS_DIR}/${NAME}" ]]; then
@@ -119,9 +119,9 @@ fi
 
 # --- platform note ----------------------------------------------------------
 if [[ "${STATUS}" -eq 0 ]]; then
-  gum log --time=false --level info "All checks passed."
+  gum log -sl info "All checks passed."
 else
-  gum log --time=false --level error "One or more checks failed. See [FAIL] items above."
+  gum log -sl error "One or more checks failed. See [FAIL] items above."
 fi
 
 exit "${STATUS}"
