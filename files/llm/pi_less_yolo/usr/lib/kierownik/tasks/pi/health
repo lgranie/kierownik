@@ -9,10 +9,10 @@ FAIL="[FAIL]"
 INFO="[INFO]"
 STATUS=0
 
-pass() { echo "  ${PASS} $*"; }
-warn() { echo "  ${WARN} $*"; }
-fail() { echo "  ${FAIL} $*"; STATUS=1; }
-info() { echo "  ${INFO} $*"; }
+pass() { gum log --time=false --level info "  ${PASS} $*"; }
+warn() { gum log --time=false --level warn "  ${WARN} $*"; }
+fail() { gum log --time=false --level error "  ${FAIL} $*"; STATUS=1; }
+info() { gum log --time=false --level info "  ${INFO} $*"; }
 
 # ---------------------------------------------------------------------------
 # Semver comparison: returns 0 if $1 >= $2
@@ -21,9 +21,7 @@ version_gte() {
   printf '%s\n%s' "$2" "$1" | sort -C -V
 }
 
-echo "pi-less-yolo health check"
-echo "========================="
-echo ""
+gum style --border thick "pi-less-yolo health check"
 
 # --- container runtime binary -----------------------------------------------
 if command -v podman > /dev/null 2>&1; then
@@ -56,8 +54,7 @@ else
 fi
 
 # --- task files -------------------------------------------------------------
-echo ""
-echo "  Task files:"
+gum log --time=false --level info "  Task files:"
 TASKS_DIR="${MISE_TASK_DIR}"
 for NAME in _default build shell upgrade health; do
   if [[ -x "${TASKS_DIR}/${NAME}" ]]; then
@@ -121,13 +118,10 @@ else
 fi
 
 # --- platform note ----------------------------------------------------------
-echo ""
-echo ""
 if [[ "${STATUS}" -eq 0 ]]; then
-  echo "All checks passed."
+  gum log --time=false --level info "All checks passed."
 else
-  echo "One or more checks failed. See [FAIL] items above."
+  gum log --time=false --level error "One or more checks failed. See [FAIL] items above."
 fi
-echo ""
 
 exit "${STATUS}"

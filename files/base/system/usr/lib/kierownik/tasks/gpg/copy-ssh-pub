@@ -15,7 +15,7 @@ fi
 
 user_email=$(gum input --prompt "Enter your email : " --value "$default_email")
 ssh_pubkey=$(gpg --export-ssh-key "${user_email}")
-echo "Your ssh pub key is :"
-echo "${ssh_pubkey}"
+gum log --time=false --level info "Your ssh pub key is :"
+gum style "${ssh_pubkey}"
 
 gum confirm "Copy to clipboard?" && gpg --export-ssh-key "${user_email}" | wl-copy

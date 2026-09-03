@@ -1,7 +1,7 @@
 function decompress --description "Expand or extract bundled & compressed files"
   for file in $argv
     if test -f $file
-      echo -e "Extracting \033[1m\033[34m$file\033[0m"
+      gum log --time=false --level info "Extracting $file"
       switch $file
         case *.tar
           tar -xvf $file
@@ -18,10 +18,10 @@ function decompress --description "Expand or extract bundled & compressed files"
         case *.zip *.ZIP
           unzip $file
         case '*.*'
-          echo "Extension not recognized, cannot extract $file"
+          gum log --time=false --level warn "Extension not recognized, cannot extract $file"
       end
     else
-      echo "$file is not a valid file"
+      gum log --time=false --level error "$file is not a valid file"
     end
   end
 end

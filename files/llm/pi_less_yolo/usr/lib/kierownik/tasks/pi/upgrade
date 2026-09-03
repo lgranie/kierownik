@@ -7,7 +7,7 @@ PI_IMAGE="pi-less-yolo:latest"
 CONTAINERFILE="${MISE_TASK_DIR}/../../Containerfile"
 
 podman image inspect "${PI_IMAGE}" > /dev/null 2>&1 || {
-  echo "error: image not found — run: mise run pi:build" >&2
+  gum log --time=false --level error "error: image not found — run: mise run pi:build" >&2
   exit 1
 }
 
@@ -15,11 +15,11 @@ CURRENT=$(perl -ne 'print $1 if /pi-coding-agent@([\d.]+)/' "${CONTAINERFILE}")
 LATEST=$(podman run --rm --entrypoint npm "${PI_IMAGE}" view @earendil-works/pi-coding-agent version)
 
 if [[ "${CURRENT}" == "${LATEST}" ]]; then
-  echo "Already at latest pi version: ${CURRENT}"
+  gum log --time=false --level info "Already at latest pi version: ${CURRENT}"
   exit 0
 fi
 
-echo "Upgrading pi: ${CURRENT} → ${LATEST}"
+gum log --time=false --level info "Upgrading pi: ${CURRENT} → ${LATEST}"
 
 # perl -pi -e is cross-platform (macOS and Linux); avoids sed -i / sed -i ''
 # incompatibility.

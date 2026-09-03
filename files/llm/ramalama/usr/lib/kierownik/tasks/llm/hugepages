@@ -25,27 +25,27 @@ enable_static_hugepages() {
 
     target_pages=$(( free_kb / 2 / HUGEPAGE_SIZE_KB ))
 
-    echo "Total RAM: $(( total_kb / 1024 / 1024 ))GB"
-    echo "Available RAM: $(( free_kb / 1024 / 1024 ))GB"
-    echo "Hugepage size: $(( HUGEPAGE_SIZE_KB / 1024 ))MB"
-    echo "Allocating $target_pages pages ($(( target_pages * HUGEPAGE_SIZE_KB / 1024 / 1024 ))GB)..."
+    gum log --time=false --level info "Total RAM: $(( total_kb / 1024 / 1024 ))GB"
+    gum log --time=false --level info "Available RAM: $(( free_kb / 1024 / 1024 ))GB"
+    gum log --time=false --level info "Hugepage size: $(( HUGEPAGE_SIZE_KB / 1024 ))MB"
+    gum log --time=false --level info "Allocating $target_pages pages ($(( target_pages * HUGEPAGE_SIZE_KB / 1024 / 1024 ))GB)..."
 
     run0 sh -c "echo never > $THP_PATH"
     run0 sh -c "echo $target_pages > $HUGEPAGES_PATH"
 
-    echo "Static hugepages enabled."
+    gum log --time=false --level info "Static hugepages enabled."
 }
 
 disable_static_hugepages() {
-    echo "Reverting to transparent hugepages..."
+    gum log --time=false --level info "Reverting to transparent hugepages..."
     run0 sh -c "echo always > $THP_PATH"
     run0 sh -c "echo 0 > $HUGEPAGES_PATH"
 }
 
 show_status() {
-    echo "Transparent hugepages: $(cat "$THP_PATH")"
-    echo "Static hugepages: $(awk '/HugePages_Total/ {print $2}' /proc/meminfo)"
-    echo "Hugepage size: $(( HUGEPAGE_SIZE_KB / 1024 ))MB"
+    gum log --time=false --level info "Transparent hugepages: $(cat "$THP_PATH")"
+    gum log --time=false --level info "Static hugepages: $(awk '/HugePages_Total/ {print $2}' /proc/meminfo)"
+    gum log --time=false --level info "Hugepage size: $(( HUGEPAGE_SIZE_KB / 1024 ))MB"
 }
 
 case "${usage_action}" in

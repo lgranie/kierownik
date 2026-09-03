@@ -58,5 +58,5 @@ cleanup() {
 trap cleanup EXIT
 
 mise run llm:hugepages on
-echo "Serving ramalama with model: ${usage_target} (ctx=${LLM_CONTEXT}, temp=${LLM_TEMPERATURE}, top_p=${LLM_TOP_P}, ngl=${LLM_GPU_LAYERS})"
+gum log --time=false --level info "Serving ramalama with model: ${usage_target} (ctx=${LLM_CONTEXT}, temp=${LLM_TEMPERATURE}, top_p=${LLM_TOP_P}, ngl=${LLM_GPU_LAYERS})"
 ramalama serve "${usage_target}" -c "${LLM_CONTEXT}" --ngl "${LLM_GPU_LAYERS}" --temp "${LLM_TEMPERATURE}" --runtime-args "--top-p ${LLM_TOP_P} --repeat-penalty ${LLM_REPEAT_PENALTY}"
