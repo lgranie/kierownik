@@ -13,4 +13,4 @@ podman export -o /tmp/output/wsl/kierownik-wsl.tar "$(podman create "${BB_REGIST
 
 # Compress to .wsl format
 zstd /tmp/output/wsl/kierownik-wsl.tar -o /tmp/output/wsl/kierownik.wsl --force
-echo "WSL image created at /tmp/output/wsl/kierownik.wsl"
+gum log --time=false --level info "WSL image created at /tmp/output/wsl/kierownik.wsl"
