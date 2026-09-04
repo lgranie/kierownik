@@ -24,7 +24,7 @@ hl.bind("SUPER + RETURN", exec("uwsm app -- footclient"), { description = "Open 
 hl.bind("SUPER + ALT + RETURN", exec("uwsm app -- footclient herdr"), { description = "Open a Terminal: foot client Herdr" })
 hl.bind("SUPER + SHIFT + RETURN", exec("foot"), { description = "Open a Terminal: foot" })
 hl.bind("SUPER + SPACE", exec(ipc .. "panel-toggle launcher"), { description = "Run an Application: Menu" })
-hl.bind("SUPER + B", exec(ipc .. "panel-toggle launcher /bookmarks "), { description = "Open Bookmark" })
+hl.bind("SUPER + B", exec(ipc .. "panel-toggle launcher '/bookmarks '"), { description = "Open Bookmark" })
 hl.bind("SUPER + ALT + L", exec(ipc .. "session lock"), { description = "Lock the Session" })
 
 -- 2. Window Management
