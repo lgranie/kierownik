@@ -1,7 +1,7 @@
 id = "linkding/bookmarks"
 name = "Linkding Bookmarks"
 version = "1.0.0"
-plugin_api = 9
+plugin_api = 24
 author = "lgranie"
 license = "MIT"
 dependencies = []
