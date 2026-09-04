@@ -1,0 +1,37 @@
+id = "linkding/bookmarks"
+name = "Linkding Bookmarks"
+version = "1.0.0"
+plugin_api = 9
+author = "lgranie"
+license = "MIT"
+dependencies = []
+tags = ["launcher", "bookmarks"]
+icon = "bookmark"
+description = "A Linkding bookmarks launcher provider"
+
+[[launcher_provider]]
+id = "bookmarks"
+entry = "launcher.luau"
+prefix = "bookmarks"
+glyph = "bookmark"
+
+[[setting]]
+key = "browser"
+type = "string"
+label_key = "settings.browser.label"
+description_key = "settings.browser.description"
+default = "brave-browser"
+
+[[setting]]
+key = "token"
+type = "string"
+label_key = "settings.token.label"
+description_key = "settings.token.description"
+default = ""
+
+[[setting]]
+key = "serverUrl"
+type = "string"
+label_key = "settings.serverUrl.label"
+description_key = "settings.serverUrl.description"
+default = ""

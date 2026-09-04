@@ -1,0 +1,8 @@
+[shell]
+launch_apps_as_systemd_services = true
+
+[[plugins.source]]
+name     = "kierownik"
+kind     = "path"
+location = "/usr/lib/kierownik/noctalia-plugins"
+enabled  = true

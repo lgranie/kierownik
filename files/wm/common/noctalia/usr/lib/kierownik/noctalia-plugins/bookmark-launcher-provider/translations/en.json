@@ -1,0 +1,8 @@
+{
+  "settings.browser.label": "Browser",
+  "settings.browser.description": "The browser executable to launch bookmarks with",
+  "settings.token.label": "Linkding Token",
+  "settings.token.description": "Your Linkding session token",
+  "settings.serverUrl.label": "Linkding URL",
+  "settings.serverUrl.description": "Your Linkding server URL"
+}
