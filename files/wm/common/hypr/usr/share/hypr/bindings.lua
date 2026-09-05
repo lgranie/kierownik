@@ -2,6 +2,7 @@
 -- https://wiki.hypr.land/Configuring/Basics/Binds/
 
 local exec = hl.dsp.exec_cmd
+local focus = hl.dsp.focus
 local layout = hl.dsp.layout
 local window = hl.dsp.window
 local worksp = hl.dsp.workspace
@@ -41,9 +42,13 @@ hl.bind("SUPER + SHIFT + LEFT", layout("swapcol l"), { description = "Swap windo
 hl.bind("SUPER + SHIFT + RIGHT", layout("swapcol r"), { description = "Swap window to the right" })
 hl.bind("SUPER + SHIFT + M", window.move({ workspace = "m+1"}), { description = "Swap window to the right" })
 
--- Move window to workspace
-hl.bind("SUPER + SHIFT + up", window.move({ workspace = "e+1" }))
-hl.bind("SUPER + SHIFT + down", window.move({ workspace = "e-1" }))
+-- Niri-style move window to next/previous workspace: missing workspaces are created, no wrap-around
+hl.bind("SUPER + SHIFT + up", window.move({ workspace = "+1" }), { description = "Move window to next workspace (create if missing)" })
+hl.bind("SUPER + SHIFT + down", window.move({ workspace = "-1" }), { description = "Move window to previous workspace" })
+
+-- Niri-style next/previous workspace: missing workspaces are created, no wrap-around
+hl.bind("SUPER + up", focus({ workspace = "+1" }), { description = "Next workspace (create if missing)" })
+hl.bind("SUPER + down", focus({ workspace = "-1" }), { description = "Previous workspace" })
 
 -- Move/resize windows with mainMod + LMB/RMB and dragging
 hl.bind("SUPER + mouse:272", window.drag(),   { mouse = true })
