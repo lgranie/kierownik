@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+#MISE description="Add EPSON ET-2750 printer connected via usb"
+#USAGE arg "[driver]" help="Printer driver to use" { choices "everywhere" "gutenprint" }
+set -oue pipefail
+
+if [[ -z "${usage_driver:-}" ]]; then
+  usage_driver=$(gum choose --header "Select printer driver" --selected "gutenprint" "everywhere" "gutenprint")
+fi
+
+PRINTER_URI="ipp://EPSON%20ET-2750%20Series%20%28USB%29._ipp._tcp.local/ipp/print"
+
+case "${usage_driver}" in
+  everywhere)
+    DRIVER_FLAG="everywhere"
+    ;;
+  gutenprint)
+    DRIVER_FLAG="gutenprint.5.3://escp2-et2750/expert"
+    ;;
+  *)
+    gum log -sl error "Unknown driver: ${usage_driver}. Choose 'everywhere' or 'gutenprint'."
+    exit 1
+    ;;
+esac
+
+gum log -sl info "Adding ET2750 with '${usage_driver}' driver..."
+run0 bash -c "lpadmin -p ET2750 -v ${PRINTER_URI} -E -m ${DRIVER_FLAG}"
