@@ -68,7 +68,7 @@ hl.window_rule({
 hl.window_rule({
 	name = "media",
 	match = {
-		class = "^.*(Euphonica|FreeTube)$",
+		class = "^.*(Euphonica|FreeTube|cliamp)$",
 	},
 	float = true,
 	center = true,
