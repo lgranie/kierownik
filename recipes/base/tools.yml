@@ -51,8 +51,11 @@ modules:
       - |
         bat --completion fish > /etc/fish/completions/bat.fish
         delta --generate-completion fish > /etc/fish/completions/delta.fish
+        dua completions fish > /etc/fish/completions/dua.fish
         gum completion fish > /etc/fish/completions/gum.fish
         herdr completion fish > /etc/fish/completions/herdr.fish
+        lazygit completion fish > /etc/fish/completions/lazygit.fish
+        usage --completions fish > /etc/fish/completions/usage.fish
         yq completion fish > /etc/fish/completions/yq.fish
         fzf --fish > /etc/fish/conf.d/90-fzf.fish
         mise activate fish > /etc/fish/conf.d/90-mise.fish
@@ -61,8 +64,11 @@ modules:
         mkdir -p /usr/share/bash-completion/completions
         bat --completion bash > /usr/share/bash-completion/completions/bat
         delta --generate-completion bash > /usr/share/bash-completion/completions/delta
+        dua completions bash > /usr/share/bash-completion/completions/dua
         gum completion bash > /usr/share/bash-completion/completions/gum
         herdr completion bash > /usr/share/bash-completion/completions/herdr
+        lazygit completion bash > /usr/share/bash-completion/completions/lazygit
+        usage --completions bash > /usr/share/bash-completion/completions/usage
         yq completion bash > /usr/share/bash-completion/completions/yq
         fzf --bash > /etc/profile.d/90-fzf.sh
         mise activate bash > /etc/profile.d/90-mise.sh
