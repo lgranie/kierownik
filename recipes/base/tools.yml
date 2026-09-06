@@ -51,10 +51,20 @@ modules:
       - |
         bat --completion fish > /etc/fish/completions/bat.fish
         delta --generate-completion fish > /etc/fish/completions/delta.fish
-        fzf --fish > /etc/fish/conf.d/90-fzf.fish
         gum completion fish > /etc/fish/completions/gum.fish
         herdr completion fish > /etc/fish/completions/herdr.fish
-        mise activate fish > /etc/fish/conf.d/90-mise.fish
         yq completion fish > /etc/fish/completions/yq.fish
+        fzf --fish > /etc/fish/conf.d/90-fzf.fish
+        mise activate fish > /etc/fish/conf.d/90-mise.fish
         zoxide init --cmd cd fish > /etc/fish/conf.d/90-zoxide.fish
+      - |
+        mkdir -p /usr/share/bash-completion/completions
+        bat --completion bash > /usr/share/bash-completion/completions/bat
+        delta --generate-completion bash > /usr/share/bash-completion/completions/delta
+        gum completion bash > /usr/share/bash-completion/completions/gum
+        herdr completion bash > /usr/share/bash-completion/completions/herdr
+        yq completion bash > /usr/share/bash-completion/completions/yq
+        fzf --bash > /etc/profile.d/90-fzf.sh
+        mise activate bash > /etc/profile.d/90-mise.sh
+        zoxide init --cmd cd bash > /etc/profile.d/90-zoxide.sh
 ...
