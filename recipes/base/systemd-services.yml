@@ -12,6 +12,10 @@ modules:
         - rpm-ostree-countme.timer
         - sshd.service
         - sshd.socket
+        - nfs-client.target
+        - gssproxy.service
+        - rpcbind.service
+        - rpcbind.socket
       enabled:
         - bootc-fetch-apply-updates.timer
         - bootc-update-check.timer
