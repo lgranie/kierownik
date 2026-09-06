@@ -37,4 +37,8 @@ modules:
       enabled:
         - flatpak-default_config.service
         - flatpak-update.timer
+
+  - type: script
+    snippets:
+      - "firewall-offline-cmd --zone=Kierownik --add-service=localsend"
 ...

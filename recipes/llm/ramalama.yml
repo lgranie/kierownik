@@ -11,4 +11,8 @@ modules:
     files:
       - source: llm/ramalama
         destination: /
+
+  - type: script
+    snippets:
+      - "firewall-offline-cmd --zone=Kierownik --add-service=ramalama"
 ...

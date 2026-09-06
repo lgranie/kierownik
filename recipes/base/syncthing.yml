@@ -22,4 +22,5 @@ modules:
   - type: script
     snippets:
       - "echo 'NoDisplay=true' >> /usr/share/applications/syncthing-start.desktop"
+      - "firewall-offline-cmd --zone=Kierownik --add-service=syncthing"
 ...

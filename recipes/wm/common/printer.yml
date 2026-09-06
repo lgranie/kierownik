@@ -28,4 +28,9 @@ modules:
         - avahi-daemon.socket
         - cups.service
         - cups.socket
+
+  - type: script
+    snippets:
+      - "firewall-offline-cmd --zone=Kierownik --add-service=ipp-client"
+      - "firewall-offline-cmd --zone=Kierownik --add-service=mdns"
 ...

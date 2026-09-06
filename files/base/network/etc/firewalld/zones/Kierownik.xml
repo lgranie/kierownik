@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zone>
+  <short>Kierownik</short>
+  <description>Kierownik config</description>
+  <!-- services added per-feature via firewall-offline-cmd snippets (localsend, sunshine, syncthing, ipp-client, mdns, ramalama) -->
+  <forward/>
+</zone>

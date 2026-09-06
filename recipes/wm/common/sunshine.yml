@@ -23,6 +23,7 @@ modules:
   - type: script
     snippets:
       - "setcap \"cap_sys_nice=ep\" \"/usr/bin/sunshine\""
+      - "firewall-offline-cmd --zone=Kierownik --add-service=sunshine"
 
   - type: systemd
     user:
