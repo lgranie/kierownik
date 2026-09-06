@@ -37,3 +37,11 @@ if [[ -n "$MISE_TAG" ]]; then
     tar -xzf - --strip-components=2 \
       -C /usr/bin/ mise/bin/mise
 fi
+
+# Install Flyline
+FLYLINE_TAG=$(/tmp/files/scripts/common/fetch_gh_latest_tag "HalFrgrd/flyline")
+if [[ -n "$FLYLINE_TAG" ]]; then
+  curl --silent --retry 3 -L --output - "https://github.com/HalFrgrd/flyline/releases/latest/download/libflyline-${FLYLINE_TAG}-x86_64-unknown-linux-gnu.tar.gz" |
+    tar -xzf - -C /usr/lib64/
+  ln -sf "/usr/lib64/libflyline.so.${FLYLINE_TAG#v}" /usr/lib64/libflyline.so
+fi
