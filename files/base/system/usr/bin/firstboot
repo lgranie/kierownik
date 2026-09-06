@@ -191,7 +191,7 @@ EOF
     --storage=directory \
     --fs-type=btrfs \
     --shell=/usr/bin/fish \
-    --member-of=pipewire,users,wheel \
+    --member-of=audio,pipewire,users,wheel \
     --real-name="$FULLNAME" \
     --email="$EMAIL"
 
