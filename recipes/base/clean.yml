@@ -5,9 +5,12 @@ modules:
       auto-remove: true
       packages:
         - cirrus-audio-firmware
+        - gssproxy
         - nano
+        - nfs-utils
         - nvidia-gpu-firmware
         - openssh-server
+        - rpcbind
         - vim-common
         - vim-data
         - vim-minimal
