@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+
+#MISE description="Restore /etc defaults from image"
+#USAGE arg "[filter]" help="Only touch paths matching this substring (e.g. firewalld)"
+#USAGE flag "--delete-added" help="Also offer to delete files present in /etc but absent from image"
+set -euo pipefail
+
+if [[ ! -d /usr/etc ]]; then
+  gum log -sl error "/usr/etc missing. Not a bootc/ostree host?"
+  exit 1
+fi
+
+mapfile -t entries < <(run0 bash -c 'ostree admin config-diff' | awk '{$1=$1};1' || true)
+
+modified=()
+added=()
+for entry in ${entries[@]+"${entries[@]}"}; do
+  [[ -z "${entry}" ]] && continue
+  status="${entry%% *}"
+  path="${entry#* }"
+  if [[ -n "${usage_filter:-}" && "${path}" != *"${usage_filter}"* ]]; then
+    continue
+  fi
+  rel="${path#/etc/}"
+  if [[ "${status}" == "M" && (-f "/usr/etc/${rel}" || -d "/usr/etc/${rel}") ]]; then
+    modified+=("${path}")
+  else
+    added+=("${path}")
+  fi
+done
+
+if [[ ${#modified[@]} -eq 0 && ${#added[@]} -eq 0 ]]; then
+  gum log -sl info "/etc matches image. Nothing to restore."
+  exit 0
+fi
+
+touched=()
+if [[ ${#modified[@]} -gt 0 ]]; then
+  selected=$(printf '%s\n' "${modified[@]}" | gum choose --no-limit --header "Select files to restore from image defaults")
+  if [[ -n "${selected}" ]]; then
+    while IFS= read -r path; do
+      rel="${path#/etc/}"
+      src="/usr/etc/${rel}"
+      if [[ -d "${src}" && ! -L "${src}" ]]; then
+        run0 bash -c "cp -a '${src}/.' '${path}/'"
+      else
+        run0 bash -c "cp -a '${src}' '${path}'"
+      fi
+      touched+=("${path}")
+    done <<< "${selected}"
+    gum log -sl info "Restored ${#touched[@]} file(s)."
+  fi
+fi
+
+if [[ ${#added[@]} -gt 0 ]]; then
+  if [[ "${usage_delete_added:-false}" == "true" ]]; then
+    gum log -sl warn "Present in /etc but absent from image:"
+    selected=$(printf '%s\n' "${added[@]}" | gum choose --no-limit --header "Select files to delete")
+    if [[ -n "${selected}" ]]; then
+      while IFS= read -r path; do
+        run0 bash -c "rm -rf '${path}'"
+        touched+=("${path}")
+      done <<< "${selected}"
+      gum log -sl info "Deleted selected file(s)."
+    fi
+  else
+    gum log -sl warn "Left alone (not in image, re-run with --delete-added to remove):"
+    gum style "$(printf '%s\n' "${added[@]}")"
+  fi
+fi
+
+if printf '%s\n' ${touched[@]+"${touched[@]}"} | grep -q "firewalld"; then
+  if run0 bash -c 'firewall-cmd --reload'; then
+    gum log -sl info "firewalld reloaded."
+  else
+    gum log -sl warn "firewalld reload failed. Reboot or start firewalld."
+  fi
+fi
