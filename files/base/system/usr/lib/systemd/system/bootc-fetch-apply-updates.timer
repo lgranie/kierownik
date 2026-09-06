@@ -7,7 +7,7 @@ ConditionPathExists=/run/ostree-booted
 OnBootSec=1h
 # This time is relatively arbitrary and obviously expected to be overridden/changed
 OnUnitInactiveSec=7d
-Persistence=true
+Persistent=true
 # When deploying a large number of systems, it may be beneficial to increase this value to help with load on the registry.
 RandomizedDelaySec=2h
 
