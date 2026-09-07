@@ -13,7 +13,7 @@ modules:
 
   - type: script
     snippets:
-      - "rm -rf /etc/skel/.{bash,mozilla}*"
+      - "rm -rf /etc/skel/.{mozilla}*"
 
   - from-file: finalize/removesuid.yml
 ...
