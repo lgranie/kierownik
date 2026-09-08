@@ -16,6 +16,7 @@ modules:
         - gssproxy.service
         - rpcbind.service
         - rpcbind.socket
+        - NetworkManager-wait-online.service
       enabled:
         - bootc-fetch-apply-updates.timer
         - bootc-update-check.timer
