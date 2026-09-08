@@ -17,9 +17,16 @@ modules:
     repos:
       cleanup: true
       nonfree: negativo17
+    install:
+      install-weak-deps: false
+      packages:
+        - repo: fedora-multimedia
+          packages:
+            - mesa-vulkan-drivers
+        - vulkan-tools
     replace:
       - from-repo: fedora-multimedia
-        skip-unavailable: true
+        install-weak-deps: false
         packages:
           - mesa-vulkan-drivers
 ...

@@ -17,6 +17,15 @@ modules:
     repos:
       cleanup: true
       nonfree: negativo17
+    install:
+      install-weak-deps: false
+      packages:
+        - repo: fedora-multimedia
+          packages:
+            - libva-intel-media-driver
+            - intel-gmmlib
+            - intel-mediasdk
+        - libvpl
     replace:
       - from-repo: fedora-multimedia
         skip-unavailable: true

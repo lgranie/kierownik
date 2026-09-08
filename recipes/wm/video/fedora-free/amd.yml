@@ -6,7 +6,6 @@ modules:
     install:
       install-weak-deps: false
       packages:
-        - mesa-va-drivers
         - libva-utils
         - mesa-vulkan-drivers
         - vulkan-tools

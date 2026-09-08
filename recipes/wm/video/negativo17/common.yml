@@ -19,7 +19,6 @@ modules:
       install-weak-deps: false
       packages:
         - libopenjph
-        - mesa-va-drivers
         - libva-utils
 
     replace:
