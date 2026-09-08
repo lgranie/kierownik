@@ -3,9 +3,9 @@ Description=Daily Flatpak updates
 #Requires=flatpak-update.service
 
 [Timer]
-OnBootSec=10min
+OnBootSec=15min
 OnCalendar=daily
-Persistent=true
+Persistent=false
 
 [Install]
 WantedBy=timers.target
