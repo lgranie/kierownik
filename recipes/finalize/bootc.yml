@@ -5,4 +5,9 @@ modules:
       DRACUT_NO_XATTR: '1'
 
   - type: signing # this sets up the proper policy & signing files for signed images to work fully
+
+  - type: kargs
+    arch: x86_64
+    kargs:
+      - rootflags=subvol=root,compress=zstd:1
 ...
