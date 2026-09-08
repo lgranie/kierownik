@@ -8,7 +8,9 @@ modules:
     install:
       install-weak-deps: false
       packages:
-        - Sunshine
+        # Pinned to 2026.516: .906/.907 break wlr dmabuf capture on Mesa 26 (black screen).
+        # Revert to `- Sunshine` once upstream fixes capture.
+        - https://github.com/LizardByte/Sunshine/releases/download/v2026.516.143833/Sunshine-2026.516.143833-1.fc44.x86_64.rpm
 
   # - type: dnf
   #  install:
