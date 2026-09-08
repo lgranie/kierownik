@@ -1,0 +1,5 @@
+#!/usr/bin/sh
+exec tail -n +3 $0
+# Override boot menu timeout. Runs after 00_header, last set wins.
+set timeout=2
+set timeout_style=hidden

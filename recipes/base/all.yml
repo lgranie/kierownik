@@ -25,7 +25,7 @@ modules:
 
   - type: script
     snippets:
-      - "chmod +x /usr/bin/firstboot"
+      - "chmod +x /usr/bin/firstboot /etc/grub.d/06_timeout"
 
   - from-file: base/systemd-services.yml
 
