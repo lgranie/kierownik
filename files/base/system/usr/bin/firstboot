@@ -178,6 +178,13 @@ setup() {
 
   hostnamectl hostname "$HOSTNAME" --transient
 
+  # Composefs ignores / options in fstab and trips systemd-remount-fs.
+  # Compression comes via rootflags kargs instead, so comment the / line.
+  if grep -Eq '^[^#].+[[:space:]]/[[:space:]]+btrfs' /etc/fstab 2>/dev/null; then
+    gum log -sl info "Commenting root (/) entry in /etc/fstab (composefs uses kargs rootflags)"
+    sed -i -E 's|^([^#].+[[:space:]]/[[:space:]]+btrfs)|#\1|' /etc/fstab
+  fi
+
   # Prepare skel
   mkdir -p /tmp/skel/$USERNAME/.config/systemd/user/dotfiles-init.service.d
   cat << EOF > /tmp/skel/$USERNAME/.config/systemd/user/dotfiles-init.service.d/10-custom.conf
