@@ -19,11 +19,7 @@ modules:
       install-weak-deps: false
       packages:
         - libopenjph
-        - heif-pixbuf-loader
-        - ffmpegthumbnailer
         - mesa-va-drivers
-        - rar
-        - pipewire-libs-extra
 
     replace:
       - from-repo: fedora-multimedia
@@ -37,10 +33,6 @@ modules:
           - mesa-libEGL
           - mesa-libGL
           - mesa-libgbm
-          - mesa-vulkan-drivers
-          - libva-intel-media-driver
-          - intel-gmmlib
-          - intel-mediasdk
           - old: ffmpeg-free
             new: ffmpeg
           - old: fdk-aac-free

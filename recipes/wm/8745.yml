@@ -1,6 +1,6 @@
 ---
 modules:
-  - from-file: wm/video/amd.yml
+  - from-file: wm/video/negativo17/amd.yml
   - from-file: wm/common/sunshine.yml
   - from-file: wm/common/waydroid.yml
 ...

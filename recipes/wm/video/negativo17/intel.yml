@@ -11,33 +11,17 @@
 # See the License for the specific language governing permissions and limitations under the License.
 ---
 modules:
-  - from-file: wm/negativo/common.yml
-  
+  - from-file: wm/video/negativo17/common.yml
+
   - type: dnf
     repos:
       cleanup: true
       nonfree: negativo17
-    install:
-      install-weak-deps: false
-      packages:
-        - libopenjph
-        - heif-pixbuf-loader
-        - ffmpegthumbnailer
-        - mesa-va-drivers
-        - rar
-        - pipewire-libs-extra
-
     replace:
       - from-repo: fedora-multimedia
         skip-unavailable: true
         packages:
-          - libheif
-          - libva
-          - mesa-dri-drivers
-          - gstreamer1-plugin-libav
-          - mesa-filesystem
-          - mesa-libEGL
-          - mesa-libGL
-          - mesa-libgbm
-          - mesa-vulkan-drivers
+          - libva-intel-media-driver
+          - intel-gmmlib
+          - intel-mediasdk
 ...

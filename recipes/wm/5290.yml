@@ -6,7 +6,7 @@ modules:
       packages:
         - iio-sensor-proxy
 
-  - from-file: wm/video/intel.yml
+  - from-file: wm/video/negativo17/intel.yml
   - from-file: wm/common/wvkbd.yml
 
   - type: files

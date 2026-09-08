@@ -1,11 +1,13 @@
 ---
 modules:
-  - from-file: wm/video/common.yml
+  - from-file: wm/video/fedora-free/common.yml
   
   - type: dnf
     install:
       install-weak-deps: false
       packages:
+        - mesa-va-drivers
+        - libva-utils
         - mesa-vulkan-drivers
         - vulkan-tools
 ...
