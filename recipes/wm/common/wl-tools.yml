@@ -4,6 +4,7 @@ modules:
     install:
       install-weak-deps: false
       packages:
+        - mpv
         - upower
         - wl-clipboard
         #- cliphist
