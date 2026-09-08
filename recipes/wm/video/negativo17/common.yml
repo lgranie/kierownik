@@ -20,6 +20,7 @@ modules:
       packages:
         - libopenjph
         - mesa-va-drivers
+        - libva-utils
 
     replace:
       - from-repo: fedora-multimedia
