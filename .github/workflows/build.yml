@@ -3,13 +3,13 @@ name: bluebuild
 on:
   schedule:
     - cron:
-        "00 07 * * 6" # build at 07:00 UTC every saturday
+        "00 07 * * 6"  # build at 07:00 UTC every saturday
   push:
-    paths-ignore: # don't rebuild if only documentation has changed
+    paths-ignore:  # don't rebuild if only documentation has changed
       - "**.md"
 
   pull_request:
-  workflow_dispatch: # allow manually triggering builds
+  workflow_dispatch:  # allow manually triggering builds
 concurrency:
   # only run one build at a time
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
@@ -23,7 +23,7 @@ jobs:
       packages: write
       id-token: write
     strategy:
-      fail-fast: false # stop GH from cancelling all matrix builds if one fails
+      fail-fast: false  # stop GH from cancelling all matrix builds if one fails
       matrix:
         recipe:
           # !! Add your recipes here

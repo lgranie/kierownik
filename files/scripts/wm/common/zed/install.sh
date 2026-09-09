@@ -3,8 +3,8 @@
 set -euo pipefail
 
 ZED_RELEASE=$(/tmp/files/scripts/common/fetch_gh_latest_tag "zed-industries/zed")
-curl --silent --retry 3 -L --output - "https://github.com/zed-industries/zed/releases/download/${ZED_RELEASE}/zed-linux-x86_64.tar.gz" \
-    | tar -xzf - -C /usr/lib/opt/
+curl --silent --retry 3 -L --output - "https://github.com/zed-industries/zed/releases/download/${ZED_RELEASE}/zed-linux-x86_64.tar.gz" |
+  tar -xzf - -C /usr/lib/opt/
 
 # Link binary
 ln -sf /usr/lib/opt/zed.app/bin/zed /usr/bin/zed

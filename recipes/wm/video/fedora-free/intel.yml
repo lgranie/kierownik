@@ -1,7 +1,7 @@
 ---
 modules:
   - from-file: wm/video/fedora-free/common.yml
-  
+
   - type: dnf
     install:
       install-weak-deps: false

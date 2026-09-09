@@ -15,17 +15,17 @@ modules:
   - type: default-flatpaks
     configurations:
       - scope: system
-        notify: false # Send notification after install/uninstall is finished (true/false)
+        notify: false  # Send notification after install/uninstall is finished (true/false)
         repo:
           url: https://flathub.org/repo/flathub.flatpakrepo
           name: flathub
           title: Flathub
         # If no repo information is specified, Flathub will be used by default
-        install: # system flatpaks we want all users to have and not remove
+        install:  # system flatpaks we want all users to have and not remove
           # - com.vscodium.codium
           - io.github.kolunmi.Bazaar
           - org.localsend.localsend_app
-      - scope: user # Also add Flathub user repo, but no user packages
+      - scope: user  # Also add Flathub user repo, but no user packages
         notify: false
         repo:
           url: https://flathub.org/repo/flathub.flatpakrepo
