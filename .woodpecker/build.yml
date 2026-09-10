@@ -1,0 +1,75 @@
+---
+# Woodpecker CI pipeline for kierownik (BlueBuild bootc images)
+#
+# Setup required in Woodpecker UI:
+#   1. Repo settings -> check "Trusted" (required for privileged: true)
+#   2. Add secrets: registry_user, registry_password, cosign_key (+ cosign_password if key is encrypted)
+#   3. Replace registry.example.com / lgranie below with your self-hosted registry host + namespace
+#   4. Optional: add cron "0 7 * * 6" in UI for Saturday rebuilds (parity with GitHub Actions)
+#
+# Secrets:
+#   registry_user     - registry username
+#   registry_password - registry password/token
+#   cosign_key        - content of cosign.key (private key, PEM)
+#   cosign_password   - cosign key password (only if key is encrypted, else omit)
+
+matrix:
+  RECIPE:
+    - krw-5290.yml
+    - krw-8745.yml
+    # - krw-N100.yml
+
+steps:
+  - name: validate
+    image: ghcr.io/blue-build/cli:latest
+    commands:
+      - bluebuild validate recipes/${RECIPE}
+    when:
+      - event: [push, pull_request, manual, cron]
+
+  - name: build-pr-check
+    image: ghcr.io/blue-build/cli:latest
+    privileged: true
+    commands:
+      - bluebuild build recipes/${RECIPE}
+    when:
+      - event: pull_request
+
+  - name: build-push
+    image: ghcr.io/blue-build/cli:latest
+    privileged: true
+    environment:
+      # !! EDIT THESE for your self-hosted registry
+      REGISTRY_HOST: registry.example.com
+      REGISTRY_NAMESPACE: lgranie
+      REGISTRY_USER:
+        from_secret: registry_user
+      REGISTRY_PASSWORD:
+        from_secret: registry_password
+    commands:
+      - bluebuild build --push --registry "$REGISTRY_HOST" --registry-namespace "$REGISTRY_NAMESPACE" --username "$REGISTRY_USER" --password "$REGISTRY_PASSWORD" recipes/${RECIPE}
+    when:
+      - event: [push, manual, cron]
+        branch: main
+
+  - name: sign-cosign
+    image: ghcr.io/sigstore/cosign/cosign:latest
+    environment:
+      # !! KEEP IN SYNC with build-push above
+      REGISTRY_HOST: registry.example.com
+      REGISTRY_NAMESPACE: lgranie
+      COSIGN_PASSWORD:
+        from_secret: cosign_password
+      COSIGN_KEY:
+        from_secret: cosign_key
+    commands:
+      - IMAGE_NAME=$(echo "${RECIPE}" | sed 's/\.yml$//')
+      - echo "$COSIGN_KEY" > /tmp/cosign.key
+      - chmod 600 /tmp/cosign.key
+      - cosign sign --key /tmp/cosign.key --yes "$REGISTRY_HOST/$REGISTRY_NAMESPACE/$IMAGE_NAME:latest"
+      - rm -f /tmp/cosign.key
+    depends_on:
+      - build-push
+    when:
+      - event: [push, manual, cron]
+        branch: main

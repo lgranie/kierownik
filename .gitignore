@@ -1,5 +1,6 @@
 build/
 cosign.key
+.woodpecker/local-secrets.yaml
 /Containerfile
 /.bluebuild-scripts_*
 *.iso

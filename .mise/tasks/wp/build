@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+#MISE description="Run Woodpecker pipeline locally via woodpecker-cli"
+#USAGE flag "--event <event>" default="manual" help="Pipeline event (manual, push, pull_request)" { choices "manual" "push" "pull_request" }
+#USAGE flag "--secrets-file <path>" default=".woodpecker/local-secrets.yaml" help="YAML file with local secrets (gitignored)"
+set -oue pipefail
+
+args=(--backend-engine docker --pipeline-event "${usage_event}")
+
+if [ -f "${usage_secrets_file}" ]; then
+  gum log -sl info "using secrets file: ${usage_secrets_file}"
+  args+=(--secrets-file "${usage_secrets_file}")
+else
+  gum log -sl warn "no secrets file at ${usage_secrets_file} (push/sign steps need registry_user, registry_password, cosign_key)"
+  gum log -sl warn "format: <name>: <value> per line, e.g. registry_password: example-password"
+fi
+
+# runs all matrix permutations (krw-5290, krw-8745, krw-N100)
+mise x "aqua:woodpecker-ci/woodpecker/woodpecker-cli" -- woodpecker-cli exec "${args[@]}" .woodpecker/build.yml
