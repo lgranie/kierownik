@@ -1,0 +1,18 @@
+# Transparent bridge: enp2s0 (uplink, DHCP behind it) + eno1 (clients).
+# The PC on eno1 gets its IP from the upstream DHCP server on 192.168.8.0/24,
+# and this host itself takes its address on br0.
+# No NAT, no local DHCP/DNS server: everything is forwarded at L2.
+[connection]
+id=br0
+type=bridge
+interface-name=br0
+
+[bridge]
+stp=false
+
+[ipv4]
+method=auto
+
+[ipv6]
+addr-gen-mode=stable-privacy
+method=auto

@@ -81,3 +81,11 @@ These images are signed with [Sigstore](https://www.sigstore.dev/)'s [cosign](ht
 ```bash
 cosign verify --key cosign.pub ghcr.io/lgranie/krw-5290
 ```
+
+## Next Steps
+
+| Task | Status |
+| ---- | ------ |
+| Add NAT on 8745 | Done |
+| Fix herdr plugin | Todo |
+| Create project skill with: Container build rules, using mise | Todo |

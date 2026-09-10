@@ -3,4 +3,15 @@ modules:
   - from-file: wm/video/negativo17/amd.yml
   - from-file: wm/common/sunshine.yml
   - from-file: wm/common/waydroid.yml
+
+  # Bridge: enp2s0 (uplink) + eno1 (clients) into br0.
+  # Transparent L2 forwarding: clients get DHCP from upstream, no NAT.
+  - type: files
+    files:
+      - source: wm/8745
+        destination: /
+
+  - type: script
+    snippets:
+      - "chmod 600 /etc/NetworkManager/system-connections/br0*.nmconnection"
 ...

@@ -1,0 +1,8 @@
+[connection]
+id=br0-port-eno1
+type=ethernet
+interface-name=eno1
+master=br0
+slave-type=bridge
+
+[ethernet]
