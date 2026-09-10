@@ -2,15 +2,32 @@
 #MISE description="Build WSL image"
 set -oue pipefail
 
+: "${BB_REGISTRY:?BB_REGISTRY missing}"
+
 mkdir -p /tmp/output/wsl
 
-# Build OCI image first
+IMAGE="${BB_REGISTRY}/krw-wsl:latest"
+TARBALL=/tmp/output/wsl/krw-wsl.tar
+WSL_IMAGE=/tmp/output/wsl/krw.wsl
+
+# Build OCI image first (tags IMAGE locally)
 bluebuild build recipes/krw-wsl.yml
 
-# Export to tar for WSL
-podman pull "${BB_REGISTRY}"/kierownik-wsl:latest
-podman export -o /tmp/output/wsl/kierownik-wsl.tar "$(podman create "${BB_REGISTRY}"/kierownik-wsl:latest)"
+# Prefer local build output; pull only when local image missing
+if podman image exists "${IMAGE}"; then
+  gum log --time=false --level info "Using local image."
+  gum style "${IMAGE}"
+else
+  gum log --time=false --level info "Local image missing, pulling remote."
+  podman pull "${IMAGE}"
+fi
+
+ctr="$(podman create "${IMAGE}")"
+trap 'podman rm "${ctr}" >/dev/null' EXIT
+podman export -o "${TARBALL}" "${ctr}"
+podman rm "${ctr}" >/dev/null
+trap - EXIT
 
 # Compress to .wsl format
-zstd /tmp/output/wsl/kierownik-wsl.tar -o /tmp/output/wsl/kierownik.wsl --force
-gum log --time=false --level info "WSL image created at /tmp/output/wsl/kierownik.wsl"
+zstd "${TARBALL}" -o "${WSL_IMAGE}" --force
+gum log --time=false --level info "WSL image created at /tmp/output/wsl/krw.wsl"
