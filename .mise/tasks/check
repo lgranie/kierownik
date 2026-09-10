@@ -23,7 +23,7 @@ fi
 gum log -sl info "3/6 shellcheck"
 # SC2154: mise USAGE injects $usage_* at runtime; SC2148: profile.d snippets sourced, no shebang by design
 if ! mise x shellcheck -- shellcheck -S warning -e SC2154 -o all \
-  .mise/tasks/build/* .mise/tasks/vm \
+  .mise/tasks/build/* .mise/tasks/run/* .mise/tasks/wp/* \
   $(find files/scripts -type f -name "*.sh" 2>/dev/null); then
   gum log -sl error "shellcheck failed"
   fail=1
@@ -35,7 +35,7 @@ if [ "${usage_fix:-false}" = "true" ]; then
   shfmt_args=(-w -i 2 -ci)
 fi
 if ! mise x shfmt -- shfmt "${shfmt_args[@]}" \
-  .mise/tasks/build/* .mise/tasks/vm \
+  .mise/tasks/build/* .mise/tasks/run/* .mise/tasks/wp/* \
   $(find files -name "*.sh" 2>/dev/null); then
   gum log -sl error "shfmt failed"
   fail=1
