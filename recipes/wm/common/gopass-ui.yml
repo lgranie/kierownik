@@ -4,5 +4,13 @@ modules:
     install:
       install-weak-deps: false
       packages:
+        - pass
+        - pass-otp
         - qtpass
+        - wtype
+
+  - type: script
+    snippets:
+      - "/tmp/files/scripts/common/install-noctalia-plugin launcher-pass"
+
 ...

@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -oue pipefail
+
+# Install one Noctalia community plugin (whole directory) at build time.
+# Usage: install-noctalia-plugin.sh <plugin-dir> [ref]
+#   <plugin-dir>  subdirectory in noctalia-dev/community-plugins (e.g. voxtype)
+#   [ref]         git ref, defaults to ${NOCTALIA_PLUGINS_REF:-main}
+# Uses a cached sparse checkout, so each call only downloads its own plugin.
+# Test overrides: NOCTALIA_PLUGINS_CACHE, NOCTALIA_PLUGIN_DEST_BASE.
+
+PLUGIN="${1:?usage: install-noctalia-plugin.sh <plugin-dir> [ref]}"
+REF="${2:-${NOCTALIA_PLUGINS_REF:-main}}"
+REPO="https://github.com/noctalia-dev/community-plugins.git"
+CACHE="${NOCTALIA_PLUGINS_CACHE:-/tmp/noctalia-community-plugins}"
+DEST_BASE="${NOCTALIA_PLUGIN_DEST_BASE:-/usr/lib/kierownik/noctalia/plugins}"
+DEST="${DEST_BASE}/${PLUGIN}"
+
+command -v git >/dev/null || {
+  echo "install-noctalia-plugin: git not found" >&2
+  exit 1
+}
+
+if [[ ! -d "${CACHE}/.git" ]]; then
+  git clone --depth 1 --filter=blob:none --sparse --branch "${REF}" "${REPO}" "${CACHE}"
+fi
+git -C "${CACHE}" sparse-checkout add "${PLUGIN}"
+
+rm -rf "${DEST}"
+mkdir -p "${DEST}"
+cp -a "${CACHE}/${PLUGIN}/." "${DEST}/"
+
+grep -E '^(id|version)[[:space:]]*=' "${DEST}/plugin.toml" || true

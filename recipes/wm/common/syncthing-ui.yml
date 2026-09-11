@@ -1,0 +1,7 @@
+---
+modules:
+  - type: script
+    snippets:
+      - "echo 'NoDisplay=true' >> /usr/share/applications/syncthing-start.desktop"
+      - "/tmp/files/scripts/common/install-noctalia-plugin syncthing"
+...

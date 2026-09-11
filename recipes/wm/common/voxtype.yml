@@ -3,6 +3,8 @@ modules:
   - type: script
     scripts:
       - wm/common/voxtype/install.sh
+    snippets:
+      - "/tmp/files/scripts/common/install-noctalia-plugin voxtype"
 
   - type: dnf
     install:
