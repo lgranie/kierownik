@@ -10,6 +10,7 @@ modules:
   - from-file: base/locale.yml
   - from-file: base/nerd-fonts.yml
   - from-file: base/network.yml
+  - from-file: base/chrony.yml
   - from-file: base/plymouth.yml
   - from-file: base/power-mgmt.yml
   - from-file: base/sshfs.yml

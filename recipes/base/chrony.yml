@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+---
+# Authenticated time by default (French NTS sources).
+# chronyd already enabled in base image; drop-in adds NTS servers
+# next to the default Fedora pool. No other NTP daemon installed.
+modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - chrony
+
+  - type: files
+    files:
+      - source: base/chrony
+        destination: /
+
+  - type: script
+    snippets:
+      # NTS sources carry time now; unauthenticated Fedora pool stays off.
+      - "sed -i 's/^pool 2\\.fedora\\.pool\\.ntp\\.org/#&/' /etc/chrony.conf"
+      # Base chrony.conf only sources /run/chrony-dhcp; pick up our drop-ins.
+      - "grep -qx 'sourcedir /etc/chrony.d' /etc/chrony.conf || echo 'sourcedir /etc/chrony.d' >> /etc/chrony.conf"
+
+  - type: systemd
+    system:
+      masked:
+        # Single time daemon: chronyd owns time. Block timesyncd
+        # even if pulled in later as a dependency.
+        - systemd-timesyncd.service
+...
