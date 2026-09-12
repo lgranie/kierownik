@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+#MISE description="Run Trivy filesystem + config scans locally (HIGH/CRITICAL)"
+set -oue pipefail
+
+gum log -sl info "trivy fs"
+mise x trivy -- trivy fs --severity HIGH,CRITICAL -q .
+
+gum log -sl info "trivy config"
+mise x trivy -- trivy config --severity HIGH,CRITICAL -q .
+
+gum log -sl info "trivy scan done"
