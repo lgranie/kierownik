@@ -24,4 +24,5 @@ modules:
       - i915.enable_psr=2
 
   - from-file: cpu/common/realtime.yml
+  - from-file: cpu/common/hardening.yml
 ...

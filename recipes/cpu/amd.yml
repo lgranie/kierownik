@@ -14,8 +14,9 @@ modules:
   - type: kargs
     arch: x86_64
     kargs:
-      - amd_iommu=on iommu=pt
+      - amd_iommu=on
       - amd_pstate=epp
 
   - from-file: cpu/common/realtime.yml
+  - from-file: cpu/common/hardening.yml
 ...

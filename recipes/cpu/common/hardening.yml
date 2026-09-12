@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+---
+# Shared kernel hardening args for all CPU profiles.
+# Printing-safe: no USB tweaks. QEMU-safe: no virtio blacklists.
+# Per-CPU IOMMU enables stay in cpu/{intel,amd}.yml.
+modules:
+  - type: kargs
+    arch: x86_64
+    kargs:
+      - mitigations=auto
+      - lockdown=integrity
+      - init_on_alloc=1
+      - init_on_free=1
+      - page_alloc.shuffle=1
+      - vsyscall=none
+      - debugfs=off
+...
