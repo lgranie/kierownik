@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+#MISE description="Take a screenshot (region or fullscreen)"
+#USAGE arg "[mode]" help="Capture mode" { choices "region" "fullscreen" }
+set -euo pipefail
+
+command -v grim >/dev/null 2>&1 || {
+  gum log -sl error "grim not installed. Rebuild image first."
+  exit 1
+}
+
+mode="${usage_mode:-}"
+if [[ -z "${mode}" ]]; then
+  mode=$(gum choose --header "Screenshot mode" "region" "fullscreen")
+fi
+
+dir="${XDG_PICTURES_DIR:-$HOME/Pictures}/Screenshots"
+mkdir -p "${dir}"
+file="${dir}/$(date +%Y-%m-%d_%H-%M-%S).png"
+
+case "${mode}" in
+  region)
+    command -v slurp >/dev/null 2>&1 || {
+      gum log -sl error "slurp not installed. Rebuild image first."
+      exit 1
+    }
+    area="$(slurp)" || {
+      gum log -sl warn "Cancelled, no screenshot taken."
+      exit 0
+    }
+    grim -g "${area}" "${file}"
+    ;;
+  fullscreen)
+    grim "${file}"
+    ;;
+  *)
+    gum log -sl error "Unknown mode: ${mode}"
+    exit 1
+    ;;
+esac
+
+wl-copy <"${file}" 2>/dev/null || true
+gum log -sl info "Saved ${file} (copied to clipboard)."

@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+#MISE description="Toggle fullscreen screen recording"
+set -euo pipefail
+
+dir="${XDG_VIDEOS_DIR:-$HOME/Videos}/Recordings"
+mkdir -p "${dir}"
+
+if pkill -0 -f "gpu-screen-recorder" 2>/dev/null; then
+  pkill -f "gpu-screen-recorder"
+  gum log -sl info "Recording stopped. Saved in ${dir}."
+  exit 0
+fi
+
+command -v gpu-screen-recorder >/dev/null 2>&1 || {
+  gum log -sl error "gpu-screen-recorder not installed. Rebuild image first."
+  exit 1
+}
+
+file="${dir}/$(date +%Y-%m-%d_%H-%M-%S).mp4"
+gum log -sl info "Recording fullscreen to ${file}. Re-run to stop."
+gpu-screen-recorder -w screen -f 60 -a default_output -o "${file}" &
+disown

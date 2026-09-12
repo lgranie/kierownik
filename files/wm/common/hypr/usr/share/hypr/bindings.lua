@@ -21,13 +21,17 @@ hl.bind("SUPER + V", exec("wl-paste"))
 hl.bind("SUPER + CTRL + V", exec("cliphist decode | wl-paste"))
 
 -- 1. Applications
-hl.bind("SUPER + RETURN", exec("uwsm app -- footclient"), { description = "Open a Terminal: foot client" })
-hl.bind("SUPER + ALT + RETURN", exec("uwsm app -- footclient herdr"), { description = "Open a Terminal: foot client Herdr" })
+hl.bind("SUPER + RETURN", exec("uwsm app -- footclient"), { description = "Open a Terminal: foot client" })hl.bind("SUPER + ALT + RETURN", exec("uwsm app -- footclient herdr"), { description = "Open a Terminal: foot client Herdr" })
 hl.bind("SUPER + SHIFT + RETURN", exec("foot"), { description = "Open a Terminal: foot" })
 hl.bind("SUPER + SPACE", exec(ipc .. "panel-toggle launcher"), { description = "Run an Application: Menu" })
 hl.bind("SUPER + B", exec(ipc .. "panel-toggle launcher '/bookmarks '"), { description = "Open Bookmark" })
 hl.bind("SUPER + ALT + K", exec(ipc .. "panel-toggle launcher '/krw '"), { description = "Run Task: krw menu" })
 hl.bind("SUPER + ALT + L", exec(ipc .. "session lock"), { description = "Lock the Session" })
+
+-- 1b. Capture (headless variants; interactive ones live in /krw menu)
+hl.bind("Print", exec("sh -c 'd=\"${XDG_PICTURES_DIR:-$HOME/Pictures}/Screenshots\"; mkdir -p \"$d\"; f=\"$d/$(date +%Y-%m-%d_%H-%M-%S).png\"; grim -g \"$(slurp)\" \"$f\" && wl-copy < \"$f\"'"), { description = "Screenshot region" })
+hl.bind("SHIFT + Print", exec("sh -c 'd=\"${XDG_PICTURES_DIR:-$HOME/Pictures}/Screenshots\"; mkdir -p \"$d\"; f=\"$d/$(date +%Y-%m-%d_%H-%M-%S).png\"; grim \"$f\" && wl-copy < \"$f\"'"), { description = "Screenshot fullscreen" })
+hl.bind("ALT + Print", exec("/usr/lib/kierownik/tasks/capture/record"), { description = "Toggle screen recording" })
 
 -- 2. Window Management
 hl.bind("SUPER + W", window.close(), { description = "Close window" })

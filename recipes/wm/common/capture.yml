@@ -1,0 +1,15 @@
+---
+modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - grim
+        - slurp
+        - gpu-screen-recorder
+
+  - type: files
+    files:
+      - source: wm/common/capture
+        destination: /
+...
