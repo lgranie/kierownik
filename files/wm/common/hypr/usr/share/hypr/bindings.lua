@@ -26,6 +26,7 @@ hl.bind("SUPER + ALT + RETURN", exec("uwsm app -- footclient herdr"), { descript
 hl.bind("SUPER + SHIFT + RETURN", exec("foot"), { description = "Open a Terminal: foot" })
 hl.bind("SUPER + SPACE", exec(ipc .. "panel-toggle launcher"), { description = "Run an Application: Menu" })
 hl.bind("SUPER + B", exec(ipc .. "panel-toggle launcher '/bookmarks '"), { description = "Open Bookmark" })
+hl.bind("SUPER + ALT + K", exec(ipc .. "panel-toggle launcher '/krw '"), { description = "Run Task: krw menu" })
 hl.bind("SUPER + ALT + L", exec(ipc .. "session lock"), { description = "Lock the Session" })
 
 -- 2. Window Management
@@ -65,3 +66,7 @@ hl.bind("SUPER + ALT + S", window.move({ workspace = "special:scratchpad", silen
 hl.bind("SUPER + M", function()
     hl.dispatch(worksp.toggle_special("media"))
 end, { description = "Toggle media" })
+
+hl.bind("SUPER + K", function()
+    hl.dispatch(worksp.toggle_special("krw"))
+end, { description = "Toggle task workspace" })

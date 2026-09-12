@@ -48,7 +48,12 @@ show_status() {
     gum log -sl info "Hugepage size: $(( HUGEPAGE_SIZE_KB / 1024 ))MB"
 }
 
-case "${usage_action}" in
+action="${usage_action:-}"
+if [[ -z "${action}" ]]; then
+  action=$(gum choose --header "Hugepages action" "on" "off" "status")
+fi
+
+case "${action}" in
     on)     enable_static_hugepages ;;
     off)    disable_static_hugepages ;;
     status) show_status ;;

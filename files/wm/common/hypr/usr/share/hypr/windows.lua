@@ -64,6 +64,17 @@ hl.window_rule({
 	float = true,
 })
 
+-- Kierownik task runner (Noctalia /krw launcher spawns foot --app-id=krw-task)
+hl.window_rule({
+	name = "krw-task",
+	match = { class = "krw-task" },
+
+	float = true,
+	center = true,
+	size = { 900, 600 },
+	workspace = "special:krw",
+})
+
 -- Media Player
 hl.window_rule({
 	name = "media",

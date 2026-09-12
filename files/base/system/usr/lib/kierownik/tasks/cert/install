@@ -4,6 +4,10 @@
 #USAGE arg "<url>" help="Site url"
 set -euo pipefail
 
+if [[ -z "${usage_url:-}" ]]; then
+  usage_url=$(gum input --placeholder "Site url, e.g. https://example.com")
+fi
+
 server="${usage_url#*://}"
 server_name="${server%%:*}"
 

@@ -1,0 +1,23 @@
+id = "krw/tasks"
+name = "Kierownik Tasks"
+version = "1.0.0"
+plugin_api = 24
+author = "lgranie"
+license = "MIT"
+dependencies = []
+tags = ["launcher", "tasks"]
+icon = "terminal"
+description = "Run kierownik system tasks from the Noctalia launcher"
+
+[[launcher_provider]]
+id = "krw"
+entry = "launcher.luau"
+prefix = "krw"
+glyph = "terminal"
+
+[[setting]]
+key = "terminal"
+type = "string"
+label_key = "settings.terminal.label"
+description_key = "settings.terminal.description"
+default = "footclient"

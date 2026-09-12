@@ -1,0 +1,4 @@
+{
+  "settings.terminal.label": "Terminal",
+  "settings.terminal.description": "Terminal executable used to run tasks (must provide a TTY for gum)"
+}
