@@ -5,6 +5,9 @@ modules:
       install-weak-deps: false
       packages:
         - fontconfig
+        # Color emoji (Noctalia emoji picker, notifications, browsers).
+        # Nerd Fonts carry symbols only, no emoji coverage.
+        - google-noto-color-emoji-fonts
 
   - type: fonts
     fonts:

@@ -7,6 +7,5 @@ modules:
         - mpv
         - upower
         - wl-clipboard
-        # - cliphist
         - wlsunset
 ...

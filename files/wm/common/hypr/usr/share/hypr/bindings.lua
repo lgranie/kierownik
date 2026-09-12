@@ -18,7 +18,7 @@ hl.bind("SUPER + X", function()
     hl.dispatch(window.close())
 end)
 hl.bind("SUPER + V", exec("wl-paste"))
-hl.bind("SUPER + CTRL + V", exec("cliphist decode | wl-paste"))
+hl.bind("SUPER + CTRL + V", exec(ipc .. "panel-toggle clipboard"), { description = "Clipboard history" })
 
 -- 1. Applications
 hl.bind("SUPER + RETURN", exec("uwsm app -- footclient"), { description = "Open a Terminal: foot client" })hl.bind("SUPER + ALT + RETURN", exec("uwsm app -- footclient herdr"), { description = "Open a Terminal: foot client Herdr" })
