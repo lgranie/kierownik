@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+#MISE description="Firmware update via fwupd"
+#USAGE arg "[action]" help="Action to run" { choices "check" "update" }
+set -euo pipefail
+
+if ! command -v fwupdmgr >/dev/null 2>&1; then
+  gum log -sl error "fwupdmgr not installed."
+  exit 1
+fi
+
+action="${usage_action:-check}"
+case "${action}" in
+  check)
+    gum log -sl info "Refreshing firmware metadata..."
+    run0 bash -c "fwupdmgr refresh --force || true"
+    run0 bash -c "fwupdmgr get-updates"
+    ;;
+  update)
+    gum log -sl info "Available firmware updates:"
+    run0 bash -c "fwupdmgr get-updates"
+    gum confirm "Apply firmware updates? Host reboots if required." || {
+      gum log -sl warn "Cancelled, no changes applied."
+      exit 0
+    }
+    run0 bash -c "fwupdmgr update"
+    gum log -sl info "Firmware update done. Reboot if prompted."
+    ;;
+  *)
+    gum log -sl error "Unknown action: ${action}. Choose 'check' or 'update'."
+    exit 1
+    ;;
+esac

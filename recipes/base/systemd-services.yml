@@ -5,18 +5,20 @@ modules:
       masked:
         - dnf-makecache.service
         - dnf-makecache.timer
+        - gssproxy.service
+        - NetworkManager-wait-online.service
+        - nfs-client.target
+        - passim.service
+        - passim.socket
         - raid-check.service
         - raid-check.timer
+        - rpcbind.service
+        - rpcbind.socket
         - rpm-ostreed-automatic.timer
         - rpm-ostree-countme.service
         - rpm-ostree-countme.timer
         - sshd.service
         - sshd.socket
-        - nfs-client.target
-        - gssproxy.service
-        - rpcbind.service
-        - rpcbind.socket
-        - NetworkManager-wait-online.service
       enabled:
         - bootc-fetch-apply-updates.timer
         - bootc-update-check.timer

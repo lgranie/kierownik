@@ -15,4 +15,7 @@ modules:
       enabled:
         - dbus-broker
         - gnome-keyring-daemon
+    system:
+      masked:
+        - geoclue.service
 ...
