@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+
+#MISE description="Test hibernation configuration"
 # SPDX-FileCopyrightText: 2025-2026 The Secureblue Authors
 # SPDX-License-Identifier: MIT
 

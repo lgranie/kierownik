@@ -1,0 +1,155 @@
+#!/usr/bin/env bash
+
+#MISE description="Create hibernation swap partition (shrinks btrfs if needed)"
+#USAGE arg "[disk]" help="Target disk, e.g. /dev/nvme0n1"
+#USAGE arg "[size]" help="Swap size, e.g. 32G (default: RAM size)"
+set -euo pipefail
+
+SWAP_GPT_GUID="0657FD6D-A4AB-43C4-84E5-0933C84B4F4F"
+MIB_SECTORS=2048 # 1 MiB in 512-byte sectors (alignment unit)
+
+disk="${usage_disk:-}"
+if [[ -z "${disk}" ]]; then
+  mapfile -t candidates < <(lsblk -dn -o PATH,SIZE,MODEL)
+  [[ "${#candidates[@]}" -gt 0 ]] || {
+    gum log -sl error "No disks found."
+    exit 1
+  }
+  disk=$(printf "%s\n" "${candidates[@]}" | gum choose --header "Target disk")
+  disk="${disk%% *}"
+fi
+[[ -b "${disk}" ]] || {
+  gum log -sl error "Not a block device: ${disk}"
+  exit 1
+}
+
+mem_gb=$((($(awk '/MemTotal/ {print $2}' /proc/meminfo) + 1048575) / 1048576))
+size="${usage_size:-}"
+if [[ -z "${size}" ]]; then
+  size=$(gum input --value "${mem_gb}G" --placeholder "Swap size, e.g. 32G")
+fi
+[[ -n "${size}" ]] || {
+  gum log -sl error "Swap size required."
+  exit 1
+}
+
+# Parse size (G/M suffix) into bytes.
+size_num="${size%[GgMm]}"
+size_unit="${size: -1}"
+case "${size_unit}" in
+  G | g) need_bytes=$((size_num * 1024 * 1024 * 1024)) ;;
+  M | m) need_bytes=$((size_num * 1024 * 1024)) ;;
+  *)
+    gum log -sl error "Size '${size}' needs a G or M suffix."
+    exit 1
+    ;;
+esac
+if [[ "${need_bytes}" -lt $((mem_gb * 1024 * 1024 * 1024)) ]]; then
+  gum log -sl warn "Swap (${size}) smaller than RAM (${mem_gb}G). Hibernation test will fail."
+fi
+
+sector_bytes="$(lsblk -dn -o LOG-SEC "${disk}")"
+free_sectors="$(sfdisk -F "${disk}" 2>/dev/null | awk '/Unpartitioned space|unallocated/ {s+=$3} END {print s+0}')"
+free_bytes=$((free_sectors * sector_bytes))
+gum log -sl info "Unpartitioned free space on ${disk}: $((free_bytes / 1024 / 1024 / 1024))G."
+
+if [[ "${free_bytes}" -lt "${need_bytes}" ]]; then
+  short_bytes=$((need_bytes - free_bytes))
+  short_mib=$(((short_bytes + 1048575) / 1048576))
+  gum log -sl warn "Need ${short_mib}MiB more. Only the LAST partition can be shrunk, and only btrfs."
+
+  lastpart="$(lsblk -ln -o PATH "${disk}" | tail -1)"
+  [[ "${lastpart}" != "${disk}" ]] || {
+    gum log -sl error "No partitions on ${disk} to shrink."
+    exit 1
+  }
+  fstype="$(lsblk -ln -o FSTYPE "${lastpart}")"
+  mnt="$(lsblk -ln -o MOUNTPOINT "${lastpart}")"
+  if [[ "${fstype}" == "crypto_LUKS" ]]; then
+    gum log -sl error "${lastpart} is LUKS-encrypted. Shrink manually (cryptsetup resize + btrfs + sfdisk)."
+    exit 1
+  fi
+  if [[ "${fstype}" != "btrfs" || -z "${mnt}" ]]; then
+    gum log -sl error "${lastpart} is '${fstype}' mounted at '${mnt:-nowhere}'. Only mounted btrfs can shrink online."
+    exit 1
+  fi
+
+  gum style --border thick "Shrink ${lastpart}" "Filesystem: btrfs on ${mnt}" "Free up: ${short_mib}MiB (+1MiB margin)"
+  gum log -sl warn "Backup data and stay on AC power. Interrupting a shrink loses data."
+  gum confirm "Shrink ${lastpart} by $((short_mib + 1))MiB?" || {
+    gum log -sl warn "Cancelled, no changes applied."
+    exit 0
+  }
+
+  shrink_mib=$((short_mib + 1))
+  run0 btrfs filesystem resize "-${shrink_mib}M" "${mnt}" || {
+    gum log -sl error "btrfs shrink failed (filesystem may lack ${shrink_mib}MiB unallocated)."
+    exit 1
+  }
+
+  # Shrink the partition itself: rewrite table with reduced size, same start.
+  # Align freed space down to 1 MiB.
+  shrink_sectors=$((shrink_mib * 1024 * 1024 / sector_bytes))
+  shrink_sectors=$((shrink_sectors / MIB_SECTORS * MIB_SECTORS))
+  dump="$(run0 sfdisk -d "${disk}")"
+  old_size="$(printf "%s\n" "${dump}" | grep -E "^${lastpart}[[:space:]]*:" | grep -oP 'size=\s*\K[0-9]+' | head -1)"
+  [[ -n "${old_size}" && "${old_size}" -gt "${shrink_sectors}" ]] || {
+    gum log -sl error "Cannot parse partition size for ${lastpart}. Filesystem shrunk; fix table manually."
+    exit 1
+  }
+  new_size=$((old_size - shrink_sectors))
+  newdump="$(printf "%s\n" "${dump}" | sed -E "s|^(${lastpart}[[:space:]]*:[[:space:]]*start=[[:space:]]*[0-9]+,[[:space:]]*size=[[:space:]]*)[0-9]+|\1${new_size}|")"
+  printf "%s\n" "${newdump}" | run0 sfdisk --force "${disk}" || {
+    gum log -sl error "Partition table rewrite failed. Filesystem shrunk; fix table manually."
+    exit 1
+  }
+  run0 partx -u "${disk}" 2>/dev/null || run0 blockdev --rereadpt "${disk}" || true
+
+  free_sectors="$(sfdisk -F "${disk}" 2>/dev/null | awk '/Unpartitioned space|unallocated/ {s+=$3} END {print s+0}')"
+  free_bytes=$((free_sectors * sector_bytes))
+  gum log -sl info "Free space now: $((free_bytes / 1024 / 1024 / 1024))G."
+  [[ "${free_bytes}" -ge "${need_bytes}" ]] || {
+    gum log -sl error "Still short. Free manually and re-run."
+    exit 1
+  }
+fi
+
+pttype="$(blkid -s PTTYPE -o value "${disk}" 2>/dev/null || true)"
+if [[ "${pttype}" == "gpt" ]]; then
+  part_type="${SWAP_GPT_GUID}"
+elif [[ "${pttype}" == "dos" ]]; then
+  part_type="82"
+else
+  gum log -sl error "Unsupported partition table '${pttype}' on ${disk}. GPT or DOS required."
+  exit 1
+fi
+
+gum style --border thick "Disk: ${disk} (${pttype})" "New swap partition: ${size}" "RAM: ${mem_gb}G"
+gum confirm "Create hibernation swap partition?" || {
+  gum log -sl warn "Cancelled, no changes applied."
+  exit 0
+}
+
+before="$(lsblk -ln -o PATH "${disk}")"
+if ! run0 bash -c "echo ',${size},${part_type}' | sfdisk -a '${disk}' --force"; then
+  gum log -sl error "Partition creation failed."
+  exit 1
+fi
+run0 partx -u "${disk}" 2>/dev/null || run0 blockdev --rereadpt "${disk}" || true
+after="$(lsblk -ln -o PATH "${disk}")"
+newpart="$(comm -13 <(printf "%s\n" "${before}" | sort) <(printf "%s\n" "${after}" | sort) | head -1)"
+[[ -n "${newpart}" ]] || {
+  gum log -sl error "Partition created but new device not found. Re-read table and check lsblk."
+  exit 1
+}
+
+run0 mkswap "${newpart}"
+run0 swapon "${newpart}"
+uuid="$(blkid -s UUID -o value "${newpart}")"
+if ! grep -q "${uuid}" /etc/fstab 2>/dev/null; then
+  run0 bash -c "printf 'UUID=%s none swap defaults 0 0\n' '${uuid}' >> /etc/fstab"
+fi
+
+gum log -sl info "Swap active on ${newpart} (UUID=${uuid})."
+gum log -sl info "Resume auto-detected via swap GUID + fstab (systemd hibernate generator)."
+gum style --border thick "Next steps:" "1. Run hibernation/test task" "2. Reboot" "3. systemctl hibernate"
