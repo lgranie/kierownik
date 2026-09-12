@@ -18,6 +18,7 @@ modules:
   - from-file: base/tools.yml
   - from-file: base/gopass.yml
   - from-file: base/syncthing.yml
+  - from-file: base/usbguard.yml
 
   - type: files
     files:

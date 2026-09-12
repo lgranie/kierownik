@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+---
+# USBGuard installed but disabled by default.
+# Default-off preserves USB printers + USB passthrough.
+# Enable explicitly via task: usbguard/setup
+modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - usbguard
+
+  - type: systemd
+    system:
+      disabled:
+        - usbguard.service
+...

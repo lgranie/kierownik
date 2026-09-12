@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+#MISE description="USBGuard setup (opt-in, default off preserves USB printers)"
+set -euo pipefail
+
+if ! command -v usbguard >/dev/null 2>&1; then
+  gum log -sl error "usbguard not installed. Rebuild image first."
+  exit 1
+fi
+
+if systemctl is-active --quiet usbguard.service; then
+  gum log -sl warn "usbguard active. USB devices restricted."
+  gum confirm "Disable usbguard and restore full USB access (printers, passthrough)?" || {
+    gum log -sl warn "Cancelled, usbguard stays active."
+    exit 0
+  }
+  run0 bash -c "systemctl disable --now usbguard.service"
+  gum log -sl info "usbguard disabled. USB access restored."
+  exit 0
+fi
+
+gum log -sl warn "Enabling usbguard restricts new USB devices."
+gum style --border thick "Current USB devices stay authorized. Unplug unknown devices first."
+gum confirm "Generate policy from current devices and enable usbguard?" || {
+  gum log -sl warn "Cancelled, usbguard stays disabled."
+  exit 0
+}
+
+run0 bash -c "usbguard generate-policy > /etc/usbguard/rules.conf"
+run0 bash -c "systemctl enable --now usbguard.service"
+gum log -sl info "usbguard enabled. Manage devices via 'usbguard list-devices'."
