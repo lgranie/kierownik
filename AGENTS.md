@@ -1,123 +1,35 @@
 # Kierownik - Agent Guidelines
 
-This is a BlueBuild/Fedora bootc OS configuration repository. Agents working here are configuring an immutable, container-native operating system.
+BlueBuild/Fedora bootc OS config. Immutable container-native OS; changes require rebuild.
 
-## Build Commands
+## Build
 
-### Using mise (recommended)
 ```bash
-# Build OCI image
-mise run build:oci N100      # Headless server
-mise run build:oci 8745      # Hyprland (AMD)
-mise run build:oci 5290      # Hyprland (Intel)
-
-# Build ISO
-mise run build:iso 5290
-
-# Build QCOW2 for VM
-mise run build:qcow2 5290
-
-# Run in VM
-mise run vm 5290
-
-# Build WSL image
+mise run check [--fix]                # validate/lint, no build
+mise run build:oci N100|8745|5290     # N100=headless, 8745=Hyprland AMD, 5290=Hyprland Intel
+mise run build:iso|build:qcow2 5290
+mise run run:vm|run:iso 5290
 mise run build:wsl
-```
-
-### Using bluebuild directly
-```bash
+mise run wp:build [--event push]      # local Woodpecker run
 bluebuild build recipes/krw-5290.yml
-bluebuild generate-iso --iso-name krw-5290.iso recipe recipes/krw-5290.yml
 ```
 
-### CI/CD
-- GitHub Actions: `.github/workflows/build.yml`
-- Builds run on schedule (Saturday 07:00 UTC) and on push
-- Uses blue-build/github-action@v1.11
-- Currently builds `recipe-wm.yml` (add to matrix in build.yml to build more)
+CI: `.github/workflows/build.yml` + `.woodpecker/build.yml`. GHA uses `blue-build/github-action@v1.12`, matrix `krw-5290.yml` + `krw-8745.yml`, schedule Sat 07:00 UTC, push (ignore `**.md`), PR, dispatch.
 
-## Code Style
+## Shell
 
-### Shell Scripts
-- Shebang: `#!/usr/bin/env bash` or `#!/usr/bin/env fish`
-- Always use error handling: `set -oue pipefail`
-- Example:
-```bash
-#!/usr/bin/env bash
-set -oue pipefail
-# Your code here
-```
+- `#!/usr/bin/env bash`, `set -oue pipefail`, validate inputs, sparse `|| true`.
+- User interaction in `.mise/tasks/`, `files/**/tasks/*` via `gum`, never `echo`/`read -p`: `gum log -sl info|warn|error`, `gum style --border thick`, `gum input|choose|confirm|filter`, verbatim `gum style "${var}"`. Plumbing `echo` stays (pipes, redirects, `> /sys/...`, `echo $?`).
+- `gum` from `.mise/config.toml` + `recipes/base/tools.yml`. No `gum` in `files/scripts/finalize/` (pre-install build time).
 
-### User Interaction (gum)
-- In scripts, mise tasks (`.mise/tasks/`) and kierownik tasks (`files/**/tasks/*`), use `gum` — never `echo`/`read -p` — when interacting with the user
-- Mapping:
-  - Status/info: `gum log -sl info "message"`
-  - Warnings/errors: `gum log -sl warn|error "message"`
-  - Banners/summaries: `gum style --border thick "line 1" "line 2"`
-  - Prompts: `gum input --prompt "..."`, `gum choose`, `gum confirm`, `gum filter`
-  - Data to display verbatim (keys, tokens): `gum style "${var}"` (no log prefix, stays copy-pasteable)
-- Keep plumbing `echo` as-is: pipes (`echo "$x" | ...`), redirects/file appends (`>> file`, `> /sys/...`, `run0 sh -c "echo ... > ..."`), `echo $?`, `echo quit | openssl`
-- `gum` is available in the image (`recipes/base/tools.yml`) and on the host via mise (`.mise/config.toml`); do NOT use it in build-time finalize scripts (`files/scripts/finalize/`), which run before packages are installed
+## Recipes
 
-### YAML Recipes
-- Use BlueBuild recipe schema: `https://schema.blue-build.org/recipe-v1.json`
-- Recipe structure:
-```yaml
----
-modules:
-  - type: dnf
-    install:
-      install-weak-deps: false
-      packages:
-        - package-name
-  - type: files
-    files:
-      - source: relative/path
-        destination: /
-  - type: script
-    snippets:
-      - "shell command"
-```
+- Line 1 schema required: `# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json`
+- dnf: `install-weak-deps: false`. files: relative `source:`, `destination: /`.
+- Top-level `recipes/krw-*.yml`; modules in `recipes/{base,cpu,wm,wsl,llm,finalize}/`. Overlays in `files/{base,cpu,wm,wsl,llm,scripts}/` (`files/base/` system, `files/wm/<name>/` WM-specific).
 
-### Configuration Files
-- Follow existing patterns in `files/` directory
-- Use descriptive names: `config.fish`, `hyprland.conf`, etc.
-- Keep system configs in `files/base/`
-- Keep WM-specific configs in `files/wm/<wm-name>/`
+## Notes
 
-### File Organization
-```
-recipes/
-  base/          # Base system modules
-  wm/            # Window manager modules
-  common/        # Shared modules
-  recipe-*.yml   # Top-level recipes
-
-files/
-  base/          # System-level file overlays
-  wm/            # WM-specific overlays
-  scripts/       # Shell scripts
-```
-
-## Error Handling
-- Shell scripts: Always use `set -oue pipefail`
-- Use `|| true` sparingly when errors are acceptable
-- Validate inputs in scripts
-
-## Important Notes
-- No unit tests exist (configuration-only repo)
-- Test changes by building images or running in VM
-- Signing keys (cosign.*) are in .gitignore - never commit
-- This is a NixOS-like immutable OS - changes require rebuild
-- Images are signed with cosign - verify with `cosign verify`
-
-## Adding New Packages
-1. Create or modify a recipe in `recipes/base/` or `recipes/wm/`
-2. Add dnf module with package list
-3. Optionally add file overlays or scripts
-
-## Adding New WM/Features
-1. Create module in `recipes/wm/common/` or `recipes/base/`
-2. Add file overlays in `files/wm/` or `files/base/`
-3. Include in relevant recipe
-4. Add to build matrix in `.github/workflows/build.yml` if new recipe
+- No unit tests; `mise run check` = validation. Full test = build or VM.
+- Never commit `cosign.*` secrets; images signed, verify via `cosign verify`.
+- New package/feature: recipe module + overlays + `from-file:` include; new top-level recipe -> add to GHA matrix.
