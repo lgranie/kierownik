@@ -2,6 +2,13 @@
 
 set -euo pipefail
 
+# On-screen keyboard only makes sense without a physical keyboard.
+# by-path event-kbd nodes cover AT (laptop) and USB keyboards.
+# Folded 2-in-1 (kbd present but unusable) is handled by tablet-mode logic.
+if ls /dev/input/by-path/ 2>/dev/null | grep -q -- '-kbd$'; then
+  exit 0
+fi
+
 # Define temporary state files
 PID_FILE="${XDG_RUNTIME_DIR}/wvkbd.pid"
 echo "${PID_FILE}"
@@ -9,8 +16,8 @@ echo "${PID_FILE}"
 # Remove old PID file if it exists
 rm -f "${PID_FILE}"
 
-# Start the keyboard
-/usr/bin/wvkbd-mobintl -L 240 &
+# Start hidden; --auto shows on text-input focus, hides on unfocus.
+/usr/bin/wvkbd-mobintl -L 240 --hidden --auto &
 PID=$!
 
 # Store PID
