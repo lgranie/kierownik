@@ -1,0 +1,4 @@
+# Grant the logged-in user access to input switch devices (SW_TABLET_MODE)
+# so krw-tablet-mode.service (user unit) can watch fold state via evtest.
+SUBSYSTEM=="input", KERNEL=="event*", ENV{ID_INPUT_SWITCH}=="?*", TAG+="uaccess"
+SUBSYSTEM=="input", KERNEL=="event*", ATTRS{capabilities/sw}=="?*", ATTRS{capabilities/sw}!="0", TAG+="uaccess"
