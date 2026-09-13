@@ -8,4 +8,9 @@ modules:
         - upower
         - wl-clipboard
         - wlsunset
+
+  - type: systemd
+    system:
+      enabled:
+        - upower.service
 ...

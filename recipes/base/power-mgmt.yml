@@ -6,4 +6,9 @@ modules:
       packages:
         - kernel-tools
         - power-profiles-daemon
+
+  - type: systemd
+    system:
+      enabled:
+        - power-profiles-daemon.service
 ...
