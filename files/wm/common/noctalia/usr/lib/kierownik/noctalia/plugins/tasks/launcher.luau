@@ -3,20 +3,18 @@
 -- Type /krw in the launcher to browse by group or search tasks.
 -- Task catalog is discovered from TASKS_DIR at plugin load and
 -- prebuilt into result rows; onQuery only filters.
--- Selected tasks run in a terminal (gum needs a TTY).
+-- Selected tasks run in a terminal (interactive tasks need a TTY).
 
 local TASKS_DIR = "/usr/lib/kierownik/tasks/"
 local HOLD_SECONDS = 10
 
 -- Parse a task file: MISE description becomes the title.
--- A task is listed when every required positional arg
--- (#USAGE arg "<...>") either declares default= or is
--- prompted via gum inside the script. Otherwise the
--- launcher could not satisfy it.
+-- A task is listed only when every required positional arg
+-- (#USAGE arg "<...>") declares default=. Required args without
+-- a default stay hidden since the launcher passes no arguments.
 local function hasUnsatisfiableArg(content)
-    local prompts = content:match("gum (input|choose|confirm|filter)")
     for line in content:gmatch("[^\n]+") do
-        if line:match('#USAGE arg "<') and not line:match("default=") and not prompts then
+        if line:match('#USAGE arg "<') and not line:match("default=") then
             return true
         end
     end
@@ -33,6 +31,12 @@ local function parseTaskFile(path)
 end
 
 -- Discover groups (subdirectories) and runnable tasks inside each.
+-- listDir returns bare filenames, but strip any directory prefix
+-- defensively so absolute entries still resolve.
+local function basename(p)
+    return p:match("([^/]+)$") or p
+end
+
 local function discoverTasks()
     local found = {}
     local groups, err = noctalia.listDir(TASKS_DIR)
@@ -41,18 +45,21 @@ local function discoverTasks()
         return found
     end
     table.sort(groups)
-    for _, g in ipairs(groups) do
-        local info = noctalia.fileInfo(TASKS_DIR .. g)
+    for _, rawG in ipairs(groups) do
+        local g = basename(rawG)
+        local groupPath = TASKS_DIR .. g
+        local info = noctalia.fileInfo(groupPath)
         if info and info.isDir then
-            local files, ferr = noctalia.listDir(TASKS_DIR .. g)
+            local files, ferr = noctalia.listDir(groupPath)
             if not files then
-                noctalia.log("krw: listDir " .. TASKS_DIR .. g .. " failed: " .. tostring(ferr))
+                noctalia.log("krw: listDir " .. groupPath .. " failed: " .. tostring(ferr))
             else
                 table.sort(files)
-                for _, f in ipairs(files) do
+                for _, rawF in ipairs(files) do
+                    local f = basename(rawF)
                     -- Skip helpers (underscore prefix) and dotted names.
                     if not f:match("^_") and not f:match("%.") then
-                        local desc = parseTaskFile(TASKS_DIR .. g .. "/" .. f)
+                        local desc = parseTaskFile(groupPath .. "/" .. f)
                         if desc then
                             table.insert(found, { group = g, name = f, title = desc, path = g .. "/" .. f, args = {} })
                         end
@@ -65,7 +72,10 @@ local function discoverTasks()
 end
 
 local tasks = discoverTasks()
-noctalia.log("krw: discovered " .. #tasks .. " tasks")
+noctalia.log("krw: discovered " .. #tasks .. " tasks in " .. TASKS_DIR)
+if #tasks == 0 then
+    noctalia.log("krw: no tasks found, check " .. TASKS_DIR .. " exists and task files carry #MISE description")
+end
 
 local selectedCategory = "all"
 local currentQuery = ""
@@ -111,6 +121,13 @@ end
 function onQuery(query)
     currentQuery = query or ""
     local text = noctalia.string.trim(currentQuery) or ""
+
+    if #entries == 0 then
+        launcher.setResults(currentQuery, {
+            { id = "", title = "No tasks found", subtitle = "Check " .. TASKS_DIR, glyph = "mood-empty" },
+        })
+        return
+    end
 
     if text == "" then
         selectedCategory = "all"
@@ -161,7 +178,9 @@ function onActivate(id)
     local category = id:match("^category:(.+)$")
     if category then
         selectedCategory = category
-        launcher.setQuery("/krw " .. category)
+        -- setQuery takes text after our prefix; the host adds the
+        -- prefix itself. Never hardcode "/krw" here.
+        launcher.setQuery(category .. " ")
         return
     end
 
