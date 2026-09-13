@@ -1,8 +1,9 @@
 --!nonstrict
 -- Kierownik tasks launcher provider for Noctalia v5.
 -- Type /krw in the launcher to browse by group or search tasks.
--- Task catalog is discovered from TASKS_DIR at plugin load and
--- prebuilt into result rows; onQuery only filters.
+-- The catalog is discovered fresh from TASKS_DIR on every query and
+-- activation. Nothing is cached at load, so added/removed tasks show up
+-- immediately without restarting Noctalia.
 -- Selected tasks run in a terminal (interactive tasks need a TTY).
 
 local TASKS_DIR = "/usr/lib/kierownik/tasks/"
@@ -13,12 +14,16 @@ local HOLD_SECONDS = 10
 -- (#USAGE arg "<...>") declares default=. Required args without
 -- a default stay hidden since the launcher passes no arguments.
 local function hasUnsatisfiableArg(content)
-    for line in content:gmatch("[^\n]+") do
-        if line:match('#USAGE arg "<') and not line:match("default=") then
+    local pos = 1
+    while true do
+        local s, e = content:find('#USAGE arg "<', pos, true)
+        if not s then return false end
+        local lineEnd = content:find("\n", e, true) or (#content + 1)
+        if not content:sub(s, lineEnd - 1):find("default=", 1, true) then
             return true
         end
+        pos = lineEnd + 1
     end
-    return false
 end
 
 local function parseTaskFile(path)
@@ -71,38 +76,33 @@ local function discoverTasks()
     return found
 end
 
-local tasks = discoverTasks()
-noctalia.log("krw: discovered " .. #tasks .. " tasks in " .. TASKS_DIR)
-if #tasks == 0 then
-    noctalia.log("krw: no tasks found, check " .. TASKS_DIR .. " exists and task files carry #MISE description")
-end
-
 local selectedCategory = "all"
-local currentQuery = ""
 
--- Prebuilt once at plugin load: formatted entries, search haystacks,
--- per-group index, and category browse rows.
-local entries = {}
-local byGroup = {}
-local categoryEntries = {}
-local categories = {}
-
-for _, t in ipairs(tasks) do
-    local entry = {
-        id = t.path,
-        title = t.title,
-        subtitle = t.group .. " / " .. t.name,
-        glyph = "terminal",
-        group = t.group,
-        haystack = (t.group .. " " .. t.name .. " " .. t.title):lower(),
-    }
-    table.insert(entries, entry)
-    if not byGroup[t.group] then
-        byGroup[t.group] = {}
-        table.insert(categories, t.group)
-        table.insert(categoryEntries, { id = "category:" .. t.group, title = t.group, subtitle = "Browse category", glyph = "tag" })
+-- Build result rows from a task list: formatted entries, search
+-- haystacks, per-group index, and category browse rows.
+local function buildRows(tasks)
+    local entries = {}
+    local byGroup = {}
+    local categoryEntries = {}
+    local categories = {}
+    for _, t in ipairs(tasks) do
+        local entry = {
+            id = t.path,
+            title = t.title,
+            subtitle = t.group .. " / " .. t.name,
+            glyph = "terminal",
+            group = t.group,
+            haystack = (t.group .. " " .. t.name .. " " .. t.title):lower(),
+        }
+        table.insert(entries, entry)
+        if not byGroup[t.group] then
+            byGroup[t.group] = {}
+            table.insert(categories, t.group)
+            table.insert(categoryEntries, { id = "category:" .. t.group, title = t.group, subtitle = "Browse category", glyph = "tag" })
+        end
+        table.insert(byGroup[t.group], entry)
     end
-    table.insert(byGroup[t.group], entry)
+    return entries, byGroup, categoryEntries, categories
 end
 
 local function getSettings()
@@ -111,7 +111,7 @@ local function getSettings()
     }
 end
 
-local function findTask(path)
+local function findTask(tasks, path)
     for _, t in ipairs(tasks) do
         if t.path == path then return t end
     end
@@ -119,22 +119,23 @@ local function findTask(path)
 end
 
 function onQuery(query)
-    currentQuery = query or ""
+    local currentQuery = query or ""
     local text = noctalia.string.trim(currentQuery) or ""
 
-    if #entries == 0 then
+    local tasks = discoverTasks()
+    if #tasks == 0 then
+        noctalia.log("krw: no tasks found, check " .. TASKS_DIR .. " exists and task files carry #MISE description")
         launcher.setResults(currentQuery, {
             { id = "", title = "No tasks found", subtitle = "Check " .. TASKS_DIR, glyph = "mood-empty" },
         })
         return
     end
 
+    local entries, byGroup, _, categories = buildRows(tasks)
+
     if text == "" then
         selectedCategory = "all"
-        local results = {}
-        for _, c in ipairs(categoryEntries) do table.insert(results, c) end
-        for _, e in ipairs(entries) do table.insert(results, e) end
-        launcher.setResults(currentQuery, results)
+        launcher.setResults(currentQuery, entries)
         return
     end
 
@@ -184,7 +185,9 @@ function onActivate(id)
         return
     end
 
-    local task = findTask(id)
+    -- Re-discover: activation can arrive without a preceding query,
+    -- so never rely on query-time state here.
+    local task = findTask(discoverTasks(), id)
     if not task then return end
 
     local inner = TASKS_DIR .. task.path
