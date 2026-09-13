@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+Description=Check for firmware updates periodically
+
+[Timer]
+OnBootSec=15min
+check_fwupd_updates() {
+    local updates
+    updates=$(fwupdmgr get-updates 2>&1 || true)
+
+    if printf "%s" "${updates}" | grep -qiE "no (upgrades|updates|available)|nothing to do"; then
+        return 0
+    fi
+
+    if printf "%s" "${updates}" | grep -qi "available"; then
+        notify_all "Firmware" "Firmware updates available, run bootc/fw-update task."
+    fi
+}
+
+# Metadata refresh is best-effort (offline machines skip silently).
+fwupdmgr refresh --force >/dev/null 2>&1 || true
+
+check_fwupd_updates

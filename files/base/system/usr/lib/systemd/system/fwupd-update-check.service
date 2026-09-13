@@ -1,0 +1,11 @@
+[Unit]
+Description=Check for firmware updates and notify users
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/fwupd-update-check
+
+[Install]
+WantedBy=multi-user.target

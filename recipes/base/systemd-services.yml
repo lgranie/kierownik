@@ -23,6 +23,7 @@ modules:
         - bootc-fetch-apply-updates.timer
         - bootc-update-check.timer
         - firstboot
+        - fwupd-update-check.timer
     user:
       enabled:
         - dotfiles-init.service
