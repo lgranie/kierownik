@@ -2,6 +2,13 @@ hl.config({
 	input = {
 		touchpad = {
 			natural_scroll = true,
+			tap_to_click = true,
+			drag_lock = true,
+        },
+
+		touchdevice = {
+			output = "eDP-1",
+			transform = 0,
 		},
 	},
 
@@ -42,4 +49,3 @@ hl.monitor({
 	scale = "1.33",
 	transform = 2,
 })
-
