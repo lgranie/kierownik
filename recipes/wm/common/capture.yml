@@ -1,6 +1,10 @@
 ---
 modules:
   - type: dnf
+    repos:
+      cleanup: true
+      copr:
+        - brycensranch/gpu-screen-recorder-git
     install:
       install-weak-deps: false
       packages:
