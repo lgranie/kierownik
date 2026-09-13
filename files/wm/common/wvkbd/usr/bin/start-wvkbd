@@ -4,8 +4,15 @@ set -euo pipefail
 
 # On-screen keyboard only makes sense without a physical keyboard.
 # by-path event-kbd nodes cover AT (laptop) and USB keyboards.
-# Folded 2-in-1 (kbd present but unusable) is handled by tablet-mode logic.
-if ls /dev/input/by-path/ 2>/dev/null | grep -q -- '-kbd$'; then
+# KRW_FORCE_OSK=1 overrides (folded 2-in-1: kbd present but unusable).
+has_kbd=0
+for node in /dev/input/by-path/*-kbd; do
+  [[ -e "${node}" ]] && {
+    has_kbd=1
+    break
+  }
+done
+if [[ "${KRW_FORCE_OSK:-0}" != "1" && "${has_kbd}" == "1" ]]; then
   exit 0
 fi
 

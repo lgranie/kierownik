@@ -1,0 +1,13 @@
+[Unit]
+Description=Fold/tablet-mode handling for 2-in-1 (disable inputs when folded)
+PartOf=graphical-session.target
+After=graphical-session-pre.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/krw-tablet-mode
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=graphical-session.target

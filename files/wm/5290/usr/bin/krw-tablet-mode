@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# Fold/tablet-mode handling for 2-in-1s (rotation excluded, see krw-autorotate).
+# Watches the SW_TABLET_MODE input switch:
+#   folded (1) -> disable physical kbd + touchpad, force on-screen keyboard
+#   laptop (0) -> re-enable inputs, stop on-screen keyboard
+# No switch on this machine -> exit quietly, nothing to do.
+set -euo pipefail
+
+if [[ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]; then
+  HYPRLAND_INSTANCE_SIGNATURE="$(ls "/run/user/$(id -u)/hypr/" 2>/dev/null | head -1)"
+  export HYPRLAND_INSTANCE_SIGNATURE
+fi
+
+command -v evtest >/dev/null 2>&1 || {
+  echo "krw-tablet-mode: evtest not installed" >&2
+  exit 1
+}
+
+# Find event node exposing SW_TABLET_MODE (bit 0x01 of the SW capability mask).
+node=""
+for ev in /dev/input/event*; do
+  base="${ev##*/}"
+  mask="$(cat "/sys/class/input/${base}/device/capabilities/sw" 2>/dev/null || echo 0)"
+  if ((16#${mask} & 1)); then
+    node="${ev}"
+    break
+  fi
+done
+[[ -n "${node}" ]] || exit 0
+
+keyboards() {
+  hyprctl devices -j 2>/dev/null | jq -r '.keyboards[]?.name // empty'
+}
+
+touchpads() {
+  hyprctl devices -j 2>/dev/null | jq -r '.mice[]? | select(.name | test("touchpad|trackpad|trackpoint"; "i")) | .name'
+}
+
+apply() {
+  if [[ "${1}" == "1" ]]; then
+    while IFS= read -r dev; do
+      [[ -n "${dev}" ]] || continue
+      hyprctl -r keyword "device[${dev}]:enabled" false >/dev/null
+    done < <(keyboards; touchpads)
+    systemctl --user set-environment KRW_FORCE_OSK=1
+    systemctl --user start wvkbd.service  else
+    while IFS= read -r dev; do
+      [[ -n "${dev}" ]] || continue
+      hyprctl -r keyword "device[${dev}]:enabled" true >/dev/null
+    done < <(keyboards; touchpads)
+    systemctl --user stop wvkbd.service 2>/dev/null || true
+    systemctl --user set-environment KRW_FORCE_OSK=0
+  fi
+}
+
+# evtest --query exit status reflects state; parse the printed value instead.
+current="$(evtest --query "${node}" EV_SW SW_TABLET_MODE 2>/dev/null | grep -oP 'value \K[01]' | head -1 || true)"
+apply "${current:-0}"
+
+evtest "${node}" 2>/dev/null | while IFS= read -r line; do
+  if [[ "${line}" == *"SW_TABLET_MODE"* ]]; then
+    value="$(printf "%s" "${line}" | grep -oP 'value \K[01]' || true)"
+    [[ -n "${value}" ]] && apply "${value}"
+  fi
+done

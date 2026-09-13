@@ -1,0 +1,13 @@
+[Unit]
+Description=Auto-rotate internal display from orientation sensor
+PartOf=graphical-session.target
+After=graphical-session-pre.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/krw-autorotate
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=graphical-session.target

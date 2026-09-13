@@ -5,6 +5,7 @@ modules:
       install-weak-deps: false
       packages:
         - iio-sensor-proxy
+        - evtest
 
   - from-file: wm/video/negativo17/intel.yml
   - from-file: wm/common/wvkbd.yml
@@ -13,4 +14,17 @@ modules:
     files:
       - source: wm/5290
         destination: /
+
+  - type: script
+    snippets:
+      - "chmod +x /usr/bin/krw-autorotate /usr/bin/krw-tablet-mode"
+
+  - type: systemd
+    system:
+      enabled:
+        - iio-sensor-proxy.service
+    user:
+      enabled:
+        - krw-autorotate.service
+        - krw-tablet-mode.service
 ...
