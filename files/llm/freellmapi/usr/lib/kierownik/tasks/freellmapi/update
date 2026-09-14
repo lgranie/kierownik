@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+#MISE description="Rebuild the FreeLLMAPI image from the latest release"
+set -oue pipefail
+
+mise run freellmapi:build
+
+# Stopped containers are auto-removed (quadlet ExecStop), so the next
+# on-demand start picks up the fresh image by itself.
+if systemctl --user is-active --quiet freellmapi.service; then
+  systemctl --user restart freellmapi.service
+  gum log -sl info "FreeLLMAPI restarted on the fresh image."
+else
+  gum log -sl info "Image rebuilt. The next request starts the new image on demand."
+fi

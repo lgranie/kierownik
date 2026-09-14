@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+#MISE description="Show FreeLLMAPI status and dashboard URL"
+set -oue pipefail
+
+ENV_FILE="${HOME}/.config/freellmapi/freellmapi.env"
+URL="http://localhost:3001"
+
+gum style --border thick "FreeLLMAPI status (on demand)"
+
+if [[ ! -f "${ENV_FILE}" ]]; then
+  gum log -sl warn "Not initialized — run: mise run freellmapi:init"
+  exit 1
+fi
+gum log -sl info "env: ${ENV_FILE}"
+
+if systemctl --user is-active --quiet freellmapi-proxy.socket; then
+  gum log -sl info "socket: listening on ${URL}"
+else
+  gum log -sl warn "socket: inactive — run: mise run freellmapi:init"
+fi
+
+if systemctl --user is-active --quiet freellmapi.service; then
+  gum log -sl info "container: running"
+else
+  gum log -sl info "container: stopped (starts on first request)"
+fi
+
+if curl -fsS "${URL}/api/ping" > /dev/null 2>&1; then
+  gum log -sl info "api: reachable at ${URL}"
+  gum style "Dashboard: ${URL} — add provider keys on the Keys page, then point any OpenAI client at ${URL}/v1 with the unified key."
+else
+  gum log -sl warn "api: unreachable at ${URL} — check: mise run freellmapi:logs"
+fi

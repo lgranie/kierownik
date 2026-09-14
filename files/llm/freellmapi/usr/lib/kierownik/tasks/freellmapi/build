@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+#MISE description="Build (or rebuild) the FreeLLMAPI Podman image"
+set -oue pipefail
+
+systemctl --user start freellmapi-build.service
+
+gum log -sl info "Image 'localhost/freellmapi:latest' built successfully."

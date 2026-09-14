@@ -1,0 +1,11 @@
+[Unit]
+Description=Build FreeLLMAPI Image
+Wants=network-online.target
+After=network-online.target
+
+[Build]
+Pull=newer
+Network=host
+ImageTag=localhost/freellmapi:latest
+File=/usr/lib/kierownik/containers/freellmapi/Containerfile
+SetWorkingDirectory=/usr/lib/kierownik/containers/freellmapi

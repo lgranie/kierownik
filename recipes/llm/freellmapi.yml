@@ -1,0 +1,15 @@
+---
+modules:
+  # No dnf packages: runs as a Podman quadlet from a locally built
+  # Chainguard-based image (`mise run freellmapi:build`).
+  # No firewall service: bound to 127.0.0.1 only (single-user router).
+  # No systemd enable here: quadlet units generate at runtime, so the
+  # on-demand socket is enabled on first `mise run freellmapi:init`.
+  - type: files
+    files:
+      - source: llm/freellmapi
+        destination: /
+
+  - type: script
+    snippets:
+      - "chmod +x /usr/lib/kierownik/freellmapi/wait-ready"

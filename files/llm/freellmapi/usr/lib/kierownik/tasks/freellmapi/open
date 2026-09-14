@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+#MISE description="Open the FreeLLMAPI dashboard in a browser"
+set -oue pipefail
+
+URL="http://localhost:3001"
+
+if command -v xdg-open > /dev/null 2>&1; then
+  xdg-open "${URL}" > /dev/null 2>&1
+else
+  gum style "Open ${URL} in your browser"
+fi
