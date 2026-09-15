@@ -50,11 +50,15 @@ if [ -n "$fish_files" ]; then
     fail=1
   fi
   for f in $fish_files; do
-    if [ "${usage_fix:-false}" = "true" ]; then
-      mise x "aqua:fish-shell/fish-shell" -- fish_indent -w "$f"
-    elif ! mise x "aqua:fish-shell/fish-shell" -- fish_indent --check "$f"; then
-      gum log -sl error "fish_indent --check failed: $f"
-      fail=1
+    if command -v fish_indent >/dev/null 2>&1; then
+      if [ "${usage_fix:-false}" = "true" ]; then
+        mise x "aqua:fish-shell/fish-shell" -- fish_indent -w "$f"
+      elif ! mise x "aqua:fish-shell/fish-shell" -- fish_indent --check "$f"; then
+        gum log -sl error "fish_indent --check failed: $f"
+        fail=1
+      fi
+    else
+      gum log -sl info "fish_indent not installed, skipping format check for $f"
     fi
   done
 fi
