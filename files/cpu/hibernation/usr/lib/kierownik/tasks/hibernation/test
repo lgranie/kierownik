@@ -18,8 +18,8 @@ gum log -sl info "✓ Swap partition detected"
 
 # Test 2: Check swap size
 gum log -sl info "Test 2: Checking swap size..."
-local mem_total=$(free -b | awk '/^Mem:/ {print $2}')
-local swap_size=$(swapon --show=NAME,SIZE --noheadings --bytes | awk '/^\/dev\/zram/ {next} {sum+=$2} END {print sum+0}')
+mem_total=$(free -b | awk '/^Mem:/ {print $2}')
+swap_size=$(swapon --show=NAME,SIZE --noheadings --bytes | awk '/^\/dev\/zram/ {next} {sum+=$2} END {print sum+0}')
 gum log -sl info "  Memory: $mem_total bytes"
 gum log -sl info "  Swap: $swap_size bytes"
 
@@ -58,7 +58,7 @@ fi
 
 # Test 6: Check initramfs
 gum log -sl info "Test 6: Checking initramfs..."
-local initramfs=$(ls /boot/initramfs-* 2>/dev/null | head -1)
+initramfs=$(ls /boot/initramfs-* 2>/dev/null | head -1)
 if [ -n "$initramfs" ]; then
     gum log -sl info "  Initramfs: $initramfs"
     if lsinitrd -f /lib/systemd/system/systemd-hibernate.service "$initramfs" >/dev/null 2>&1; then

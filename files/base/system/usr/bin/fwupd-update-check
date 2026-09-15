@@ -2,10 +2,6 @@
 
 set -euo pipefail
 
-Description=Check for firmware updates periodically
-
-[Timer]
-OnBootSec=15min
 check_fwupd_updates() {
     local updates
     updates=$(fwupdmgr get-updates 2>&1 || true)
