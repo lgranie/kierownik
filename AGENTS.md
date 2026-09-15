@@ -5,7 +5,7 @@ BlueBuild/Fedora bootc OS config. Immutable container-native OS; changes require
 ## Build
 
 ```bash
-mise run check [--fix]                # validate/lint, no build
+mise run check:lint [--fix]                # validate/lint, no build
 mise run build:oci N100|8745|5290     # N100=headless, 8745=Hyprland AMD, 5290=Hyprland Intel
 mise run build:iso|build:qcow2 5290
 mise run run:vm|run:iso 5290
@@ -30,6 +30,6 @@ CI: `.github/workflows/build.yml` + `.woodpecker/build.yml`. GHA uses `blue-buil
 
 ## Notes
 
-- No unit tests; `mise run check` = validation. Full test = build or VM.
+- No unit tests; `mise run check:lint` = validation. Full test = build or VM.
 - Never commit `cosign.*` secrets; images signed, verify via `cosign verify`.
 - New package/feature: recipe module + overlays + `from-file:` include; new top-level recipe -> add to GHA matrix.

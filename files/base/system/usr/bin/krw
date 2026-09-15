@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+set -oue pipefail
+
+# krw — pick a kierownik system task with gum and run it.
+# Catalog: /usr/lib/kierownik/tasks/<group>/<name>, title from
+# #MISE description="...". Tasks needing args (#USAGE arg "<...>"
+# without default=) stay hidden, the picker passes no arguments.
+
+TASKS_DIR="${KRW_TASKS_DIR:-/usr/lib/kierownik/tasks}"
+HOLD_SECONDS="${KRW_HOLD:-10}"
+
+[[ "${HOLD_SECONDS}" =~ ^[0-9]+$ ]] || HOLD_SECONDS=10
+
+print_usage() {
+  gum style --border thick "krw — run a kierownik system task" \
+    "Usage: krw [group/name]" \
+    "No args opens the task picker. The window closes HOLD seconds" \
+    "after the task finishes (KRW_HOLD, default 10)."
+}
+
+description_of() {
+  sed -n 's/^#MISE description="\([^"]*\)".*/\1/p' "$1" | head -n 1
+}
+
+# True when the task needs a positional arg the picker cannot supply.
+needs_arg() {
+  grep -E '#USAGE arg "<' "$1" 2>/dev/null | grep -v 'default=' | grep -q .
+}
+
+collect_entries() {
+  local group group_path name path desc
+  local -a groups=()
+  [[ -d "${TASKS_DIR}" ]] || return 0
+  while IFS= read -r group; do
+    groups+=("${group}")
+  done < <(ls -1 "${TASKS_DIR}" | sort)
+  for group in ${groups[@]+"${groups[@]}"}; do
+    group_path="${TASKS_DIR}/${group}"
+    [[ -d "${group_path}" ]] || continue
+    while IFS= read -r name; do
+      [[ "${name}" != _* && "${name}" != *.* ]] || continue
+      path="${group_path}/${name}"
+      [[ -f "${path}" ]] || continue
+      desc="$(description_of "${path}")"
+      [[ -n "${desc}" ]] || continue
+      needs_arg "${path}" && continue
+      printf '%s/%s\t%s\n' "${group}" "${name}" "${desc}"
+    done < <(ls -1 "${group_path}" | sort)
+  done
+}
+
+run_task() {
+  local selection="$1"
+  local task="${TASKS_DIR}/${selection}"
+  local rc=0
+  if [[ "${selection}" != */* || "${selection}" == *..* ]]; then
+    gum log -sl error "invalid task: ${selection}"
+    return 1
+  fi
+  if [[ ! -f "${task}" ]]; then
+    gum log -sl error "task not found: ${selection}"
+    return 1
+  fi
+  "${task}" || rc=$?
+  gum style "--- done: ${selection} (rc=${rc}), closing in ${HOLD_SECONDS}s ---"
+  sleep "${HOLD_SECONDS}"
+  return "${rc}"
+}
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  print_usage
+  exit 0
+fi
+
+if [[ $# -gt 1 ]]; then
+  gum log -sl error "usage: krw [group/name]"
+  exit 1
+fi
+
+if [[ $# -eq 1 ]]; then
+  run_task "$1"
+  exit $?
+fi
+
+mapfile -t rows < <(collect_entries)
+if [[ ${#rows[@]} -eq 0 ]]; then
+  gum log -sl error "no tasks found, check ${TASKS_DIR} exists and task files carry #MISE description"
+  exit 1
+fi
+
+# Pad task paths so descriptions align in one column.
+width=0
+for row in "${rows[@]}"; do
+  path="${row%%$'\t'*}"
+  ((${#path} > width)) && width=${#path}
+done
+declare -A label_to_path=()
+labels=()
+for row in "${rows[@]}"; do
+  path="${row%%$'\t'*}"
+  desc="${row#*$'\t'}"
+  printf -v label '%-*s  %s' "${width}" "${path}" "${desc}"
+  label_to_path["${label}"]="${path}"
+  labels+=("${label}")
+done
+
+picked="$(printf '%s\n' "${labels[@]}" | gum filter --limit 1 --header "Run Task" --placeholder "Search tasks")"
+[[ -n "${picked:-}" ]] || exit 0
+selection="${label_to_path["${picked}"]:-}"
+[[ -n "${selection:-}" ]] || exit 0
+
+run_task "${selection}"

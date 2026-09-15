@@ -12,7 +12,6 @@ alias vim=nvim
 # mise
 alias mup='mise up'
 alias mr='mise run'
-alias krw='mise run'
 
 # Utils (fish abbrs become plain aliases; no recursive expansion in bash)
 alias env='env | sort'
