@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <radialGradient id="ground" cx="0.5" cy="0.42" r="0.65">
+      <stop offset="0" stop-color="#2A4DA3"/>
+      <stop offset="1" stop-color="#1A3579"/>
+    </radialGradient>
+  </defs>
+  <!-- plate -->
+  <circle cx="128" cy="128" r="120" fill="url(#ground)"/>
+  <circle cx="128" cy="128" r="108" fill="none" stroke="#FFFFFF" stroke-width="7"/>
+  <!-- outer dot ring -->
+  <g fill="#FFFFFF">
+    <circle cx="213" cy="150.8" r="7"/>
+    <circle cx="190.2" cy="190.2" r="7"/>
+    <circle cx="150.8" cy="213" r="7"/>
+    <circle cx="105.2" cy="213" r="7"/>
+    <circle cx="65.8" cy="190.2" r="7"/>
+    <circle cx="43" cy="150.8" r="7"/>
+    <circle cx="43" cy="105.2" r="7"/>
+    <circle cx="65.8" cy="65.8" r="7"/>
+    <circle cx="105.2" cy="43" r="7"/>
+    <circle cx="150.8" cy="43" r="7"/>
+    <circle cx="190.2" cy="65.8" r="7"/>
+    <circle cx="213" cy="105.2" r="7"/>
+  </g>
+  <!-- petal rosette -->
+  <g fill="#FFFFFF">
+    <circle cx="180" cy="128" r="13"/>
+    <circle cx="164.8" cy="164.8" r="13"/>
+    <circle cx="128" cy="180" r="13"/>
+    <circle cx="91.2" cy="164.8" r="13"/>
+    <circle cx="76" cy="128" r="13"/>
+    <circle cx="91.2" cy="91.2" r="13"/>
+    <circle cx="128" cy="76" r="13"/>
+    <circle cx="164.8" cy="91.2" r="13"/>
+  </g>
+  <g fill="#1E3C8F">
+    <circle cx="180" cy="128" r="6"/>
+    <circle cx="164.8" cy="164.8" r="6"/>
+    <circle cx="128" cy="180" r="6"/>
+    <circle cx="91.2" cy="164.8" r="6"/>
+    <circle cx="76" cy="128" r="6"/>
+    <circle cx="91.2" cy="91.2" r="6"/>
+    <circle cx="128" cy="76" r="6"/>
+    <circle cx="164.8" cy="91.2" r="6"/>
+  </g>
+  <!-- heart -->
+  <circle cx="128" cy="128" r="16" fill="#FFFFFF"/>
+  <circle cx="128" cy="128" r="7" fill="#1E3C8F"/>
+</svg>

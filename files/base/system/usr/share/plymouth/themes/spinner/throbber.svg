@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- stencil source for the plymouth watermark (rendered white) -->
+  <circle cx="128" cy="128" r="108" fill="none" stroke="#FFFFFF" stroke-width="10"/>
+  <g fill="#FFFFFF">
+    <circle cx="128" cy="128" r="10"/>
+  </g>
+  <g fill="none" stroke="#FFFFFF" stroke-width="8">
+    <circle cx="180" cy="128" r="13"/>
+    <circle cx="164.8" cy="164.8" r="13"/>
+    <circle cx="128" cy="180" r="13"/>
+    <circle cx="91.2" cy="164.8" r="13"/>
+    <circle cx="76" cy="128" r="13"/>
+    <circle cx="91.2" cy="91.2" r="13"/>
+    <circle cx="128" cy="76" r="13"/>
+    <circle cx="164.8" cy="91.2" r="13"/>
+  </g>
+</svg>

@@ -4,7 +4,7 @@ GenericName=System Task Runner
 Comment=Pick and run a kierownik system task
 TryExec=krw
 Exec=footclient --app-id=krw-task krw
-Icon=system-run
+Icon=kierownik
 Terminal=false
 Type=Application
 Categories=System;ConsoleOnly;
