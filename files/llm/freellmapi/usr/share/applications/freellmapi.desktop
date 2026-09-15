@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Name=FreeLLMAPI
+GenericName=LLM API Router
+Comment=Local OpenAI-compatible router dashboard
+TryExec=/usr/bin/brave-browser-stable
+Exec=/usr/bin/brave-browser-stable --enable-features=UseOzonePlatform --ozone-platform=wayland --app=http://localhost:3001
+Icon=freellmapi
+Terminal=false
+Type=Application
+Categories=Network;WebBrowser;
+Keywords=freellmapi;llm;openai;api;dashboard;
+StartupNotify=true
