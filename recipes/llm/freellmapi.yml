@@ -10,6 +10,11 @@ modules:
       - source: llm/freellmapi
         destination: /
 
+  - type: systemd
+    user:
+      enabled:
+        - freellmapi-proxy.socket
+
   - type: script
     snippets:
       - "chmod +x /usr/lib/kierownik/freellmapi/wait-ready"
