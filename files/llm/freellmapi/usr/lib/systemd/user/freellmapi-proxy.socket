@@ -1,5 +1,6 @@
 [Unit]
 Description=FreeLLMAPI on-demand socket (starts the container on first connection)
+After=network.target
 
 [Socket]
 # Public endpoint. Must differ from the container backend (127.0.0.1:3002):
