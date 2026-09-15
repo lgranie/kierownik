@@ -11,6 +11,7 @@ modules:
   - type: script
     snippets:
       - "plymouth-set-default-theme spinner"
+      - "rm -f /usr/share/plymouth/themes/spinner/throbber-{0007..0030}.png"
 
   - type: kargs
     arch: x86_64
