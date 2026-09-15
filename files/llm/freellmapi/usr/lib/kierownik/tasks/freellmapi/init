@@ -23,9 +23,6 @@ chmod 600 "${ENV_FILE}"
 
 podman image inspect "localhost/freellmapi:latest" > /dev/null 2>&1 || mise run freellmapi:build
 
-systemctl --user daemon-reload
-systemctl --user enable --now freellmapi-proxy.socket
-
 gum log -sl info "Probing ${URL}/api/ping (starts the container on demand) ..."
 for _ in $(seq 1 30); do
   if curl -fsS "${URL}/api/ping" > /dev/null 2>&1; then
