@@ -64,6 +64,9 @@ PI_ENV_VARS=(
   KIMI_API_KEY
   MINIMAX_API_KEY
   MINIMAX_CN_API_KEY
+  FREELLMAPI_URL
+  FREELLMAPI_BASE_URL
+  OPENAI_BASE_URL
 )
 for var in "${PI_ENV_VARS[@]}"; do
   [ -n "${!var:-}" ] && FLAGS+=("--env" "$var=${!var}")

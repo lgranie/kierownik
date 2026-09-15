@@ -7,6 +7,8 @@ set -gx PI_SKIP_VERSION_CHECK 1
 set -gx PI_MEMORY 4g
 set -gx PI_CPUS 2
 set -gx PI_PIDS_LIMIT 512
+set -gx OPENAI_BASE_URL http://localhost:3001/v1
+set -gx OPENAI_API_KEY freellmapi
 
 # Alias
 alias pi "mise run pi"

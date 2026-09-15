@@ -8,6 +8,8 @@ export PI_SKIP_VERSION_CHECK=1
 export PI_MEMORY=4g
 export PI_CPUS=2
 export PI_PIDS_LIMIT=512
+export OPENAI_BASE_URL="http://localhost:3001/v1"
+export OPENAI_API_KEY="freellmapi"
 
 # Alias
 alias pi='mise run pi'
