@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=krw
+GenericName=System Task Runner
+Comment=Pick and run a kierownik system task
+TryExec=krw
+Exec=footclient --app-id=krw-task krw
+Icon=system-run
+Terminal=false
+Type=Application
+Categories=System;ConsoleOnly;
+Keywords=tasks;system;maintenance;kierownik;
+StartupNotify=false

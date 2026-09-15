@@ -25,10 +25,10 @@ hl.bind("SUPER + RETURN", exec("uwsm app -- footclient"), { description = "Open 
 hl.bind("SUPER + SHIFT + RETURN", exec("foot"), { description = "Open a Terminal: foot" })
 hl.bind("SUPER + SPACE", exec(ipc .. "panel-toggle launcher"), { description = "Run an Application: Menu" })
 hl.bind("SUPER + B", exec(ipc .. "panel-toggle launcher '/bookmarks '"), { description = "Open Bookmark" })
-hl.bind("SUPER + ALT + K", exec(ipc .. "panel-toggle launcher '/krw '"), { description = "Run Task: krw menu" })
+hl.bind("SUPER + ALT + K", exec("uwsm app -- footclient --app-id=krw-task krw"), { description = "Run Task: krw menu" })
 hl.bind("SUPER + ALT + L", exec(ipc .. "session lock"), { description = "Lock the Session" })
 
--- 1b. Capture (headless variants; interactive ones live in /krw menu)
+-- 1b. Capture (headless variants; interactive ones live in krw menu)
 hl.bind("Print", exec("sh -c 'd=\"${XDG_PICTURES_DIR:-$HOME/Pictures}/Screenshots\"; mkdir -p \"$d\"; f=\"$d/$(date +%Y-%m-%d_%H-%M-%S).png\"; grim -g \"$(slurp)\" \"$f\" && wl-copy < \"$f\"'"), { description = "Screenshot region" })
 hl.bind("SHIFT + Print", exec("sh -c 'd=\"${XDG_PICTURES_DIR:-$HOME/Pictures}/Screenshots\"; mkdir -p \"$d\"; f=\"$d/$(date +%Y-%m-%d_%H-%M-%S).png\"; grim \"$f\" && wl-copy < \"$f\"'"), { description = "Screenshot fullscreen" })
 hl.bind("ALT + Print", exec("/usr/lib/kierownik/tasks/capture/record"), { description = "Toggle screen recording" })

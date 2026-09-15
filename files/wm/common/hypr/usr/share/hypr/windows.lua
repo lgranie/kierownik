@@ -64,7 +64,7 @@ hl.window_rule({
 	float = true,
 })
 
--- Kierownik task runner (Noctalia /krw launcher spawns foot --app-id=krw-task)
+-- Kierownik task runner (krw spawns foot --app-id=krw-task)
 hl.window_rule({
 	name = "krw-task",
 	match = { class = "krw-task" },
