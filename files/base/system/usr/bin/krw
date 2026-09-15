@@ -7,15 +7,12 @@ set -oue pipefail
 # without default=) stay hidden, the picker passes no arguments.
 
 TASKS_DIR="${KRW_TASKS_DIR:-/usr/lib/kierownik/tasks}"
-HOLD_SECONDS="${KRW_HOLD:-10}"
-
-[[ "${HOLD_SECONDS}" =~ ^[0-9]+$ ]] || HOLD_SECONDS=10
 
 print_usage() {
   gum style --border thick "krw — run a kierownik system task" \
     "Usage: krw [group/name]" \
-    "No args opens the task picker. The window closes HOLD seconds" \
-    "after the task finishes (KRW_HOLD, default 10)."
+    "No args opens the task picker. The window stays open" \
+    "until you confirm close."
 }
 
 description_of() {
@@ -49,21 +46,27 @@ collect_entries() {
   done
 }
 
+wait_for_close() {
+  gum confirm "Close window?" || true
+}
+
 run_task() {
   local selection="$1"
   local task="${TASKS_DIR}/${selection}"
   local rc=0
   if [[ "${selection}" != */* || "${selection}" == *..* ]]; then
     gum log -sl error "invalid task: ${selection}"
+    wait_for_close
     return 1
   fi
   if [[ ! -f "${task}" ]]; then
     gum log -sl error "task not found: ${selection}"
+    wait_for_close
     return 1
   fi
   "${task}" || rc=$?
-  gum style "--- done: ${selection} (rc=${rc}), closing in ${HOLD_SECONDS}s ---"
-  sleep "${HOLD_SECONDS}"
+  gum style "--- done: ${selection} (rc=${rc}) ---"
+  wait_for_close
   return "${rc}"
 }
 
