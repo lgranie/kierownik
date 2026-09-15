@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=krw
-GenericName=System Task Runner
+Name=Kierownik
+GenericName=Krw Task Runner
 Comment=Pick and run a kierownik system task
 TryExec=krw
 Exec=footclient --app-id=krw-task krw
