@@ -1,6 +1,7 @@
 [Unit]
 Description=Noctalia Shell.
 Documentation=https://docs.noctalia.dev/v5/
+ConditionUser=!@system
 # order startup after WM
 After=graphical-session.target wayland-session@hyprland.desktop.target
 

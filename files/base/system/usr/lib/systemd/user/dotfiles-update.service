@@ -1,6 +1,7 @@
 [Unit]
 Description=Kier Dotfiles Update
 ConditionPathExists=%h/.dots
+ConditionUser=!@system
 After=dotfiles-init.service gpg-agent-ssh.socket
 Requires=dotfiles-init.service gpg-agent-ssh.socket
 

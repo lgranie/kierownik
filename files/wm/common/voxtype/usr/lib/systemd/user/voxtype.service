@@ -1,5 +1,6 @@
 [Unit]
 Description=Voxtype push-to-talk voice-to-text daemon
+ConditionUser=!@system
 Documentation=man:voxtype(1)
 PartOf=graphical-session.target
 After=graphical-session.target pipewire.service pipewire-pulse.service

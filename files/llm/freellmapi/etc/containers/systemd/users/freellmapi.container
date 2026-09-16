@@ -1,5 +1,6 @@
 [Unit]
 Description=FreeLLMAPI - one OpenAI-compatible endpoint across free LLM tiers
+ConditionUser=!@system
 Wants=network-online.target
 After=network-online.target
 # On-demand backend for freellmapi-proxy.socket: started on first connection

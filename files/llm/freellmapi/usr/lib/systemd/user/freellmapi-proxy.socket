@@ -1,5 +1,6 @@
 [Unit]
 Description=FreeLLMAPI on-demand socket (starts the container on first connection)
+ConditionUser=!@system
 After=network.target
 
 [Socket]

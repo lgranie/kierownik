@@ -1,5 +1,6 @@
 [Unit]
 Description=FreeLLMAPI on-demand proxy (forwards to the container, stops it when idle)
+ConditionUser=!@system
 Requires=freellmapi.service
 After=freellmapi.service
 

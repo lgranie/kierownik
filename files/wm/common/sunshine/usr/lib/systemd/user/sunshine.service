@@ -1,5 +1,6 @@
 [Unit]
 Description=Sunshine Service
+ConditionUser=!@system
 StartLimitIntervalSec=500
 StartLimitBurst=5
 After=network.target graphical-session.target
