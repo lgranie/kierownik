@@ -13,6 +13,14 @@ modules:
       - source: llm/ramalama
         destination: /
 
+  - type: kargs
+    arch: x86_64
+    kargs:
+      # Pin THP to madvise: llama.cpp marks its buffers MADV_HUGEPAGE, so it
+      # gets hugepages with zero boot-time RAM reservation. Slightly faster
+      # than always for llama.cpp CPU inference (Phoronix, Linux 6.18 LTS).
+      - transparent_hugepage=madvise
+
   - type: script
     snippets:
       - "firewall-offline-cmd --zone=Kierownik --add-service=ramalama"

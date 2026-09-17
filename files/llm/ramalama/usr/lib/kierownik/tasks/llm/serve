@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#MISE description="Toggle hugepages and launch ramalama"
+#MISE description="Launch ramalama with per-model tuning"
 #USAGE arg "[model]" help="Model to run"
 set -oue pipefail
 
@@ -63,11 +63,5 @@ if [[ -n "${LLM_TOP_K}" ]]; then
     runtime_args="${runtime_args} --top-k ${LLM_TOP_K}"
 fi
 
-cleanup() {
-    mise run llm:hugepages off
-}
-trap cleanup EXIT
-
-mise run llm:hugepages on
 gum log -sl info "Serving ramalama with model: ${usage_target} (ctx=${LLM_CONTEXT}, temp=${LLM_TEMPERATURE}, top_p=${LLM_TOP_P}, top_k=${LLM_TOP_K:-default}, repeat=${LLM_REPEAT_PENALTY}, ngl=${LLM_GPU_LAYERS})"
 ramalama serve "${usage_target}" -c "${LLM_CONTEXT}" --ngl "${LLM_GPU_LAYERS}" --temp "${LLM_TEMPERATURE}" --runtime-args "${runtime_args}"

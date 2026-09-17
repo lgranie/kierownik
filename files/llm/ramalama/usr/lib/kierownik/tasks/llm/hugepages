@@ -1,60 +1,21 @@
 #!/usr/bin/env bash
-#MISE description="Toggle hugepages for LLM workloads"
-#USAGE arg "<action>" help="Action to perform" { choices "on" "off" "status" }
+#MISE description="Show hugepage state for LLM workloads"
+#USAGE arg "[action]" help="Action to perform" { choices "status" }
 set -oue pipefail
 
 THP_PATH="/sys/kernel/mm/transparent_hugepage/enabled"
-HUGEPAGES_PATH="/proc/sys/vm/nr_hugepages"
 HUGEPAGE_SIZE_KB=$(grep Hugepagesize /proc/meminfo | awk '{print $2}')
 
-get_total_ram_kb() {
-    awk '/MemTotal/ {print $2}' /proc/meminfo
-}
-
-get_free_ram_kb() {
-    awk '/MemAvailable/ {print $2}' /proc/meminfo
-}
-
-enable_static_hugepages() {
-    local total_kb
-    local free_kb
-    local target_pages
-
-    total_kb=$(get_total_ram_kb)
-    free_kb=$(get_free_ram_kb)
-
-    target_pages=$(( free_kb / 2 / HUGEPAGE_SIZE_KB ))
-
-    gum log -sl info "Total RAM: $(( total_kb / 1024 / 1024 ))GB"
-    gum log -sl info "Available RAM: $(( free_kb / 1024 / 1024 ))GB"
-    gum log -sl info "Hugepage size: $(( HUGEPAGE_SIZE_KB / 1024 ))MB"
-    gum log -sl info "Allocating $target_pages pages ($(( target_pages * HUGEPAGE_SIZE_KB / 1024 / 1024 ))GB)..."
-
-    run0 sh -c "echo never > $THP_PATH"
-    run0 sh -c "echo $target_pages > $HUGEPAGES_PATH"
-
-    gum log -sl info "Static hugepages enabled."
-}
-
-disable_static_hugepages() {
-    gum log -sl info "Reverting to transparent hugepages..."
-    run0 sh -c "echo always > $THP_PATH"
-    run0 sh -c "echo 0 > $HUGEPAGES_PATH"
-}
-
 show_status() {
-    gum log -sl info "Transparent hugepages: $(cat "$THP_PATH")"
-    gum log -sl info "Static hugepages: $(awk '/HugePages_Total/ {print $2}' /proc/meminfo)"
+    gum log -sl info "Transparent hugepages: $(cat "$THP_PATH") (want [madvise], pinned via transparent_hugepage=madvise karg)"
+    gum log -sl info "Static hugepages: $(awk '/HugePages_Total/ {print $2}' /proc/meminfo) (want 0, unused by llama.cpp)"
+    gum log -sl info "AnonHugePages: $(awk '/AnonHugePages/ {print $2" "$3}' /proc/meminfo) (THP actually backing processes)"
     gum log -sl info "Hugepage size: $(( HUGEPAGE_SIZE_KB / 1024 ))MB"
 }
 
-action="${usage_action:-}"
-if [[ -z "${action}" ]]; then
-  action=$(gum choose --header "Hugepages action" "on" "off" "status")
+action="${usage_action:-status}"
+if [[ "${action}" != "status" ]]; then
+    gum log -sl warn "Only 'status' is supported — THP mode is pinned at boot via kargs, no runtime toggle."
 fi
 
-case "${action}" in
-    on)     enable_static_hugepages ;;
-    off)    disable_static_hugepages ;;
-    status) show_status ;;
-esac
+show_status

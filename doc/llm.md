@@ -5,7 +5,7 @@ Reference for running local LLMs with ramalama on the Ryzen 7 8745HS (Radeon 780
 
 ## Quick start
 
-Interactive model picker (turns hugepages on, serves, then turns them off):
+Interactive model picker (per-model tuning auto-applied from the table below):
 
 ```bash
 mise run llm:serve
@@ -23,13 +23,16 @@ Override context size and GPU offload layers:
 LLM_CONTEXT=16384 LLM_GPU_LAYERS=60 mise run llm:serve qwen3.8:ud-iq4_xs
 ```
 
-Manage hugepages manually:
+Check hugepage state:
 
 ```bash
-mise run llm:hugepages status   # show THP + static hugepage state
-mise run llm:hugepages on       # allocate half of free RAM as static hugepages
-mise run llm:hugepages off      # revert to transparent hugepages
+mise run llm:hugepages status   # show THP mode + AnonHugePages
 ```
+
+THP is pinned to `madvise` at boot via the `transparent_hugepage=madvise` karg in
+`recipes/llm/ramalama.yml` (takes effect after rebuild + reboot). No runtime toggle:
+llama.cpp marks its buffers `MADV_HUGEPAGE`, so it gets hugepages automatically with
+zero RAM reservation. Static HugeTLB pools stay at 0 — llama.cpp doesn't use them.
 
 Clean up downloaded models:
 
@@ -93,8 +96,9 @@ MoE alternative for max responsiveness: **`gemma4:ud-iq4_xs`**.
 - **GPU offload trades compute, not memory.** `--ngl` moves work to the iGPU but the
   weights still live in the same 32GB. A partial offload (`LLM_GPU_LAYERS=40` MoE,
   `20–30` dense) is a good starting point.
-- **Hugepages:** the serve task allocates ~half of *free* RAM as static hugepages for
-  the duration. Don't run two models at once (they'd fight over the pool).
+- **Hugepages:** THP pinned to `madvise` at boot (karg, zero RAM carve).
+  llama.cpp gets hugepages via `MADV_HUGEPAGE` automatically. Don't run two models
+  at once (they'd fight over RAM).
 
 ## BIOS configuration for shared memory
 
