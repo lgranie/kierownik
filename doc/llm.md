@@ -1,6 +1,6 @@
 # Local LLM on 8745HS (32GB shared RAM)
 
-Reference for running local LLMs with ramalama on the Ryzen AI HX (Radeon 860M iGPU,
+Reference for running local LLMs with ramalama on the Ryzen 7 8745HS (Radeon 780M iGPU,
 32GB unified/shared memory) machines in this repo.
 
 ## Quick start
@@ -14,13 +14,13 @@ mise run llm:serve
 Serve a specific model with default tuning:
 
 ```bash
-mise run llm:serve qwen3-coder:q3_k_m
+mise run llm:serve qwen3.8:ud-iq4_xs
 ```
 
 Override context size and GPU offload layers:
 
 ```bash
-LLM_CONTEXT=16384 LLM_GPU_LAYERS=60 mise run llm:serve qwen3-coder:q3_k_m
+LLM_CONTEXT=16384 LLM_GPU_LAYERS=60 mise run llm:serve qwen3.8:ud-iq4_xs
 ```
 
 Manage hugepages manually:
@@ -41,43 +41,58 @@ mise run llm:clean --all        # remove everything
 ## Models / shortnames
 
 Configured in `files/llm/ramalama/usr/share/ramalama/shortnames.conf`.
-All are GGUF on Hugging Face, sorted newest first. Verified working URLs.
+All are GGUF on Hugging Face. URLs verified 2026-09-17 via HF API + `curl -I`
+(`x-linked-size`). Sizes are exact file bytes converted to GB.
 
-| Alias | Model | Note |
-|-------|-------|------|
-| `qwen3.8` | Qwen3.8 27B | Dense, highest accuracy, but heavier for 32GB |
-| `gemma4` | Gemma 4 26B | MoE (4B active), Apache 2.0, fast on shared RAM |
-| `bigcodemax` | BigCodeMax 8B | MXFP4 ~7.8GB, easiest fit, quick/light coding |
-| `devstral` | Devstral Small 24B | Dense, best for agentic/multi-file workflows, SLOW on 32GB |
-| `qwen3-coder` | Qwen3-Coder 30B | MoE (3.3B active), best all-round coding on this HW |
+Memory = weights + KV cache (f16) + ~1.5GB compute/buffers. Budget ~20–24GB
+(model+ctx); rest stays for OS. Green fits easy, yellow tight but OK.
 
-### Quant aliases (fit for 32GB shared RAM)
+| Name | Release | Shortname | URL (verified) | Size | Mem 8k | Mem 16k | Mem 32k | MTP draft (speculative) | Ramalama args |
+|------|---------|-----------|----------------|------|--------|---------|---------|-------------------------|---------------|
+| Qwen3.6 35B-A3B MoE, 262K, thinking+vision | 2026-04-16 | `qwen3.6:iq3_xxs` | `hf://bartowski/Qwen_Qwen3.6-35B-A3B-GGUF/Qwen_Qwen3.6-35B-A3B-IQ3_XXS.gguf` | 15.8GB | 18.1GB | 19.0GB | 20.7GB | `hf://bartowski/Qwen_Qwen3.6-35B-A3B-GGUF/mtp-Qwen_Qwen3.6-35B-A3B-Q4_0.gguf` | `-c 16384 --ngl 40 --temp 0.7 --runtime-args "--top-p 0.95 --repeat-penalty 1.1"` |
+| Qwen3.8 27B newest dense, 262K (ext. 1M), vision | 2026-08-13 | `qwen3.8:ud-iq4_xs` | `hf://unsloth/Qwen3.8-27B-GGUF/Qwen3.8-27B-UD-IQ4_XS.gguf` | 14.3GB | 16.9GB | 18.1GB | 20.4GB | `hf://unsloth/Qwen3.8-27B-GGUF/MTP/mtp-Qwen3.8-27B-Q4_0.gguf` | `-c 16384 --ngl 30 --temp 1.0 --top-k 20 --runtime-args "--top-p 0.95 --repeat-penalty 1.0"` |
+| Muse Glimmer 30B dense, 131K, Apache-2.0, agentic coding 76% SWE-bench | 2026-08-10 | `muse-glimmer:iq4_xs` | `hf://bartowski/Muse-Glimmer-30B-GGUF/Muse-Glimmer-30B-IQ4_XS.gguf` | 15.4GB | 18.1GB | 19.3GB | 21.7GB | `hf://bartowski/Muse-Glimmer-30B-GGUF/dflash-Muse-Glimmer-30B-Q4_0.gguf` (DFlash draft) | `-c 16384 --ngl 30 --temp 0.7 --runtime-args "--top-p 0.95 --repeat-penalty 1.1"` (reasoning_strength high, ATEM tool template) |
+| Gemma 4 26B-A4B MoE, 262K, Apache-2.0, best general tool-call | 2026-03-31 | `gemma4:ud-iq4_xs` | `hf://unsloth/gemma-4-26B-A4B-it-GGUF/gemma-4-26B-A4B-it-UD-IQ4_XS.gguf` | 13.6GB | 16.0GB | 16.8GB | 18.5GB | `hf://unsloth/gemma-4-26B-A4B-it-GGUF/mtp-gemma-4-26B-A4B-it-Q8_0.gguf` | `-c 16384 --ngl 40 --temp 0.7 --runtime-args "--top-p 0.95 --repeat-penalty 1.1"` |
+| Gemma 4 26B-A4B MoE, higher-quality quant | 2026-03-31 | `gemma4:ud-q4_k_xl` | `hf://unsloth/gemma-4-26B-A4B-it-GGUF/gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf` | 17.0GB | 19.4GB | 20.2GB | 21.9GB | same as above | `-c 16384 --ngl 40 --temp 0.7 --runtime-args "--top-p 0.95 --repeat-penalty 1.1"` |
+| GLM-4.7-Flash, 128K, long-ctx agent pick | 2026-01-20 | `glm-flash:q3_k_s` | `hf://bartowski/zai-org_GLM-4.7-Flash-GGUF/zai-org_GLM-4.7-Flash-Q3_K_S.gguf` | 13.5GB | 15.9GB | 16.9GB | 18.7GB | — | `-c 32768 --ngl 30 --temp 0.7 --runtime-args "--top-p 0.95 --repeat-penalty 1.1"` |
 
-| Alias | Quant | Size | Use |
-|-------|-------|------|-----|
-| `qwen3-coder:q4_k_m` | Q4_K_M | 18.6GB | default, balance |
-| `qwen3-coder:q4_k_s` | Q4_K_S | 17.5GB | more headroom |
-| `qwen3-coder:q3_k_m` | Q3_K_M | 14.7GB | **recommended** tightest good fit |
-| `gemma4:q4_k_s` | Q4_K_S | 15.8GB | more headroom |
-| `gemma4:iq4_xs` | IQ4_XS | 14.2GB | imatrix, quality/size |
-| `gemma4:q3_k_m` | Q3_K_M | 13GB | tightest good fit |
+Notes:
+
+- Release = base model launch (GLM-4.7-Flash GGUF 2026-01-20,
+  Gemma 4 2026-03-31, Qwen3.6 2026-04-16, Muse Glimmer 2026-08-10,
+  Qwen3.8 GGUF 2026-08-13).
+  2026 models only; older releases (Qwen3-Coder, gpt-oss, Devstral Small 2)
+  dropped per policy.
+- `mise run llm:serve <alias>` auto-applies that row's Ramalama args (ctx, ngl,
+  temp, top-p, top-k, repeat-penalty) from the `shortnames.conf` comment.
+  Env overrides win: `LLM_CONTEXT=8192 LLM_GPU_LAYERS=20 mise run llm:serve ...`.
+- Qwen3-Coder-Next (80B-A3B) excluded: only Q8_0 GGUF published (~84GB), no fit.
+- NVIDIA Nemotron 3.5 Lightning 30B excluded: smallest quants ~18.9GB + KV = tight
+  with no coding advantage over Qwen3-Coder on this HW.
+- MTP = multi-token-prediction draft for speculative decoding (ggml-org preset style:
+  `--spec-type draft-mtp`). Ramalama may not expose MTP flags yet; column lists the
+  matching draft file when the publisher ships one. `—` = none published.
+- Qwen3.8 thinking model uses `temperature=1.0, top_k=20` per Unsloth guide;
+  coders use `temperature=0.7`. Muse Glimmer uses `reasoning_strength` high.
 
 Recommended default for interactive coding on 8745HS:
-**`qwen3-coder:q3_k_m`** (MoE keeps it responsive on the 860M).
+**`qwen3.8:ud-iq4_xs`** (newest 2026 coding gains, fits 16.9/18.1GB at 8k/16k).
+MoE alternative for max responsiveness: **`gemma4:ud-iq4_xs`**.
 
 ## Advice for 32GB shared memory
 
 - **There is no discrete VRAM.** The iGPU borrows from the same 32GB pool as the
   CPU/OS. Realistic model+context budget is ~20–24GB.
-- **Prefer MoE models** (Qwen3-Coder 30B, Gemma 4) — only their active experts run
+- **Prefer MoE models** (Qwen3.6 35B, Gemma 4) — only their active experts run
   per token, so they stay responsive even mostly on CPU.
-- **Dense models that don't fit** (Devstral 24B, Qwen3.8 27B at high quants) will be
-  slow on shared RAM — only use if you need their specific strengths.
-- **Context is RAM.** Native context is 256K but it won't fit. Use
+- **Dense models need headroom** (Qwen3.8 27B, Muse Glimmer 30B at 32k ctx reach ~21–22GB) —
+  fine at 8–16k ctx, tight at 32k. Only use 32k if you need repo-scale context.
+- **Context is RAM.** Native context is 128–262K but it won't fit. Use
   `LLM_CONTEXT=8192` (default) to `16384` unless you genuinely need long context.
+  32k fits the table above but leaves little headroom; measure with `mise run llm:serve`.
 - **GPU offload trades compute, not memory.** `--ngl` moves work to the iGPU but the
-  weights still live in the same 32GB. A partial offload (`LLM_GPU_LAYERS=40`) is a
-  good starting point.
+  weights still live in the same 32GB. A partial offload (`LLM_GPU_LAYERS=40` MoE,
+  `20–30` dense) is a good starting point.
 - **Hugepages:** the serve task allocates ~half of *free* RAM as static hugepages for
   the duration. Don't run two models at once (they'd fight over the pool).
 
