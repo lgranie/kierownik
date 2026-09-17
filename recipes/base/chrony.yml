@@ -24,6 +24,8 @@ modules:
 
   - type: systemd
     system:
+      enabled:
+        - chronyd.service
       masked:
         # Single time daemon: chronyd owns time. Block timesyncd
         # even if pulled in later as a dependency.
