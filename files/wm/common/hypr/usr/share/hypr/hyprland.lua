@@ -21,7 +21,7 @@ require("perm")
 require("windows")
 
 hl.config({
-    debug {
+    debug = {
         disable_logs = true
     },
 
