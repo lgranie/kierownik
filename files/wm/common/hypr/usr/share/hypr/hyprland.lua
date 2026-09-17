@@ -21,6 +21,10 @@ require("perm")
 require("windows")
 
 hl.config({
+    debug {
+        disable_logs = true
+    },
+
 	ecosystem = {
         no_update_news = true,
 		no_donation_nag = true,
