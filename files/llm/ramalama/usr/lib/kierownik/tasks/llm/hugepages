@@ -7,15 +7,15 @@ THP_PATH="/sys/kernel/mm/transparent_hugepage/enabled"
 HUGEPAGE_SIZE_KB=$(grep Hugepagesize /proc/meminfo | awk '{print $2}')
 
 show_status() {
-    gum log -sl info "Transparent hugepages: $(cat "$THP_PATH") (want [madvise], pinned via transparent_hugepage=madvise karg)"
-    gum log -sl info "Static hugepages: $(awk '/HugePages_Total/ {print $2}' /proc/meminfo) (want 0, unused by llama.cpp)"
-    gum log -sl info "AnonHugePages: $(awk '/AnonHugePages/ {print $2" "$3}' /proc/meminfo) (THP actually backing processes)"
-    gum log -sl info "Hugepage size: $(( HUGEPAGE_SIZE_KB / 1024 ))MB"
+  gum log -sl info "Transparent hugepages: $(cat "$THP_PATH") (want [madvise], pinned via transparent_hugepage=madvise karg)"
+  gum log -sl info "Static hugepages: $(awk '/HugePages_Total/ {print $2}' /proc/meminfo) (want 0, unused by llama.cpp)"
+  gum log -sl info "AnonHugePages: $(awk '/AnonHugePages/ {print $2" "$3}' /proc/meminfo) (THP actually backing processes)"
+  gum log -sl info "Hugepage size: $((HUGEPAGE_SIZE_KB / 1024))MB"
 }
 
 action="${usage_action:-status}"
 if [[ "${action}" != "status" ]]; then
-    gum log -sl warn "Only 'status' is supported — THP mode is pinned at boot via kargs, no runtime toggle."
+  gum log -sl warn "Only 'status' is supported — THP mode is pinned at boot via kargs, no runtime toggle."
 fi
 
 show_status

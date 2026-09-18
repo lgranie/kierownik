@@ -4,13 +4,13 @@
 subkey_keygrip=$(gpg --list-keys --with-keygrip | awk '$0 ~ /\[A\]/ {getline; print $3}')
 
 if [[ ! -f "$HOME/.gnupg/sshcontrol" ]]; then
-    echo "${subkey_keygrip}" >> "$HOME/.gnupg/sshcontrol"
+  echo "${subkey_keygrip}" >>"$HOME/.gnupg/sshcontrol"
 fi
 
 identity_file="$HOME/.identity"
 default_email=""
 if [[ -f "$identity_file" ]]; then
-    default_email=$(jq -r '.emailAddress' "$identity_file")
+  default_email=$(jq -r '.emailAddress' "$identity_file")
 fi
 
 user_email=$(gum input --prompt "Enter your email : " --value "$default_email")

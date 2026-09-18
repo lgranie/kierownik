@@ -11,7 +11,10 @@ STATUS=0
 
 pass() { gum log -sl info "  ${PASS} $*"; }
 warn() { gum log -sl warn "  ${WARN} $*"; }
-fail() { gum log -sl error "  ${FAIL} $*"; STATUS=1; }
+fail() {
+  gum log -sl error "  ${FAIL} $*"
+  STATUS=1
+}
 info() { gum log -sl info "  ${INFO} $*"; }
 
 # ---------------------------------------------------------------------------
@@ -24,21 +27,21 @@ version_gte() {
 gum style --border thick "pi-less-yolo health check"
 
 # --- container runtime binary -----------------------------------------------
-if command -v podman > /dev/null 2>&1; then
+if command -v podman >/dev/null 2>&1; then
   pass "podman available"
 else
   fail "podman not found — install Podman: https://podman.io/getting-started/installation"
 fi
 
 # --- container runtime daemon -----------------------------------------------
-if podman info > /dev/null 2>&1; then
+if podman info >/dev/null 2>&1; then
   pass "podman socket running"
 else
   fail "podman socket not running — start the Podman socket"
 fi
 
 # --- image ------------------------------------------------------------------
-if podman image inspect "pi-less-yolo:latest" > /dev/null 2>&1; then
+if podman image inspect "pi-less-yolo:latest" >/dev/null 2>&1; then
   pass "image pi-less-yolo:latest exists"
 else
   warn "image pi-less-yolo:latest not found — run: mise run pi:build"

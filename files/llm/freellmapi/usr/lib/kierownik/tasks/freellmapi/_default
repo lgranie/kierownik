@@ -26,7 +26,7 @@ else
   gum log -sl info "container: stopped (starts on first request)"
 fi
 
-if curl -fsS "${URL}/api/ping" > /dev/null 2>&1; then
+if curl -fsS "${URL}/api/ping" >/dev/null 2>&1; then
   gum log -sl info "api: reachable at ${URL}"
   gum style "Dashboard: ${URL} — add provider keys on the Keys page, then point any OpenAI client at ${URL}/v1 with the unified key."
 else

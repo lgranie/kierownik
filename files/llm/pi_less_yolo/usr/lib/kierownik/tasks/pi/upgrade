@@ -6,7 +6,7 @@ set -euo pipefail
 PI_IMAGE="pi-less-yolo:latest"
 CONTAINERFILE="${MISE_TASK_DIR}/../../Containerfile"
 
-podman image inspect "${PI_IMAGE}" > /dev/null 2>&1 || {
+podman image inspect "${PI_IMAGE}" >/dev/null 2>&1 || {
   gum log -sl error "error: image not found — run: mise run pi:build" >&2
   exit 1
 }

@@ -47,7 +47,7 @@ if [[ ${#modified[@]} -gt 0 ]]; then
         run0 bash -c "cp -a '${src}' '${path}'"
       fi
       touched+=("${path}")
-    done <<< "${selected}"
+    done <<<"${selected}"
     gum log -sl info "Restored ${#touched[@]} file(s)."
   fi
 fi
@@ -60,7 +60,7 @@ if [[ ${#added[@]} -gt 0 ]]; then
       while IFS= read -r path; do
         run0 bash -c "rm -rf '${path}'"
         touched+=("${path}")
-      done <<< "${selected}"
+      done <<<"${selected}"
       gum log -sl info "Deleted selected file(s)."
     fi
   else

@@ -14,18 +14,18 @@ if [[ -f "${ENV_FILE}" ]]; then
 else
   KEY="$(openssl rand -hex 32)"
   umask 077
-  printf 'ENCRYPTION_KEY=%s\n' "${KEY}" > "${ENV_FILE}"
+  printf 'ENCRYPTION_KEY=%s\n' "${KEY}" >"${ENV_FILE}"
   umask 022
   gum log -sl info "Wrote ${ENV_FILE} with a fresh ENCRYPTION_KEY"
 fi
 
 chmod 600 "${ENV_FILE}"
 
-podman image inspect "localhost/freellmapi:latest" > /dev/null 2>&1 || mise run freellmapi:build
+podman image inspect "localhost/freellmapi:latest" >/dev/null 2>&1 || mise run freellmapi:build
 
 gum log -sl info "Probing ${URL}/api/ping (starts the container on demand) ..."
 for _ in $(seq 1 30); do
-  if curl -fsS "${URL}/api/ping" > /dev/null 2>&1; then
+  if curl -fsS "${URL}/api/ping" >/dev/null 2>&1; then
     HEALTHY=1
     break
   fi
