@@ -15,4 +15,8 @@ modules:
         - vim-common
         - vim-data
         - vim-minimal
+
+  - type: script
+    snippets:
+      - rm -f /etc/profile.d/*csh*
 ...

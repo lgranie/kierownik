@@ -8,6 +8,12 @@ krw_require_interactive || return 0 2>/dev/null || exit 0
 # Delete dead links in current dir
 alias rmdl='find . -xtype l -delete'
 
+# lsd
+alias ls=lsd
+alias l='lsd -l'
+alias ll='lsd -la'
+
+
 # nvim
 alias v=nvim
 alias vi=nvim
