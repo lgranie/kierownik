@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+#MISE description="Update Pico firmware (UF2)"
+set -euo pipefail
+# shellcheck disable=SC1091
+source "$(dirname "$0")/_usbguard"
+
+# ponytail: BOOTSEL PID 0003 known RP2040 only; RP2350 PID unverified, add after hardware check
+BOOTSEL_IDS="2e8a:0003"
+
+mode="$(gum choose openpgp fido --header "Key type")"
+if [[ "${mode}" == "openpgp" ]]; then repo="polhenarejos/pico-openpgp"; else repo="polhenarejos/pico-fido"; fi
+
+# fetch_gh_latest_tag is build-time only; inline the same one-liner here.
+tag="$(curl --silent --retry 3 "https://api.github.com/repos/${repo}/releases/latest" | jq -r '.tag_name // empty' 2>/dev/null || true)"
+[[ -n "${tag}" ]] || tag="$(gum input --placeholder "Offline: paste release tag (e.g. v5.0)")"
+[[ -n "${tag}" ]] || exit 0
+
+board="$(gum choose pico pico2 --header "Board")"
+url="$(curl --silent --retry 3 "https://api.github.com/repos/${repo}/releases/tags/${tag}" | jq -r '.assets[]?.browser_download_url' 2>/dev/null | grep "\.uf2$" | grep "${board}" | head -n 1 || true)"
+[[ -n "${url}" ]] || url="$(gum input --placeholder "Asset lookup failed: paste local UF2 path or URL")"
+[[ -n "${url}" ]] || exit 0
+
+uf2="${url}"
+if [[ "${url}" == http* ]]; then
+  uf2="/tmp/pico-${board}-${tag}.uf2"
+  curl --silent --retry 3 -L --output "${uf2}" "${url}" || {
+    gum log -sl error "Download failed."
+    exit 1
+  }
+fi
+[[ -f "${uf2}" ]] || {
+  gum log -sl error "UF2 not found: ${uf2}"
+  exit 1
+}
+
+gum confirm "Reflash wipes keys. Exported pubs via key/copy first?" || exit 0
+gum style --border thick "Hold BOOTSEL, plug the Pico, then confirm." && gum confirm "Pico in BOOTSEL mode?" || exit 0
+
+mnt=""
+for _ in $(seq 1 60); do
+  # shellcheck disable=SC2086
+  _usbguard_allow ${BOOTSEL_IDS} || true
+  mnt="$(lsblk -rno LABEL,MOUNTPOINT 2>/dev/null | awk '$1=="RPI-RP2" || $1=="RP2350" {print $2; exit}')"
+  [[ -n "${mnt}" ]] && break
+  sleep 2
+done
+[[ -n "${mnt}" ]] || mnt="$(gum input --placeholder "No BOOTSEL volume found: paste mount path")"
+[[ -n "${mnt}" && -d "${mnt}" ]] || {
+  gum log -sl error "No BOOTSEL volume."
+  exit 1
+}
+
+cp "${uf2}" "${mnt}/" && sync
+gum log -sl info "Flashed. Pico reboots itself; verify with key/init or gpg --card-status / fido2-token -L."

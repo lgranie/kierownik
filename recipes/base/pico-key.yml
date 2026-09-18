@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+---
+modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - curl
+        - opensc
+        - pcsc-lite-ccid
+        - yubikey-manager
+
+  - type: files
+    files:
+      - source: base/pico-key
+        destination: /
+
+  - type: script
+    scripts:
+      - base/pico-key-ccid.sh

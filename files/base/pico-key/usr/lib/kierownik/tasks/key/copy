@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+#MISE description="Export Pico public keys"
+set -euo pipefail
+# shellcheck disable=SC1091
+source "$(dirname "$0")/_usbguard"
+
+PICO_IDS="2e8a:10ff 2e8a:10fe feff:fcfd"
+
+mode="$(gum choose openpgp fido --header "Key type")"
+
+# shellcheck disable=SC2086
+if ! _usbguard_allow ${PICO_IDS}; then
+  gum log -sl error "Pico blocked by usbguard. Run 'usbguard list-devices' to inspect."
+  exit 1
+fi
+
+if [[ "${mode}" == "openpgp" ]]; then
+  gpg --card-status >/dev/null 2>&1 || {
+    gum log -sl error "No OpenPGP card found (gpg --card-status)."
+    exit 1
+  }
+  out="$(gum choose gpg ssh pkcs11 --header "Which public key?")"
+  case "${out}" in
+    gpg) pub="$(gpg --armor --export)" ;;
+    ssh)
+      email="$(gum input --prompt "Email identity: ")"
+      pub="$(gpg --export-ssh-key "${email}")"
+      ;;
+    pkcs11) pub="$(ssh-keygen -D /usr/lib64/opensc-pkcs11.so -e)" ;;
+  esac
+  gum style "${pub}"
+  gum confirm "Copy to clipboard?" && printf '%s' "${pub}" | wl-copy
+else
+  dev="$(fido2-token -L 2>/dev/null | grep -o '/dev/hidraw[0-9]*' | gum choose --header "Pick Pico device")"
+  [[ -n "${dev}" ]] || exit 0
+  fido2-token -I "${dev}"
+  gum log -sl warn "FIDO privates never leave the card. Vault export only via PicoKey App."
+fi

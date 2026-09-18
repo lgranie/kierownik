@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+
+#MISE description="Create Pico credentials / enroll for login"
+set -euo pipefail
+
+# shellcheck disable=SC1091
+source "$(dirname "$0")/_usbguard"
+
+PICO_IDS="2e8a:10ff 2e8a:10fe feff:fcfd"
+
+mode="$(gum choose openpgp fido --header "Key type")"
+
+# shellcheck disable=SC2086
+if ! _usbguard_allow ${PICO_IDS}; then
+  gum log -sl error "Pico blocked by usbguard. Run 'usbguard list-devices' to inspect."
+  exit 1
+fi
+
+if [[ "${mode}" == "openpgp" ]]; then
+  gpg --card-status >/dev/null 2>&1 || {
+    gum log -sl error "No OpenPGP card found (gpg --card-status)."
+    exit 1
+  }
+  how="$(gum choose generate move --header "On-card generate (never leaves) or move host key?")"
+  if [[ "${how}" == "generate" ]]; then
+    kind="$(gum choose ed25519 rsa4096 --header "Key kind (rsa4096 gen takes ~15min)")"
+    if [[ "${kind}" == "rsa4096" ]]; then
+      gum style --border thick "In card-edit run: admin → generate" \
+        "RSA-4096 on-card takes ~15 minutes. Stay present for PIN prompts."
+      # ponytail: RSA path stays interactive; 3 per-slot size prompts double version-fragility
+      gpg --card-edit
+    else
+      default_name="$(jq -r '.realName // empty' ~/.identity 2>/dev/null)"
+      default_email="$(jq -r '.emailAddress // empty' ~/.identity 2>/dev/null)"
+      name="$(gum input --prompt "Real name: " --value "${default_name}")"
+      email="$(gum input --prompt "Email: " --value "${default_email}")"
+      admin_pin="$(gum input --password --prompt "Admin PIN (PW3): ")"
+      [[ -n "${name}" && -n "${email}" && -n "${admin_pin}" ]] || exit 0
+      # ponytail: positional answers track GnuPG 2.4 generate prompts; re-verify on major GnuPG bumps
+      printf '%s\n' admin generate n 0 y 2 1 "${name}" "${email}" "" O quit |
+        gpg --batch --yes --pinentry-mode loopback --pin "${admin_pin}" \
+          --command-fd 0 --status-fd 2 --expert --card-edit || {
+        gum log -sl error "On-card generate failed (prompt drift?). Transcript above; retry via: gpg --card-edit"
+        exit 1
+      }
+      unset admin_pin
+    fi
+  else
+    fpr="$(gpg --list-secret-keys --with-colons 2>/dev/null | awk -F: '/^fpr:/ {print $10}' | gum choose --header "Pick host key to move")"
+    [[ -n "${fpr}" ]] || exit 0
+    gum style --border thick "In edit-key run, per subkey:" \
+      "key 1 → keytocard → pick slot (1=sign 2=encrypt 3=auth) → save" \
+      "Host secret then lives on the Pico; keep an offline backup first."
+    gpg --edit-key "${fpr}"
+  fi
+  grep -q 'pcsc-shared' ~/.gnupg/scdaemon.conf 2>/dev/null || echo "pcsc-shared" >>~/.gnupg/scdaemon.conf
+  gpg --card-status
+else
+  command -v pamu2fcfg >/dev/null || {
+    gum log -sl error "pamu2fcfg not installed. Rebuild image first."
+    exit 1
+  }
+  gum log -sl info "Touch the Pico when it blinks."
+  pamu2fcfg --pin-verification | run0 bash -c 'cat >> /etc/u2f_mappings'
+  gum log -sl info "Enrolled. Cryptsetup enroll stays manual: systemd-cryptenroll --fido2-device=auto /dev/..."
+fi

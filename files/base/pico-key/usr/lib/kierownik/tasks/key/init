@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+#MISE description="Initialize Pico hardware key"
+set -euo pipefail
+# shellcheck disable=SC1091
+source "$(dirname "$0")/_usbguard"
+
+PICO_IDS="2e8a:10ff 2e8a:10fe feff:fcfd"
+
+mode="$(gum choose openpgp fido --header "Key type")"
+
+# shellcheck disable=SC2086
+if ! _usbguard_allow ${PICO_IDS}; then
+  gum log -sl error "Pico blocked by usbguard. Run 'usbguard list-devices' to inspect."
+  exit 1
+fi
+
+if [[ "${mode}" == "openpgp" ]]; then
+  gpg --card-status >/dev/null 2>&1 || {
+    gum log -sl error "No OpenPGP card found. Check pcscd sees the Pico (gpg --card-status)."
+    exit 1
+  }
+  gum style --border thick "Set PINs in card-edit" \
+    "admin → passwd → 1 (user PIN PW1) → 3 (admin PIN PW3) → Q" \
+    "Then: name, lang, key-attr (KDF), uif on (press-to-confirm)."
+  gpg --card-edit
+  gpg --card-status
+else
+  command -v fido2-token >/dev/null || {
+    gum log -sl error "fido2-tools not installed. Rebuild image first."
+    exit 1
+  }
+  dev="$(fido2-token -L 2>/dev/null | grep -o '/dev/hidraw[0-9]*' | gum choose --header "Pick Pico device")"
+  [[ -n "${dev}" ]] || exit 0
+  fido2-token -C "${dev}"
+  fido2-token -I "${dev}"
+  gum log -sl info "24-word backup only via PicoKey App; do it now if needed."
+fi
