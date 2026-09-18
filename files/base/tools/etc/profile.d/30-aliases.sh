@@ -1,6 +1,10 @@
 # bash twin of conf.d/30-aliases.fish (sourced from /etc/profile.d)
 # shellcheck shell=bash
 
+# shellcheck source=00-interactive-only.sh disable=SC1091
+. /etc/profile.d/00-interactive-only.sh 2>/dev/null || return 0 2>/dev/null || exit 0
+krw_require_interactive || return 0 2>/dev/null || exit 0
+
 # Delete dead links in current dir
 alias rmdl='find . -xtype l -delete'
 
