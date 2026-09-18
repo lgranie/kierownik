@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+#MISE description="Backup gpg secret key"
+# Optional args (prompted when missing): $1 fingerprint, $2 backup path.
+set -euo pipefail
+
+fpr="${1:-}"
+path="${2:-}"
+if [[ -z "${fpr}" ]]; then
+  fpr="$(gpg --list-secret-keys --with-colons 2>/dev/null | awk -F: '/^fpr:/ {print $10}' | gum choose --header "Pick key to back up")"
+fi
+[[ -n "${fpr}" ]] || exit 0
+if [[ -z "${path}" ]]; then
+  path="$(gum input --prompt "Secret backup path: " --value "${HOME}/gpg-backup-${fpr: -8}.asc")"
+fi
+[[ -n "${path}" ]] || exit 0
+if [[ -e "${path}" ]]; then
+  gum confirm "Overwrite ${path}?" || exit 0
+fi
+gpg --armor --output "${path}" --export-secret-keys "${fpr}" || {
+  gum log -sl error "Backup failed."
+  exit 1
+}
+chmod 600 "${path}"
+gpg --show-keys "${path}" >/dev/null || {
+  gum log -sl error "Backup unreadable."
+  exit 1
+}
+if gum confirm "Generate a revocation certificate alongside?"; then
+  gpg --output "${path%.asc}.rev" --gen-revoke "${fpr}"
+fi
+gum log -sl info "Backed up to ${path}"

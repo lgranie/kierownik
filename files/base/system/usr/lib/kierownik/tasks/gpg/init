@@ -7,8 +7,8 @@ identity_file="$HOME/.identity"
 default_name=""
 default_email=""
 if [[ -f "$identity_file" ]]; then
-    default_name=$(jq -r '.realName' "$identity_file")
-    default_email=$(jq -r '.emailAddress' "$identity_file")
+  default_name=$(jq -r '.realName' "$identity_file")
+  default_email=$(jq -r '.emailAddress' "$identity_file")
 fi
 
 user_name=$(gum input --prompt "Enter your name : " --value "$default_name")
@@ -38,3 +38,7 @@ gpg --batch --passphrase '' --quick-add-key ${FPR} rsa4096 auth 0
 
 # Save pub key
 gpg --output public.key --armor --export "${user_email}"
+
+if gum confirm "Back up the secret key now?"; then
+  "$(dirname "$0")/backup" "${FPR}"
+fi

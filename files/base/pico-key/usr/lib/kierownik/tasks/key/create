@@ -48,9 +48,14 @@ if [[ "${mode}" == "openpgp" ]]; then
   else
     fpr="$(gpg --list-secret-keys --with-colons 2>/dev/null | awk -F: '/^fpr:/ {print $10}' | gum choose --header "Pick host key to move")"
     [[ -n "${fpr}" ]] || exit 0
+    tasks_root="${KRW_TASKS_DIR:-$(dirname "$0")/..}"
+    "${tasks_root}/gpg/backup" "${fpr}" || {
+      gum log -sl error "Backup failed; move aborted, host key untouched."
+      exit 1
+    }
     gum style --border thick "In edit-key run, per subkey:" \
       "key 1 → keytocard → pick slot (1=sign 2=encrypt 3=auth) → save" \
-      "Host secret then lives on the Pico; keep an offline backup first."
+      "Backup done above; keytocard now removes the host secret."
     gpg --edit-key "${fpr}"
   fi
   grep -q 'pcsc-shared' ~/.gnupg/scdaemon.conf 2>/dev/null || echo "pcsc-shared" >>~/.gnupg/scdaemon.conf
