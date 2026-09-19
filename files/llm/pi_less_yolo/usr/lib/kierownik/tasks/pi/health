@@ -17,13 +17,6 @@ fail() {
 }
 info() { gum log -sl info "  ${INFO} $*"; }
 
-# ---------------------------------------------------------------------------
-# Semver comparison: returns 0 if $1 >= $2
-# ---------------------------------------------------------------------------
-version_gte() {
-  printf '%s\n%s' "$2" "$1" | sort -C -V
-}
-
 gum style --border thick "pi-less-yolo health check"
 
 # --- container runtime binary -----------------------------------------------

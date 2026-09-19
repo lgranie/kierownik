@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 #MISE description="Show hugepage state for LLM workloads"
-#USAGE arg "[action]" help="Action to perform" { choices "status" }
 set -oue pipefail
 
 THP_PATH="/sys/kernel/mm/transparent_hugepage/enabled"
@@ -12,10 +11,5 @@ show_status() {
   gum log -sl info "AnonHugePages: $(awk '/AnonHugePages/ {print $2" "$3}' /proc/meminfo) (THP actually backing processes)"
   gum log -sl info "Hugepage size: $((HUGEPAGE_SIZE_KB / 1024))MB"
 }
-
-action="${usage_action:-status}"
-if [[ "${action}" != "status" ]]; then
-  gum log -sl warn "Only 'status' is supported — THP mode is pinned at boot via kargs, no runtime toggle."
-fi
 
 show_status

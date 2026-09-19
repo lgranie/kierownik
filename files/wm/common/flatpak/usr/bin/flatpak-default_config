@@ -10,4 +10,4 @@ flatpak override --system --nosocket=x11
 # org.localsend.localsend_app
 flatpak override --system --filesystem=xdg-download org.localsend.localsend_app
 
-notify_all "Flatpak" "System configuration setted"
+notify_all "Flatpak" "System configuration set"
