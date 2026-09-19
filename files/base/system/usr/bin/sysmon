@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+set -oue pipefail
+
+# sysmon — system monitor herdr session in the special:sysmon workspace.
+# Tab "monitor": btop on top, nvtop below. Tab "services": systemd-manager-tui.
+# No args attaches to the session. `sysmon toggle` shows/hides it from
+# Hyprland/Noctalia (used by the SUPER+S bind and the sysmon widget click).
+# Layout bootstraps once; herdr session persistence restores it afterwards.
+
+SESSION="sysmon"
+
+usage() {
+  gum style --border thick "sysmon — herdr system monitor session" \
+    "Usage: sysmon [toggle]" \
+    "No args attaches to the sysmon session (bootstraps layout once)." \
+    "toggle shows/hides the special:sysmon workspace."
+}
+
+err() {
+  gum log -sl error "$1"
+  gum confirm "Close window?" || true
+}
+
+need() {
+  command -v "$1" >/dev/null 2>&1 || {
+    err "$1 not installed. Rebuild image first."
+    exit 1
+  }
+}
+
+h() {
+  herdr --session "${SESSION}" "$@"
+}
+
+bootstrap() {
+  local out tab root new
+  if h workspace list | jq -e '.. | objects | select(.label == "sysmon")' >/dev/null; then
+    return 0
+  fi
+  need btop
+  need nvtop
+  need systemd-manager-tui
+  out="$(h workspace create --label sysmon --no-focus)"
+  tab="$(jq -r '.result.tab.tab_id' <<<"${out}")"
+  root="$(jq -r '.result.root_pane.pane_id' <<<"${out}")"
+  h tab rename "${tab}" monitor >/dev/null
+  h pane run "${root}" "btop" >/dev/null
+  new="$(h pane split "${root}" --direction down --no-focus | jq -r '.result.pane.pane_id')"
+  h pane run "${new}" "nvtop" >/dev/null
+  new="$(h tab create --label services --no-focus | jq -r '.result.root_pane.pane_id')"
+  h pane run "${new}" "systemd-manager-tui" >/dev/null
+}
+
+attach() {
+  need herdr
+  need jq
+  if [[ "${HERDR_ENV:-}" == "1" ]]; then
+    err "already inside herdr, detach first (prefix+q)."
+    exit 1
+  fi
+  bootstrap
+  exec herdr --session "${SESSION}"
+}
+
+toggle() {
+  need hyprctl
+  need jq
+  if hyprctl clients -j | jq -e '.. | objects | select(.class == "sysmon" or .initialClass == "sysmon")' >/dev/null; then
+    hyprctl dispatch togglespecialworkspace sysmon
+    return 0
+  fi
+  need uwsm-app
+  need footclient
+  uwsm-app -a sysmon -- footclient --app-id=sysmon sysmon >/dev/null 2>&1 &
+  disown
+  local i
+  for ((i = 0; i < 50; i++)); do
+    hyprctl clients -j | jq -e '.. | objects | select(.class == "sysmon" or .initialClass == "sysmon")' >/dev/null && break
+    sleep 0.1
+  done
+  hyprctl workspaces -j | jq -e '.[] | select(.name == "special:sysmon")' >/dev/null ||
+    hyprctl dispatch togglespecialworkspace sysmon
+}
+
+case "${1:-}" in
+  -h | --help)
+    usage
+    exit 0
+    ;;
+  toggle) toggle ;;
+  "") attach ;;
+  *)
+    err "usage: sysmon [toggle]"
+    exit 1
+    ;;
+esac

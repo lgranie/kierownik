@@ -75,6 +75,24 @@ hl.window_rule({
 	workspace = "special:krw",
 })
 
+-- System monitor (sysmon spawns foot --app-id=sysmon)
+hl.window_rule({
+	name = "sysmon",
+	match = { class = "sysmon" },
+
+	workspace = "special:sysmon",
+	decorate = false,
+	border_size = 0,
+	rounding = 0,
+	no_shadow = true,
+})
+
+hl.workspace_rule({
+	workspace = "special:sysmon",
+	gaps_in = 0,
+	gaps_out = 0,
+})
+
 -- Media Player
 hl.window_rule({
 	name = "media",

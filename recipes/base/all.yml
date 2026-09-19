@@ -29,7 +29,7 @@ modules:
 
   - type: script
     snippets:
-      - "chmod +x /usr/bin/firstboot /usr/bin/fwupd-update-check /usr/bin/krw /etc/grub.d/06_timeout"
+      - "chmod +x /usr/bin/firstboot /usr/bin/fwupd-update-check /usr/bin/krw /usr/bin/sysmon /etc/grub.d/06_timeout"
 
   - from-file: base/systemd-services.yml
 
