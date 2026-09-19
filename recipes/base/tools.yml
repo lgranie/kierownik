@@ -25,6 +25,7 @@ modules:
         - lsd
         - make
         - neovim
+        - nvtop
         - openssh
         - ripgrep
         - stow

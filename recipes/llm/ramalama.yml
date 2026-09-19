@@ -5,7 +5,6 @@ modules:
     install:
       install-weak-deps: false
       packages:
-        - nvtop
         - ramalama
 
   - type: files
