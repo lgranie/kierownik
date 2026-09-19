@@ -3,17 +3,16 @@ set -oue pipefail
 
 # sysmon — system monitor herdr session in the special:sysmon workspace.
 # Tab "monitor": btop on top, nvtop below. Tab "services": systemd-manager-tui.
-# No args attaches to the session. `sysmon toggle` shows/hides it from
-# Hyprland/Noctalia (used by the SUPER+S bind and the sysmon widget click).
+# Attaches to the session (run it once from a terminal or the launcher;
+# SUPER+S toggles special:sysmon natively).
 # Layout bootstraps once; herdr session persistence restores it afterwards.
 
 SESSION="sysmon"
 
 usage() {
   gum style --border thick "sysmon — herdr system monitor session" \
-    "Usage: sysmon [toggle]" \
-    "No args attaches to the sysmon session (bootstraps layout once)." \
-    "toggle shows/hides the special:sysmon workspace."
+    "Usage: sysmon" \
+    "Attaches to the sysmon session (bootstraps layout once)."
 }
 
 err() {
@@ -112,35 +111,14 @@ attach() {
   exec herdr --session "${SESSION}"
 }
 
-toggle() {
-  need hyprctl
-  need jq
-  if hyprctl clients -j | jq -e '.. | objects | select(.class == "sysmon" or .initialClass == "sysmon")' >/dev/null; then
-    hyprctl dispatch togglespecialworkspace sysmon
-    return 0
-  fi
-  need uwsm-app
-  need footclient
-  uwsm-app -a sysmon -- footclient --app-id=sysmon sysmon >/dev/null 2>&1 &
-  disown
-  local i
-  for ((i = 0; i < 50; i++)); do
-    hyprctl clients -j | jq -e '.. | objects | select(.class == "sysmon" or .initialClass == "sysmon")' >/dev/null && break
-    sleep 0.1
-  done
-  hyprctl workspaces -j | jq -e '.[] | select(.name == "special:sysmon")' >/dev/null ||
-    hyprctl dispatch togglespecialworkspace sysmon
-}
-
 case "${1:-}" in
   -h | --help)
     usage
     exit 0
     ;;
-  toggle) toggle ;;
   "") attach ;;
   *)
-    err "usage: sysmon [toggle]"
+    err "usage: sysmon"
     exit 1
     ;;
 esac

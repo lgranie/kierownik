@@ -63,7 +63,9 @@ hl.bind("SUPER + mouse:273", window.resize(), { mouse = true })
 -- 9. Hyprland Specific
 hl.bind("SUPER + R", layout("colresize +conf"))
 
-hl.bind("SUPER + S", exec("sysmon toggle"), { description = "Toggle system monitor" })
+hl.bind("SUPER + S", function()
+    hl.dispatch(worksp.toggle_special("sysmon"))
+end, { description = "Toggle system monitor" })
 
 hl.bind("SUPER + M", function()
     hl.dispatch(worksp.toggle_special("media"))
