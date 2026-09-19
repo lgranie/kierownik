@@ -265,23 +265,13 @@ local function scoreBookmark(title, entry, query)
     end
 
     local baseScore = math.max(titleScore * 1.0, urlScore * 0.6, tagScore * 0.8)
-    if baseScore == 0 and titleScore == 0 and urlScore == 0 and tagScore == 0 then
-        -- Check if any field matches substring as fallback
-        local lq = query:lower()
-        local matched = title:lower():find(lq, 1, true) or entry.url:lower():find(lq, 1, true)
-        if not matched and entry.tags then
-            for _, tag in ipairs(entry.tags) do
-                if tag:lower():find(lq, 1, true) then matched = true break end
-            end
-        end
-        if matched then
-            baseScore = 1.0
-        else
-            return nil
+    local matched = title:lower():find(lq, 1, true) or entry.url:lower():find(lq, 1, true)
+    if not matched and entry.tags then
+        for _, tag in ipairs(entry.tags) do
+            if tag:lower():find(lq, 1, true) then matched = true break end
         end
     end
-
-    return baseScore + usageBoost
+    return matched and 1.0 or nil
 end
 
 function onQuery(query)
@@ -384,38 +374,26 @@ function onQuery(query)
             table.insert(results, scoredList[i].result)
         end
     else
-        local lowerQuery = text:lower()
-        local showAll = activeCategory ~= "all" and lowerQuery == activeCategory:lower()
-        for i = 1, #keys do
-            local title = keys[i]
-            local entry = database[title]
-            if showAll or title:lower():find(lowerQuery, 1, true) or entry.url:lower():find(lowerQuery, 1, true) then
-                local sc = scoreBookmark(title, entry, text)
-                if sc then
-                    table.insert(scoredList, {
-                        title = title,
-                        score = sc,
-                        result = formatBookmark(title, entry, sc)
-                    })
-                end
-            else
-                local sc = scoreBookmark(title, entry, text)
-                if sc then
-                    table.insert(scoredList, {
-                        title = title,
-                        score = sc,
-                        result = formatBookmark(title, entry, sc)
-                    })
-                end
-            end
+    local lowerQuery = text:lower()
+    for i = 1, #keys do
+        local title = keys[i]
+        local entry = database[title]
+        local sc = scoreBookmark(title, entry, text)
+        if sc then
+            table.insert(scoredList, {
+                title = title,
+                score = sc,
+                result = formatBookmark(title, entry, sc)
+            })
         end
-        table.sort(scoredList, function(a, b)
-            if a.score ~= b.score then return a.score > b.score end
-            return a.title < b.title
-        end)
-        for i = 1, math.min(#scoredList, 50) do
-            table.insert(results, scoredList[i].result)
-        end
+    end
+    table.sort(scoredList, function(a, b)
+        if a.score ~= b.score then return a.score > b.score end
+        return a.title < b.title
+    end)
+    for i = 1, math.min(#scoredList, 50) do
+        table.insert(results, scoredList[i].result)
+    end
     end
 
     if #results == 0 then
