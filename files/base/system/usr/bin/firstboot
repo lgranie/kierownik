@@ -197,7 +197,7 @@ EOF
     --password-change-now=false \
     --storage=directory \
     --fs-type=btrfs \
-    --shell=/usr/bin/fish \
+    --shell=/usr/bin/bash \
     --member-of=audio,pipewire,users,wheel \
     --real-name="$FULLNAME" \
     --email="$EMAIL"

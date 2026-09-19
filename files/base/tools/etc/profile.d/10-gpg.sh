@@ -1,4 +1,4 @@
-# bash twin of conf.d/10-gpg.fish (sourced from /etc/profile.d)
+# gpg/ssh agent env (sourced from /etc/profile.d)
 # shellcheck shell=bash
 
 # Skip system users (e.g. greetd UID 967) and non-interactive shells.

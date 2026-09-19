@@ -1,13 +1,12 @@
-# bash prompt, fish prompt_pwd style (sourced from /etc/profile.d)
-# fish needs no twin: default fish_prompt already abbreviates.
+# bash prompt with abbreviated pwd: /v/h/lgranie
 # shellcheck shell=bash
 
 # shellcheck source=00-interactive-only.sh disable=SC1091
 . /etc/profile.d/00-interactive-only.sh 2>/dev/null || return 0 2>/dev/null || exit 0
 krw_require_interactive || return 0 2>/dev/null || exit 0
 
-# fish prompt_pwd style: /v/h/lgranie
-fishpwd() {
+# abbreviated pwd: /v/h/lgranie
+pwdshort() {
   local p="$PWD"
   case "$p" in "$HOME"*) p="~${p#$HOME}" ;; esac
   local IFS=/
@@ -28,4 +27,4 @@ fishpwd() {
   done
   printf "%s" "$out"
 }
-PS1='[\u@\h $(fishpwd)]\$ '
+PS1='[\u@\h $(pwdshort)]\$ '

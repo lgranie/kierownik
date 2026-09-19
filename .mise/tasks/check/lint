@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #MISE description="Validate and lint recipes, scripts, workflows (no build)"
-#USAGE flag "--fix" help="Apply shfmt -w and fish_indent -w fixes (default: check only)"
+#USAGE flag "--fix" help="Apply shfmt -w fixes (default: check only)"
 set -oue pipefail
 
 fail=0
 
-gum log -sl info "1/6 bluebuild validate"
+gum log -sl info "1/5 bluebuild validate"
 for r in recipes/krw-*.yml recipes/recipe-*.yml; do
   [ -f "$r" ] || continue
   if ! mise x -- bluebuild validate "$r"; then
@@ -14,13 +14,13 @@ for r in recipes/krw-*.yml recipes/recipe-*.yml; do
   fi
 done
 
-gum log -sl info "2/6 yamllint"
+gum log -sl info "2/5 yamllint"
 if ! mise x uv yamllint -- yamllint -d "{extends: default, rules: {line-length: {max: 160}, document-start: disable, truthy: disable}}" recipes/ .github/; then
   gum log -sl error "yamllint failed"
   fail=1
 fi
 
-gum log -sl info "3/6 shellcheck"
+gum log -sl info "3/5 shellcheck"
 # SC2154: mise USAGE injects $usage_* at runtime; SC2148: profile.d snippets sourced, no shebang by design
 if ! mise x shellcheck -- shellcheck -S warning -e SC2154 -o all \
   .mise/tasks/build/* .mise/tasks/run/* .mise/tasks/wp/* \
@@ -29,7 +29,7 @@ if ! mise x shellcheck -- shellcheck -S warning -e SC2154 -o all \
   fail=1
 fi
 
-gum log -sl info "4/6 shfmt"
+gum log -sl info "4/5 shfmt"
 shfmt_args=(-d -i 2 -ci)
 if [ "${usage_fix:-false}" = "true" ]; then
   shfmt_args=(-w -i 2 -ci)
@@ -41,29 +41,7 @@ if ! mise x shfmt -- shfmt "${shfmt_args[@]}" \
   fail=1
 fi
 
-gum log -sl info "5/6 fish"
-fish_files=$(find files -name "*.fish" 2>/dev/null || true)
-if [ -n "$fish_files" ]; then
-  # shellcheck disable=SC2086
-  if ! mise x "aqua:fish-shell/fish-shell" -- fish -n $fish_files; then
-    gum log -sl error "fish -n failed"
-    fail=1
-  fi
-  for f in $fish_files; do
-    if command -v fish_indent >/dev/null 2>&1; then
-      if [ "${usage_fix:-false}" = "true" ]; then
-        mise x "aqua:fish-shell/fish-shell" -- fish_indent -w "$f"
-      elif ! mise x "aqua:fish-shell/fish-shell" -- fish_indent --check "$f"; then
-        gum log -sl error "fish_indent --check failed: $f"
-        fail=1
-      fi
-    else
-      gum log -sl info "fish_indent not installed, skipping format check for $f"
-    fi
-  done
-fi
-
-gum log -sl info "6/6 actionlint"
+gum log -sl info "5/5 actionlint"
 if ! mise x actionlint -- actionlint .github/workflows/*.yml; then
   gum log -sl error "actionlint failed"
   fail=1

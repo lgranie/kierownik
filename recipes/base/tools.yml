@@ -16,7 +16,6 @@ modules:
         - delta
         - dua-cli
         - fd
-        - fish
         - fzf
         - gcc
         - git
@@ -49,19 +48,6 @@ modules:
     scripts:
       - base/non-packaged-tools.sh
     snippets:
-      - "sed -i 's|^SHELL=.*|SHELL=/usr/bin/fish|' /etc/default/useradd"
-      - |
-        bat --completion fish > /etc/fish/completions/bat.fish
-        delta --generate-completion fish > /etc/fish/completions/delta.fish
-        dua completions fish > /etc/fish/completions/dua.fish
-        gum completion fish > /etc/fish/completions/gum.fish
-        herdr completion fish > /etc/fish/completions/herdr.fish
-        lazygit completion fish > /etc/fish/completions/lazygit.fish
-        usage --completions fish > /etc/fish/completions/usage.fish
-        yq completion fish > /etc/fish/completions/yq.fish
-        fzf --fish > /etc/fish/conf.d/90-fzf.fish
-        mise activate fish > /etc/fish/conf.d/90-mise.fish
-        zoxide init --cmd cd fish > /etc/fish/conf.d/90-zoxide.fish
       - |
         mkdir -p /usr/share/bash-completion/completions
         bat --completion bash > /usr/share/bash-completion/completions/bat

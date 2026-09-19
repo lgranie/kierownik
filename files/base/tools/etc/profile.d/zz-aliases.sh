@@ -1,4 +1,4 @@
-# bash twin of conf.d/30-aliases.fish (sourced from /etc/profile.d)
+# aliases (sourced from /etc/profile.d)
 # shellcheck shell=bash
 
 # shellcheck source=00-interactive-only.sh disable=SC1091
@@ -13,7 +13,6 @@ alias ls=lsd
 alias l='lsd -l'
 alias ll='lsd -la'
 
-
 # nvim
 alias v=nvim
 alias vi=nvim
@@ -23,14 +22,13 @@ alias vim=nvim
 alias mup='mise up'
 alias mr='mise run'
 
-# Utils (fish abbrs become plain aliases; no recursive expansion in bash)
+# Utils
 alias env='env | sort'
 alias df='df -h'
 alias du='du -h -d 1'
 
-# run0 (fish `abbr dmesg` equivalent)
+# run0
 alias dmesg='run0 dmesg'
 
-# fish `abbr sudo --set-cursor "run0 bash -c '%'"` has no alias equivalent;
-# a function wraps the command the same way (bash cannot place the cursor)
+# bash cannot place cursor like `run0 bash -c '%'` template; function wraps instead
 sudo() { run0 bash -c "$*"; }

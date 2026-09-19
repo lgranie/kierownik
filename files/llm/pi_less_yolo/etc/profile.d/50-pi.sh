@@ -1,4 +1,4 @@
-# bash twin of conf.d/50-pi.fish (sourced from /etc/profile.d)
+# pi env (sourced from /etc/profile.d)
 # shellcheck shell=bash
 
 # Env

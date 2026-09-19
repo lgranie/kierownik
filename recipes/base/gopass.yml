@@ -15,5 +15,5 @@ modules:
 
   - type: script
     snippets:
-      - "gopass completion fish > /etc/fish/completions/gopass.fish"
+      - "gopass completion bash > /usr/share/bash-completion/completions/gopass"
 ...

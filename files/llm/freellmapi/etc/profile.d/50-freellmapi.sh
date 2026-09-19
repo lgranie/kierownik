@@ -1,4 +1,4 @@
-# bash twin of conf.d/50-freellmapi.fish (sourced from /etc/profile.d)
+# freellmapi env (sourced from /etc/profile.d)
 # shellcheck shell=bash
 
 # Env

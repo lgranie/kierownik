@@ -10,7 +10,7 @@ Kierownik is a personal operating system built with [BlueBuild](https://blue-bui
 Kierownik ships with:
 
 * a headless version with :
-  * fish as default interactive shell
+  * bash with flyline as default interactive shell
   * a collection of terminal tools ( lsd, zoxide, bat, tv, ... )
   * mise for dev and system tasks
 * graphical flavors : Hyprland with scrolling layout as default

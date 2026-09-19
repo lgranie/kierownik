@@ -1,4 +1,4 @@
-# bash twin of conf.d/00-environment.fish (sourced from /etc/profile.d)
+# Environment (sourced from /etc/profile.d)
 # shellcheck shell=bash
 
 # Env

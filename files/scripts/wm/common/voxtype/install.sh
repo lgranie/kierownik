@@ -17,11 +17,8 @@ chmod +x /usr/bin/voxtype
 
 # voxtype setup gpu --enable --backend vulkan
 
-# Shell completions (upstream ships bash/fish/zsh under packaging/completions)
+# Shell completion (upstream ships bash under packaging/completions)
 mkdir -p /usr/share/bash-completion/completions
 curl --silent --retry 3 -L \
   --output /usr/share/bash-completion/completions/voxtype \
   https://raw.githubusercontent.com/peteonrails/voxtype/main/packaging/completions/voxtype.bash
-curl --silent --retry 3 -L \
-  --output /etc/fish/completions/voxtype.fish \
-  https://raw.githubusercontent.com/peteonrails/voxtype/main/packaging/completions/voxtype.fish
