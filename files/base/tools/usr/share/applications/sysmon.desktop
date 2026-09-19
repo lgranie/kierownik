@@ -4,6 +4,7 @@ GenericName=System Monitor
 Comment=herdr sysmon session: btop, nvtop, systemd services
 TryExec=sysmon
 Exec=footclient --app-id=sysmon sysmon
+Icon=sysmon
 Terminal=false
 Type=Application
 Categories=System;Monitor;ConsoleOnly;

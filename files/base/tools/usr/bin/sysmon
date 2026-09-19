@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+set -oue pipefail
+
+# sysmon — system monitor herdr session in the special:sysmon workspace.
+# Tab "monitor": btop on top, nvtop below. Tab "services": systemd-manager-tui.
+# No args attaches to the session. `sysmon toggle` shows/hides it from
+# Hyprland/Noctalia (used by the SUPER+S bind and the sysmon widget click).
+# Layout bootstraps once; herdr session persistence restores it afterwards.
+
+SESSION="sysmon"
+
+usage() {
+  gum style --border thick "sysmon — herdr system monitor session" \
+    "Usage: sysmon [toggle]" \
+    "No args attaches to the sysmon session (bootstraps layout once)." \
+    "toggle shows/hides the special:sysmon workspace."
+}
+
+err() {
+  gum log -sl error "$1"
+  gum confirm "Close window?" || true
+}
+
+need() {
+  command -v "$1" >/dev/null 2>&1 || {
+    err "$1 not installed. Rebuild image first."
+    exit 1
+  }
+}
+
+h() {
+  herdr --session "${SESSION}" "$@"
+}
+
+ensure_server() {
+  # `session attach` starts the session server as a side effect even when
+  # the client itself fails ("Not a tty" without a terminal). Without this,
+  # every API call below fails with server_not_running on fresh boot and
+  # `set -e` kills the script before `attach` can start the server.
+  herdr session attach "${SESSION}" </dev/null >/dev/null 2>&1 || true
+}
+
+pane_runs() {
+  h pane process-info --pane "$1" 2>/dev/null |
+    jq -e --arg cmd "$2" '.result.process_info.foreground_processes[]? | select(.name == $cmd or ((.cmdline // "") | contains($cmd)))' >/dev/null
+}
+
+repair_tab() {
+  local ws="$1" label="$2"
+  shift 2
+  local -a cmds=("$@")
+  local tabs_json tab out panes_json p cmd found i
+  tabs_json="$(h tab list --workspace "${ws}")"
+  tab="$(jq -r --arg l "${label}" '.result.tabs[]? | select(.label == $l) | .tab_id' <<<"${tabs_json}")"
+  local -a panes=()
+  if [[ -z "${tab}" ]]; then
+    out="$(h tab create --workspace "${ws}" --label "${label}" --no-focus)"
+    tab="$(jq -r '.result.tab.tab_id' <<<"${out}")"
+    panes+=("$(jq -r '.result.root_pane.pane_id' <<<"${out}")")
+  fi
+  if [[ "${#panes[@]}" -eq 0 ]]; then
+    panes_json="$(h pane list --workspace "${ws}")"
+    mapfile -t panes < <(jq -r --arg t "${tab}" '.result.panes[]? | select(.tab_id == $t) | .pane_id' <<<"${panes_json}")
+  fi
+  for ((i = ${#panes[@]}; i < ${#cmds[@]}; i++)); do
+    p="$(h pane split "${panes[0]}" --direction down --no-focus | jq -r '.result.pane.pane_id')"
+    panes+=("${p}")
+  done
+  for ((i = 0; i < ${#cmds[@]}; i++)); do
+    cmd="${cmds[$i]}"
+    found=""
+    for p in "${panes[@]}"; do
+      if pane_runs "${p}" "${cmd}"; then found=1; break; fi
+    done
+    [[ -n "${found}" ]] || h pane run "${panes[$i]}" "${cmd}" >/dev/null
+  done
+}
+
+bootstrap() {
+  local out tab root new ws
+  ensure_server
+  need btop
+  need nvtop
+  need systemd-manager-tui
+  ws="$(h workspace list | jq -r '.result.workspaces[]? | select(.label == "sysmon") | .workspace_id')"
+  if [[ -z "${ws}" ]]; then
+    out="$(h workspace create --label sysmon --no-focus)"
+    ws="$(jq -r '.result.workspace.workspace_id' <<<"${out}")"
+    tab="$(jq -r '.result.tab.tab_id' <<<"${out}")"
+    root="$(jq -r '.result.root_pane.pane_id' <<<"${out}")"
+    h tab rename "${tab}" monitor >/dev/null
+    h pane run "${root}" "btop" >/dev/null
+    new="$(h pane split "${root}" --direction down --no-focus | jq -r '.result.pane.pane_id')"
+    h pane run "${new}" "nvtop" >/dev/null
+    new="$(h tab create --workspace "${ws}" --label services --no-focus | jq -r '.result.root_pane.pane_id')"
+    h pane run "${new}" "systemd-manager-tui" >/dev/null
+    return 0
+  fi
+  # Server restarts restore layout as idle shells, so verify + repair.
+  repair_tab "${ws}" monitor btop nvtop
+  repair_tab "${ws}" services systemd-manager-tui
+}
+
+attach() {
+  need herdr
+  need jq
+  if [[ "${HERDR_ENV:-}" == "1" ]]; then
+    err "already inside herdr, detach first (prefix+q)."
+    exit 1
+  fi
+  bootstrap
+  exec herdr --session "${SESSION}"
+}
+
+toggle() {
+  need hyprctl
+  need jq
+  if hyprctl clients -j | jq -e '.. | objects | select(.class == "sysmon" or .initialClass == "sysmon")' >/dev/null; then
+    hyprctl dispatch togglespecialworkspace sysmon
+    return 0
+  fi
+  need uwsm-app
+  need footclient
+  uwsm-app -a sysmon -- footclient --app-id=sysmon sysmon >/dev/null 2>&1 &
+  disown
+  local i
+  for ((i = 0; i < 50; i++)); do
+    hyprctl clients -j | jq -e '.. | objects | select(.class == "sysmon" or .initialClass == "sysmon")' >/dev/null && break
+    sleep 0.1
+  done
+  hyprctl workspaces -j | jq -e '.[] | select(.name == "special:sysmon")' >/dev/null ||
+    hyprctl dispatch togglespecialworkspace sysmon
+}
+
+case "${1:-}" in
+  -h | --help)
+    usage
+    exit 0
+    ;;
+  toggle) toggle ;;
+  "") attach ;;
+  *)
+    err "usage: sysmon [toggle]"
+    exit 1
+    ;;
+esac
