@@ -72,6 +72,31 @@ local function writeUsage()
     end)
 end
 
+local function updateCategories()
+    local seen = { all = true }
+    local list = { "all" }
+    for _, entry in pairs(database) do
+        if type(entry) == "table" and type(entry.tags) == "table" then
+            for _, tag in ipairs(entry.tags) do
+                if type(tag) == "string" and tag ~= "" and not seen[tag] then
+                    seen[tag] = true
+                    table.insert(list, tag)
+                end
+            end
+        end
+    end
+    table.sort(list)
+    -- keep "all" first
+    local out = { "all" }
+    for _, c in ipairs(list) do
+        if c ~= "all" then table.insert(out, c) end
+    end
+    categories = out
+    if selectedCategory ~= "all" and not seen[selectedCategory] then
+        selectedCategory = "all"
+    end
+end
+
 local function loadUsage()
     local data, err = noctalia.readFile(getUsagePath())
     if data and data ~= "" then
@@ -328,6 +353,7 @@ function onQuery(query)
     end
 
     local scoredList = {}
+    local results = {}
     if text == "" then
         for _, c in ipairs(categories) do
             if c ~= "all" then
@@ -427,7 +453,7 @@ function onActivate(id)
     local category = id:match("^category:(.+)$")
     if category then
         selectedCategory = category
-        launcher.setQuery("/bookmarks " .. category)
+        launcher.setQuery(category .. " ")
         return
     end
 end
