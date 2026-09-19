@@ -5,11 +5,12 @@
 # listed (and authorized), 1 when usbguard is active but no match is found.
 
 _usbguard_allow() {
+  local pids="${1:-2e8a:10ff 2e8a:10fe feff:fcfd}"
   systemctl is-active --quiet usbguard.service 2>/dev/null || return 0
   command -v usbguard >/dev/null 2>&1 || return 0
   local devs line num want found=0
   devs="$(usbguard list-devices 2>/dev/null)" || return 0
-  for want in "$@"; do
+  for want in ${pids}; do
     line="$(printf '%s\n' "${devs}" | grep -i "id ${want} " | head -n 1 || true)"
     [[ -n "${line}" ]] || continue
     found=1

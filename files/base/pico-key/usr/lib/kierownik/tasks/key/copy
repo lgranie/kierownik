@@ -1,19 +1,16 @@
 #!/usr/bin/env bash
 
 #MISE description="Export Pico public keys"
-set -euo pipefail
+set -oue pipefail
 # shellcheck disable=SC1091
 source "$(dirname "$0")/_usbguard"
 
-PICO_IDS="2e8a:10ff 2e8a:10fe feff:fcfd"
-
-mode="$(gum choose openpgp fido --header "Key type")"
-
-# shellcheck disable=SC2086
-if ! _usbguard_allow ${PICO_IDS}; then
+_usbguard_allow || {
   gum log -sl error "Pico blocked by usbguard. Run 'usbguard list-devices' to inspect."
   exit 1
-fi
+}
+
+mode="$(gum choose openpgp fido --header "Key type")"
 
 if [[ "${mode}" == "openpgp" ]]; then
   gpg --card-status >/dev/null 2>&1 || {
