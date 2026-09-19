@@ -8,9 +8,6 @@ set -euo pipefail
 # shellcheck source=tasks/pi/_podman_flags
 source "$(dirname "$0")/_podman_flags"
 
-FLAGS+=("--interactive")
-[ -t 0 ] && [ -t 1 ] && FLAGS+=("--tty")
-
 PI_ARGS=()
 if [[ -z "${PI_NO_CONTAINER_PROMPT:-}" ]]; then
   PI_ARGS+=(
