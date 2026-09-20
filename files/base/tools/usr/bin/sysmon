@@ -32,11 +32,17 @@ h() {
 }
 
 ensure_server() {
-  # `session attach` starts the session server as a side effect even when
-  # the client itself fails ("Not a tty" without a terminal). Without this,
-  # every API call below fails with server_not_running on fresh boot and
-  # `set -e` kills the script before `attach` can start the server.
-  herdr session attach "${SESSION}" </dev/null >/dev/null 2>&1 || true
+  # Never `session attach` here: it grabs /dev/tty whenever one exists,
+  # blanks the window (output is /dev/null) and eats all keys incl. ctrl+c.
+  # Instead start the headless server detached and poll the socket.
+  herdr status server >/dev/null 2>&1 && return 0
+  setsid herdr server >/dev/null 2>&1 </dev/null &
+  for _ in $(seq 1 50); do
+    herdr status server >/dev/null 2>&1 && return 0
+    sleep 0.2
+  done
+  err "herdr server failed to start"
+  exit 1
 }
 
 pane_runs() {
@@ -108,7 +114,18 @@ attach() {
     exit 1
   fi
   bootstrap
-  exec herdr --session "${SESSION}"
+  # sysmon-only chrome: hidden sidebar, global config untouched.
+  local src="${HERDR_CONFIG_PATH:-$HOME/.config/herdr/config.toml}"
+  local dst="${XDG_RUNTIME_DIR:-/tmp}/herdr-sysmon-config.toml"
+  awk '
+    /^[[:space:]]*sidebar_(start_collapsed|collapsed_mode)[[:space:]]*=/ { next }
+    /^\[ui\][[:space:]]*$/ { print; print "sidebar_start_collapsed = true"; print "sidebar_collapsed_mode = \"hidden\""; ui=1; next }
+    { print }
+    END { if (!ui) printf "\n[ui]\nsidebar_start_collapsed = true\nsidebar_collapsed_mode = \"hidden\"\n" }
+  ' "${src}" >"${dst}" 2>/dev/null || {
+    printf '[ui]\nsidebar_start_collapsed = true\nsidebar_collapsed_mode = "hidden"\n' >"${dst}"
+  }
+  HERDR_CONFIG_PATH="${dst}" exec herdr --session "${SESSION}"
 }
 
 case "${1:-}" in

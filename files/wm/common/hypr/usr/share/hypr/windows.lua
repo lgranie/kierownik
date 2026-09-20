@@ -82,15 +82,6 @@ hl.window_rule({
 
 	workspace = "special:sysmon",
 	decorate = false,
-	border_size = 0,
-	rounding = 0,
-	no_shadow = true,
-})
-
-hl.workspace_rule({
-	workspace = "special:sysmon",
-	gaps_in = 0,
-	gaps_out = 0,
 })
 
 -- Media Player
