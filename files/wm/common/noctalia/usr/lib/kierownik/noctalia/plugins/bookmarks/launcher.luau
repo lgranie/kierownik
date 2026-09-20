@@ -265,13 +265,23 @@ local function scoreBookmark(title, entry, query)
     end
 
     local baseScore = math.max(titleScore * 1.0, urlScore * 0.6, tagScore * 0.8)
-    local matched = title:lower():find(lq, 1, true) or entry.url:lower():find(lq, 1, true)
-    if not matched and entry.tags then
-        for _, tag in ipairs(entry.tags) do
-            if tag:lower():find(lq, 1, true) then matched = true break end
+    if baseScore == 0 and titleScore == 0 and urlScore == 0 and tagScore == 0 then
+        -- Check if any field matches substring as fallback
+        local lq = query:lower()
+        local matched = title:lower():find(lq, 1, true) or entry.url:lower():find(lq, 1, true)
+        if not matched and entry.tags then
+            for _, tag in ipairs(entry.tags) do
+                if tag:lower():find(lq, 1, true) then matched = true break end
+            end
+        end
+        if matched then
+            baseScore = 1.0
+        else
+            return nil
         end
     end
-    return matched and 1.0 or nil
+
+    return baseScore + usageBoost
 end
 
 function onQuery(query)
