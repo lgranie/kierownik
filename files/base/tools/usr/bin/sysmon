@@ -1,18 +1,16 @@
 #!/usr/bin/env bash
 set -oue pipefail
 
-# sysmon — system monitor herdr session in the special:sysmon workspace.
-# Tab "monitor": btop on top, nvtop below. Tab "services": systemd-manager-tui.
-# Attaches to the session (run it once from a terminal or the launcher;
-# SUPER+S toggles special:sysmon natively).
-# Layout bootstraps once; herdr session persistence restores it afterwards.
+# sysmon — tmux system monitor in special:sysmon.
+# Window "monitor": btop top, nvtop below. Window "services": systemd-manager-tui.
+# SUPER+S toggles special:sysmon natively.
 
 SESSION="sysmon"
 
 usage() {
-  gum style --border thick "sysmon — herdr system monitor session" \
+  gum style --border thick "sysmon — tmux system monitor" \
     "Usage: sysmon" \
-    "Attaches to the sysmon session (bootstraps layout once)."
+    "Attaches to the sysmon tmux session (creates layout once)."
 }
 
 err() {
@@ -27,105 +25,24 @@ need() {
   }
 }
 
-h() {
-  herdr --session "${SESSION}" "$@"
-}
-
-ensure_server() {
-  # Never `session attach` here: it grabs /dev/tty whenever one exists,
-  # blanks the window (output is /dev/null) and eats all keys incl. ctrl+c.
-  # Instead start the headless server detached and poll the socket.
-  herdr status server >/dev/null 2>&1 && return 0
-  setsid herdr server >/dev/null 2>&1 </dev/null &
-  for _ in $(seq 1 50); do
-    herdr status server >/dev/null 2>&1 && return 0
-    sleep 0.2
-  done
-  err "herdr server failed to start"
-  exit 1
-}
-
-pane_runs() {
-  h pane process-info --pane "$1" 2>/dev/null |
-    jq -e --arg cmd "$2" '.result.process_info.foreground_processes[]? | select(.name == $cmd or ((.cmdline // "") | contains($cmd)))' >/dev/null
-}
-
-repair_tab() {
-  local ws="$1" label="$2"
-  shift 2
-  local -a cmds=("$@")
-  local tabs_json tab out panes_json p cmd found i
-  tabs_json="$(h tab list --workspace "${ws}")"
-  tab="$(jq -r --arg l "${label}" '.result.tabs[]? | select(.label == $l) | .tab_id' <<<"${tabs_json}")"
-  local -a panes=()
-  if [[ -z "${tab}" ]]; then
-    out="$(h tab create --workspace "${ws}" --label "${label}" --no-focus)"
-    tab="$(jq -r '.result.tab.tab_id' <<<"${out}")"
-    panes+=("$(jq -r '.result.root_pane.pane_id' <<<"${out}")")
-  fi
-  if [[ "${#panes[@]}" -eq 0 ]]; then
-    panes_json="$(h pane list --workspace "${ws}")"
-    mapfile -t panes < <(jq -r --arg t "${tab}" '.result.panes[]? | select(.tab_id == $t) | .pane_id' <<<"${panes_json}")
-  fi
-  for ((i = ${#panes[@]}; i < ${#cmds[@]}; i++)); do
-    p="$(h pane split "${panes[0]}" --direction down --no-focus | jq -r '.result.pane.pane_id')"
-    panes+=("${p}")
-  done
-  for ((i = 0; i < ${#cmds[@]}; i++)); do
-    cmd="${cmds[$i]}"
-    found=""
-    for p in "${panes[@]}"; do
-      if pane_runs "${p}" "${cmd}"; then found=1; break; fi
-    done
-    [[ -n "${found}" ]] || h pane run "${panes[$i]}" "${cmd}" >/dev/null
-  done
-}
-
 bootstrap() {
-  local out tab root new ws
-  ensure_server
   need btop
   need nvtop
   need systemd-manager-tui
-  ws="$(h workspace list | jq -r '.result.workspaces[]? | select(.label == "sysmon") | .workspace_id')"
-  if [[ -z "${ws}" ]]; then
-    out="$(h workspace create --label sysmon --no-focus)"
-    ws="$(jq -r '.result.workspace.workspace_id' <<<"${out}")"
-    tab="$(jq -r '.result.tab.tab_id' <<<"${out}")"
-    root="$(jq -r '.result.root_pane.pane_id' <<<"${out}")"
-    h tab rename "${tab}" monitor >/dev/null
-    h pane run "${root}" "btop" >/dev/null
-    new="$(h pane split "${root}" --direction down --no-focus | jq -r '.result.pane.pane_id')"
-    h pane run "${new}" "nvtop" >/dev/null
-    new="$(h tab create --workspace "${ws}" --label services --no-focus | jq -r '.result.root_pane.pane_id')"
-    h pane run "${new}" "systemd-manager-tui" >/dev/null
-    return 0
-  fi
-  # Server restarts restore layout as idle shells, so verify + repair.
-  repair_tab "${ws}" monitor btop nvtop
-  repair_tab "${ws}" services systemd-manager-tui
+  tmux has-session -t "${SESSION}" 2>/dev/null && return 0
+  tmux new-session -ds "${SESSION}" -n monitor btop
+  tmux split-window -vd -t "${SESSION}:monitor" nvtop
+  tmux new-window -d -t "${SESSION}" -n services systemd-manager-tui
+  tmux select-window -t "${SESSION}:monitor"
 }
 
 attach() {
-  need herdr
-  need jq
-  if [[ "${HERDR_ENV:-}" == "1" ]]; then
-    err "already inside herdr, detach first (prefix+q)."
-    exit 1
-  fi
+  need tmux
   bootstrap
-  # sysmon-only chrome: hidden sidebar, global config untouched.
-  local src="${HERDR_CONFIG_PATH:-$HOME/.config/herdr/config.toml}"
-  local dst="${XDG_RUNTIME_DIR:-/tmp}/herdr-sysmon-config.toml"
-  awk '
-    /^[[:space:]]*sidebar_(start_collapsed|collapsed_mode)[[:space:]]*=/ { next }
-    /^\[ui\][[:space:]]*$/ { print; print "sidebar_start_collapsed = true"; print "sidebar_collapsed_mode = \"hidden\""; ui=1; next }
-    { print }
-    END { if (!ui) printf "\n[ui]\nsidebar_start_collapsed = true\nsidebar_collapsed_mode = \"hidden\"\n" }
-  ' "${src}" >"${dst}" 2>/dev/null || {
-    printf '[ui]\nsidebar_start_collapsed = true\nsidebar_collapsed_mode = "hidden"\n' >"${dst}"
-  }
-  HERDR_CONFIG_PATH="${dst}" exec herdr --session "${SESSION}"
+  if [[ -n "${TMUX:-}" ]]; then
+    exec tmux switch-client -t "${SESSION}"
+  fi
+  exec tmux attach-session -t "${SESSION}"
 }
 
 case "${1:-}" in

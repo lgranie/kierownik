@@ -29,6 +29,7 @@ modules:
         - ripgrep
         - stow
         - tar
+        - tmux
         - unzip
         - yq
         - zoxide
