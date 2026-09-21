@@ -19,4 +19,4 @@ run0 bash -c "podman run \
     IMAGE_REPO=ghcr.io/lgranie \
     IMAGE_NAME=krw-${usage_target} \
     IMAGE_TAG=latest \
-    VERSION=44"
+    VERSION=45"
