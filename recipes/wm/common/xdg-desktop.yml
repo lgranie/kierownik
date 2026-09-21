@@ -5,7 +5,12 @@ modules:
       install-weak-deps: false
       packages:
         - dbus-broker
-        - gnome-keyring
+        # Fedora 45 default Secret Service provider (replaces gnome-keyring).
+        # oo7-daemon ships oo7-daemon.service + D-Bus activation
+        # (dbus-org.freedesktop.secrets.service, no socket unit);
+        # oo7-portal is the xdg-desktop-portal Secret backend.
+        - oo7-daemon
+        - oo7-portal
         - xdg-desktop-portal-gnome
         - xdg-desktop-portal-gtk
         - xdg-utils
@@ -14,7 +19,7 @@ modules:
     user:
       enabled:
         - dbus-broker
-        - gnome-keyring-daemon
+        - oo7-daemon
     system:
       masked:
         - geoclue.service
