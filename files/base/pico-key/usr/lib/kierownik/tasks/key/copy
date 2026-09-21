@@ -26,7 +26,7 @@ if [[ "${mode}" == "openpgp" ]]; then
       ;;
     pkcs11) pub="$(ssh-keygen -D /usr/lib64/opensc-pkcs11.so -e)" ;;
   esac
-  gum style "${pub}"
+  gum style -- "${pub}"
   gum confirm "Copy to clipboard?" && printf '%s' "${pub}" | wl-copy
 else
   dev="$(fido2-token -L 2>/dev/null | grep -o '/dev/hidraw[0-9]*' | gum choose --header "Pick Pico device")"

@@ -16,7 +16,7 @@ bluebuild build recipes/krw-wsl.yml
 # Prefer local build output; pull only when local image missing
 if podman image exists "${IMAGE}"; then
   gum log --time=false --level info "Using local image."
-  gum style "${IMAGE}"
+  gum style -- "${IMAGE}"
 else
   gum log --time=false --level info "Local image missing, pulling remote."
   podman pull "${IMAGE}"

@@ -7,6 +7,6 @@ gpg_key_id=$(gpg2 --list-secret-keys --keyid-format LONG | grep ssb | grep '[S]'
 
 gpg_pubkey=$(gpg --armor --export "${gpg_key_id}")
 gum log -sl info "Your gpg pub key is"
-gum style "${gpg_pubkey}"
+gum style -- "${gpg_pubkey}"
 
 gum confirm "Copy to clipboard?" && gpg --armor --export "${gpg_key_id}" | wl-copy

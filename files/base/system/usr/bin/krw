@@ -65,7 +65,7 @@ run_task() {
     return 1
   fi
   "${task}" || rc=$?
-  gum style "--- done: ${selection} (rc=${rc}) ---"
+  gum style -- "--- done: ${selection} (rc=${rc}) ---"
   wait_for_close
   return "${rc}"
 }

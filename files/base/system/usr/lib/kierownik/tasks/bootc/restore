@@ -65,7 +65,7 @@ if [[ ${#added[@]} -gt 0 ]]; then
     fi
   else
     gum log -sl warn "Left alone (not in image, re-run with --delete-added to remove):"
-    gum style "$(printf '%s\n' "${added[@]}")"
+    gum style -- "$(printf '%s\n' "${added[@]}")"
   fi
 fi
 
