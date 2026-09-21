@@ -26,6 +26,7 @@ modules:
         - neovim
         - nvtop
         - openssh
+        - podman-tui
         - ripgrep
         - stow
         - tar
