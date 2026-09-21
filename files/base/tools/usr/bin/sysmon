@@ -3,6 +3,7 @@ set -oue pipefail
 
 # sysmon — tmux system monitor in special:sysmon.
 # Window "monitor": btop top, nvtop below. Window "services": systemd-manager-tui.
+# Window "containers": podman-tui.
 # SUPER+S toggles special:sysmon natively.
 
 SESSION="sysmon"
@@ -29,10 +30,12 @@ bootstrap() {
   need btop
   need nvtop
   need systemd-manager-tui
+  need podman-tui
   tmux has-session -t "${SESSION}" 2>/dev/null && return 0
   tmux new-session -ds "${SESSION}" -n monitor btop
-  tmux split-window -vd -t "${SESSION}:monitor" nvtop
+  tmux split-window -vd -p 35 -t "${SESSION}:monitor" nvtop
   tmux new-window -d -t "${SESSION}" -n services systemd-manager-tui
+  tmux new-window -d -t "${SESSION}" -n containers podman-tui
   tmux select-window -t "${SESSION}:monitor"
 }
 
