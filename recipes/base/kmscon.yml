@@ -1,5 +1,11 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 ---
+# Fedora 45 ships kmscon as the default VT console out of the box
+# (/usr/lib/systemd/system/autovt@.service -> kmsconvt@.service, with
+# fallback to getty/fbcon), so we no longer manage the symlink ourselves.
+# The explicit installs stay: the default only covers base kmscon, while
+# our kmscon.conf needs hwaccel (kmscon-gl) and font-engine=pango
+# (kmscon-pango).
 modules:
   - type: dnf
     install:
@@ -13,8 +19,4 @@ modules:
     files:
       - source: base/kmscon
         destination: /
-
-  - type: script
-    snippets:
-      - "ln -s /usr/lib/systemd/system/kmsconvt@.service /etc/systemd/system/autovt@.service"
 ...
