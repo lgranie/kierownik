@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 set -oue pipefail
 
-# krw — pick a kierownik system task with gum and run it.
-# Catalog: /usr/lib/kierownik/tasks/<group>/<name>, title from
-# #MISE description="...". Tasks needing args (#USAGE arg "<...>"
+# krw — pick a kierownik system task with gum and run it via mise.
+# Catalog: /usr/lib/kierownik/tasks/<group>/<name> (= mise <group>:<name>),
+# title from #MISE description="...". Tasks needing args (#USAGE arg "<...>"
 # without default=) stay hidden, the picker passes no arguments.
 
 TASKS_DIR="${KRW_TASKS_DIR:-/usr/lib/kierownik/tasks}"
 
 print_usage() {
   gum style --border thick "krw — run a kierownik system task" \
-    "Usage: krw [group/name]" \
+    "Usage: krw [group/name | group:name] [args...]" \
     "No args opens the task picker. The window stays open" \
     "until you confirm close."
 }
@@ -41,7 +41,7 @@ collect_entries() {
       desc="$(description_of "${path}")"
       [[ -n "${desc}" ]] || continue
       needs_arg "${path}" && continue
-      printf '%s/%s\t%s\n' "${group}" "${name}" "${desc}"
+      printf '%s:%s\t%s\n' "${group}" "${name}" "${desc}"
     done < <(ls -1 "${group_path}" | sort)
   done
 }
@@ -51,21 +51,23 @@ wait_for_close() {
 }
 
 run_task() {
-  local selection="$1"
-  local task="${TASKS_DIR}/${selection}"
+  local path_selection="${1//:/\/}"
+  shift
+  local name_selection="${path_selection//\//:}"
+  local task="${TASKS_DIR}/${path_selection}"
   local rc=0
-  if [[ "${selection}" != */* || "${selection}" == *..* ]]; then
-    gum log -sl error "invalid task: ${selection}"
+  if [[ "${path_selection}" != */* || "${path_selection}" == *..* ]]; then
+    gum log -sl error "invalid task: ${path_selection}"
     wait_for_close
     return 1
   fi
   if [[ ! -f "${task}" ]]; then
-    gum log -sl error "task not found: ${selection}"
+    gum log -sl error "task not found: ${path_selection}"
     wait_for_close
     return 1
   fi
-  "${task}" || rc=$?
-  gum style -- "--- done: ${selection} (rc=${rc}) ---"
+  mise run "${name_selection}" "$@" || rc=$?
+  gum style -- "--- done: ${name_selection} (rc=${rc}) ---"
   wait_for_close
   return "${rc}"
 }
@@ -75,13 +77,8 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
   exit 0
 fi
 
-if [[ $# -gt 1 ]]; then
-  gum log -sl error "usage: krw [group/name]"
-  exit 1
-fi
-
-if [[ $# -eq 1 ]]; then
-  run_task "$1"
+if [[ $# -ge 1 ]]; then
+  run_task "$@"
   exit $?
 fi
 

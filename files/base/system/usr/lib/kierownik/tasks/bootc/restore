@@ -18,6 +18,7 @@ for entry in ${entries[@]+"${entries[@]}"}; do
   [[ -z "${entry}" ]] && continue
   status="${entry%% *}"
   path="${entry#* }"
+  [[ "${path}" != /* ]] && path="/etc/${path}"
   if [[ -n "${usage_filter:-}" && "${path}" != *"${usage_filter}"* ]]; then
     continue
   fi
