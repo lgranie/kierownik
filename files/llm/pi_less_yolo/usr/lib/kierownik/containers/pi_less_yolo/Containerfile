@@ -47,19 +47,6 @@ RUN <<EORUN
     npm install -g "@earendil-works/pi-coding-agent@${PI_RELEASE}"
 EORUN
 
-# Install herdr (terminal workspace manager for AI coding agents) so pi can
-# drive the host herdr server via the CLI/socket API (socket forwarded in
-# tasks/pi/_podman_flags). Static binary, no runtime deps.
-RUN <<EORUN
-    set -e
-
-    HERDR_TAG=$(curl --silent --retry 3 "https://api.github.com/repos/herdrdev/herdr/releases/latest" | jq -r '.tag_name // empty' 2>/dev/null || true)
-    if [[ -n "$HERDR_TAG" ]]; then
-      curl --silent --retry 3 -L --output /usr/local/bin/herdr "https://github.com/herdrdev/herdr/releases/download/${HERDR_TAG}/herdr-linux-x86_64"
-      chmod +x /usr/local/bin/herdr
-    fi
-EORUN
-
 # Prepend extension binaries (host-mounted via /pi-agent). Security: binaries
 # here can shadow any command; no privilege escalation (--cap-drop=ALL,
 # --no-new-privileges), but review ~/.pi/agent/npm-global/bin/ after installs.

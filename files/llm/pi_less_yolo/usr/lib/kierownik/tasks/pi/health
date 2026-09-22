@@ -113,15 +113,6 @@ else
   info "local model host access inactive (set PI_LOCAL_MODELS=1 to enable)"
 fi
 
-# --- herdr (agent runtime) ----------------------------------------------------
-if [[ -d "${HOME}/.config/herdr" ]]; then
-  # shellcheck disable=SC2088
-  pass "~/.config/herdr found (socket dir will be mounted, in-container herdr CLI drives the host server)"
-else
-  # shellcheck disable=SC2088
-  info "herdr not configured on host (run herdr once to opt in; in-container herdr CLI will have no server)"
-fi
-
 # --- platform note ----------------------------------------------------------
 if [[ "${STATUS}" -eq 0 ]]; then
   gum log -sl info "All checks passed."
