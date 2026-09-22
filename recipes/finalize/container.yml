@@ -13,8 +13,7 @@ modules:
       BUG_REPORT_URL: https://github.com/lgranie/kierownik/issues
 
   - type: script
-    snippets:
-      - "rm -rf /etc/skel/.{mozilla}*"
-
-  - from-file: finalize/removesuid.yml
+    scripts:
+      - finalize/clean.sh
+      - finalize/removesuid.sh
 ...
