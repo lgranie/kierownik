@@ -2,15 +2,16 @@
 set -oue pipefail
 
 # krw — pick a kierownik system task with gum and run it via mise.
-# Catalog: /usr/lib/kierownik/tasks/<group>/<name> (= mise <group>:<name>),
-# title from #MISE description="...". Tasks needing args (#USAGE arg "<...>"
-# without default=) stay hidden, the picker passes no arguments.
+# Catalog: /usr/lib/kierownik/tasks/<group>/<name>, invoked as mise
+# <group>:<name>, title from #MISE description="...". Tasks needing args
+# (#USAGE arg "<...>" without default=) stay hidden, the picker passes
+# no arguments.
 
 TASKS_DIR="${KRW_TASKS_DIR:-/usr/lib/kierownik/tasks}"
 
 print_usage() {
   gum style --border thick "krw — run a kierownik system task" \
-    "Usage: krw [group/name | group:name] [args...]" \
+    "Usage: krw [group:name] [args...]" \
     "No args opens the task picker. The window stays open" \
     "until you confirm close."
 }
@@ -51,18 +52,18 @@ wait_for_close() {
 }
 
 run_task() {
-  local path_selection="${1//:/\/}"
+  local name_selection="$1"
   shift
-  local name_selection="${path_selection//\//:}"
+  local path_selection="${name_selection//:/\/}"
   local task="${TASKS_DIR}/${path_selection}"
   local rc=0
-  if [[ "${path_selection}" != */* || "${path_selection}" == *..* ]]; then
-    gum log -sl error "invalid task: ${path_selection}"
+  if [[ "${name_selection}" != *:* || "${name_selection}" == *\/* || "${name_selection}" == *..* ]]; then
+    gum log -sl error "invalid task (use group:name): ${name_selection}"
     wait_for_close
     return 1
   fi
   if [[ ! -f "${task}" ]]; then
-    gum log -sl error "task not found: ${path_selection}"
+    gum log -sl error "task not found: ${name_selection}"
     wait_for_close
     return 1
   fi
