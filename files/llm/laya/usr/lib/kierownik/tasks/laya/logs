@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+#MISE description="Follow Laya logs"
+#MISE raw=true
+set -oue pipefail
+
+journalctl --user -fu laya.service

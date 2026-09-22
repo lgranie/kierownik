@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Wait for the Laya container backend to answer.
+# Used as ExecStartPre by laya-proxy.service so queued connections are
+# only forwarded once the backend is up (socket activation path).
+set -oue pipefail
+
+URL="http://127.0.0.1:8009/health"
+
+for _ in $(seq 1 360); do
+  if curl -fsS "${URL}" >/dev/null 2>&1; then
+    exit 0
+  fi
+  sleep 0.5
+done
+
+echo "laya backend did not answer ${URL} within 180s" >&2
+exit 1

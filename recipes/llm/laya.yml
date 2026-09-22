@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+---
+modules:
+  # No dnf packages: runs as a Podman quadlet from a locally built
+  # Chainguard-based image (`mise run laya:build`).
+  # No firewall service: bound to 127.0.0.1 only (single-user).
+  # No systemd enable here: quadlet units generate at runtime, so the
+  # on-demand socket is enabled on first `mise run laya:init`.
+  - type: files
+    files:
+      - source: llm/laya
+        destination: /
+
+  - type: systemd
+    user:
+      enabled:
+        - laya-proxy.socket
+
+  - type: script
+    snippets:
+      - "chmod +x /usr/lib/kierownik/laya/wait-ready"

@@ -1,0 +1,48 @@
+[Unit]
+Description=Laya - English System 1 decision model API
+ConditionUser=!@system
+Wants=network-online.target
+After=network-online.target
+# On-demand backend for laya-proxy.socket: started on first connection
+# via laya-proxy.service, stopped when the proxy goes idle.
+StopWhenUnneeded=yes
+
+[Container]
+# Locally built by laya-build.service (`mise run laya:build`)
+# from the Chainguard-based Containerfile; no registry pull.
+Image=localhost/laya:latest
+ContainerName=laya
+Environment=USE_TF=0
+Environment=LAYA_MODEL=convaiinnovations/laya
+Environment=HF_HUB_CACHE=/cache
+# Backend port: the public 8008 is held by laya-proxy.socket and
+# forwarded here by laya-proxy.service. Localhost-only either way.
+PublishPort=127.0.0.1:8009:8000
+# HF weights cache (~808 MB English checkpoint); survives rebuilds.
+Volume=%h/.local/share/laya:/cache:Z
+# iGPU passthrough (780M on 8745HS, Intel iGPU on 5290). torch is
+# CPU-only until a ROCm/CUDA wheel lands, so this is future-proofing.
+Device=/dev/dri
+# Model load needs >10s on CPU (weights fetch + torch init); default
+# podman stop -t 10 hits SIGKILL. Keep below TimeoutStopSec.
+StopTimeout=60
+# Lets the API reach host-local servers if needed.
+AddHost=host.docker.internal:host-gateway
+# Script form: the runtime image has no shell, so no inline `python -c`.
+HealthCmd=python /app/healthcheck.py
+HealthInterval=120s
+HealthTimeout=5s
+HealthStartPeriod=60s
+HealthRetries=3
+# Startup probe: same endpoint, 5s cadence. The probe itself retries while
+# torch boots, so the first run never exits 1.
+HealthStartupCmd=python /app/healthcheck.py
+HealthStartupInterval=5s
+
+[Service]
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=120
+# Idle stop (StopWhenUnneeded) kills the container via ExecStop's
+# `podman rm -f`, so the main process exits 137 - a clean stop, not a failure.
+SuccessExitStatus=137

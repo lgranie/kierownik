@@ -27,6 +27,7 @@ modules:
   - from-file: wm/5290.yml
 
   - from-file: llm/freellmapi.yml
+  - from-file: llm/laya.yml
   - from-file: llm/pi_less_yolo.yml
 
   - from-file: finalize/all.yml

@@ -1,0 +1,12 @@
+[Unit]
+Description=Build Laya Image
+ConditionUser=!@system
+Wants=network-online.target
+After=network-online.target
+
+[Build]
+Pull=newer
+Network=host
+ImageTag=localhost/laya:latest
+File=/usr/lib/kierownik/containers/laya/Containerfile
+SetWorkingDirectory=/usr/lib/kierownik/containers/laya

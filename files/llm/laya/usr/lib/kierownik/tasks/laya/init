@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+#MISE description="Initialize Laya (weights dir, image, on-demand socket)"
+set -oue pipefail
+
+DATA_DIR="${HOME}/.local/share/laya"
+URL="http://localhost:8008"
+
+mkdir -p "${DATA_DIR}"
+
+podman image inspect "localhost/laya:latest" >/dev/null 2>&1 || mise run laya:build
+
+gum log -sl info "Probing ${URL}/health (starts the container on demand; first boot downloads ~808 MB) ..."
+for _ in $(seq 1 90); do
+  if curl -fsS "${URL}/health" >/dev/null 2>&1; then
+    HEALTHY=1
+    break
+  fi
+  sleep 2
+done
+
+if [[ "${HEALTHY:-0}" == "1" ]]; then
+  gum style --border thick "Laya is running on demand at ${URL}"
+  gum style "POST ${URL}/predict with {state, questions} for typed decisions."
+  gum style "Idle for a bit and the container stops itself; the next request starts it again."
+else
+  gum log -sl error "The API did not answer within 180s — check: mise run laya:logs"
+  exit 1
+fi

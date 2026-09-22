@@ -1,0 +1,37 @@
+FROM cgr.dev/chainguard/python:latest-dev AS builder
+
+# Chainguard python defaults to non-root `nonroot`; apk/pip need root.
+USER root
+
+RUN \
+  --mount=type=tmpfs,dst=/var/cache/apk \
+  --mount=type=tmpfs,dst=/tmp \
+  <<EOR
+set -eux
+apk add --no-cache ca-certificates
+pip install --no-cache-dir --prefix=/pkg "laya" "fastapi" "uvicorn"
+EOR
+
+FROM cgr.dev/chainguard/python:latest AS runtime
+
+# Rootless Podman maps container root to the unprivileged host user, which
+# owns the bind-mounted HF cache. Same tradeoff as freellmapi (USER root).
+USER root
+WORKDIR /app
+
+ENV USE_TF=0
+ENV LAYA_MODEL=convaiinnovations/laya
+ENV HF_HUB_CACHE=/cache
+ENV PORT=8000
+
+COPY --from=builder /pkg /usr
+COPY files/system/ /
+
+EXPOSE 8000
+
+# Exec-array form: the runtime image has no shell. Quadlet also sets this via
+# HealthCmd; the duplication keeps plain `podman run` usage healthy too.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+  CMD ["python", "/app/healthcheck.py"]
+
+ENTRYPOINT ["python", "-m", "uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"]
