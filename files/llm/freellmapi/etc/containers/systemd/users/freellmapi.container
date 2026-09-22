@@ -22,18 +22,28 @@ EnvironmentFile=%h/.config/freellmapi/freellmapi.env
 # forwarded here by freellmapi-proxy.service. Localhost-only either way.
 PublishPort=127.0.0.1:3002:3001
 Volume=%h/.local/share/freellmapi:/app/server/data:Z
+# Node needs >10s for graceful shutdown (SQLite checkpoint); default
+# podman stop -t 10 hits SIGKILL. Keep below TimeoutStopSec so systemd
+# never kills podman rm first.
+StopTimeout=30
 # Lets custom providers reach host-local servers (ramalama, ollama, ...).
 AddHost=host.docker.internal:host-gateway
 # Script form: the runtime image has no shell, so no inline `node -e`.
 HealthCmd=node /app/healthcheck.js
-HealthInterval=30s
+HealthInterval=120s
 HealthTimeout=5s
 HealthStartPeriod=15s
 HealthRetries=3
+# Startup probe: same endpoint, 2s cadence. The probe itself retries for
+# 15s while node boots, so the first run never exits 1 and the transient
+# healthcheck unit never fails (no unit-monitor ping on launch).
+HealthStartupCmd=node /app/healthcheck.js
+HealthStartupInterval=5s
 
 [Service]
 Restart=on-failure
 RestartSec=5s
+TimeoutStopSec=60
 # Idle stop (StopWhenUnneeded) kills the container via ExecStop's
 # `podman rm -f`, so the main process exits 137 - a clean stop, not a failure.
 SuccessExitStatus=137

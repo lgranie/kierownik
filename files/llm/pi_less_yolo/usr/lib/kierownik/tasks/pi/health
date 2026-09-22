@@ -34,10 +34,10 @@ else
 fi
 
 # --- image ------------------------------------------------------------------
-if podman image inspect "pi-less-yolo:latest" >/dev/null 2>&1; then
-  pass "image pi-less-yolo:latest exists"
+if podman image inspect "localhost/pi_less_yolo:latest" >/dev/null 2>&1; then
+  pass "image localhost/pi_less_yolo:latest exists"
 else
-  warn "image pi-less-yolo:latest not found — run: mise run pi:build"
+  warn "image localhost/pi_less_yolo:latest not found — run: mise run pi:build"
 fi
 
 # --- conf.d entry -----------------------------------------------------------
@@ -52,7 +52,7 @@ fi
 # --- task files -------------------------------------------------------------
 gum log -sl info "  Task files:"
 TASKS_DIR="${MISE_TASK_DIR}"
-for NAME in _default build shell upgrade health; do
+for NAME in _default build shell update health; do
   if [[ -x "${TASKS_DIR}/${NAME}" ]]; then
     pass "  tasks/pi/${NAME}"
   else

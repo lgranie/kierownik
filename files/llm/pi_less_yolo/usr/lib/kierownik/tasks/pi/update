@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 
-#MISE description="Update FreeLLMAPI to the latest release (rebuilds only if newer)"
+#MISE description="Update pi to the latest release (rebuilds only if newer)"
 set -euo pipefail
 
 # --- config (group-specific) ---
-IMAGE="localhost/freellmapi:latest"
-PKG_JSON="/app/desktop/package.json"
-REPO="tashfeenahmed/freellmapi"
-BUILD_TASK="freellmapi:build"
+IMAGE="localhost/pi_less_yolo:latest"
+PKG_JSON="/usr/local/lib/node_modules/@earendil-works/pi-coding-agent/package.json"
+REPO="earendil-works/pi"
+BUILD_TASK="pi:build"
 
-# --- shared logic (mirror in tasks/pi/update) ---
+# --- shared logic (mirror in tasks/freellmapi/update) ---
 podman image inspect "${IMAGE}" >/dev/null 2>&1 || {
   gum log -sl info "Image not found — building now."
   mise run "${BUILD_TASK}"
@@ -34,12 +34,5 @@ gum log -sl info "Updating: ${CURRENT:-unknown} → ${LATEST}"
 
 mise run "${BUILD_TASK}"
 
-# --- group hook: restart the on-demand backend onto the fresh image ---
-# Stopped containers are auto-removed (quadlet ExecStop), so the next
-# on-demand start picks up the fresh image by itself.
-if systemctl --user is-active --quiet freellmapi.service; then
-  systemctl --user restart freellmapi.service
-  gum log -sl info "FreeLLMAPI restarted on the fresh image."
-else
-  gum log -sl info "Image rebuilt. The next request starts the new image on demand."
-fi
+# --- group hook: none. pi containers are --rm ephemeral,
+# so the next run picks up the fresh image by itself. ---
