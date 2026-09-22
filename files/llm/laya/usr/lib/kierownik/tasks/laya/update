@@ -14,7 +14,7 @@ podman image inspect "${IMAGE}" >/dev/null 2>&1 || {
   exit 0
 }
 
-CURRENT="$(podman run --rm --entrypoint python "${IMAGE}" -m pip show laya 2>/dev/null | awk '/^Version:/ {print $2}' || true)"
+CURRENT="$(podman run --rm --entrypoint python "${IMAGE}" -c 'import importlib.metadata; print(importlib.metadata.version("laya"))' 2>/dev/null || true)"
 LATEST="$(curl --silent --retry 3 "https://pypi.org/pypi/laya/json" | jq -r '.info.version // empty' 2>/dev/null || true)"
 
 if [[ -z "${LATEST}" ]]; then

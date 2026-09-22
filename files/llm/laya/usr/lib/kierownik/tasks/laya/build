@@ -8,7 +8,7 @@ systemctl --user start laya-build.service
 gum log -sl info "Image 'localhost/laya:latest' built successfully."
 
 # Tag with the pip version too. Read from the image itself (no API race).
-VERSION="$(podman run --rm --entrypoint python localhost/laya:latest -m pip show laya 2>/dev/null | awk '/^Version:/ {print $2}' || true)"
+VERSION="$(podman run --rm --entrypoint python localhost/laya:latest -c 'import importlib.metadata; print(importlib.metadata.version("laya"))' 2>/dev/null || true)"
 if [[ -n "${VERSION}" ]]; then
   podman tag localhost/laya:latest "localhost/laya:${VERSION}"
   gum log -sl info "Tagged 'localhost/laya:${VERSION}'."
