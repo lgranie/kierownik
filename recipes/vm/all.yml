@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+---
+# Generic VM guest: virtio GL/Vulkan, host agent, SPICE clipboard bridge.
+# No hardware-specific firmware, kargs, or overlays; keep image portable
+# across KVM (local test) and WHPX (Windows demo).
+modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - mesa-dri-drivers
+        - mesa-vulkan-drivers
+        - qemu-guest-agent
+        - spice-vdagent
+
+  - type: systemd
+    system:
+      enabled:
+        - qemu-guest-agent.service
+        - spice-vdagentd.service
+...
