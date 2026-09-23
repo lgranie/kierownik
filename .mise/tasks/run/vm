@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #MISE description="Run image in VM via qemu"
-#USAGE arg "<target>" help="Target environment" { choices "N100" "8745" "5290" }
+#USAGE arg "<target>" help="Target environment" { choices "N100" "8745" "5290" "VM" }
 set -oue pipefail
 
 disk="/tmp/output/qcow2/disk-${usage_target}.qcow2"

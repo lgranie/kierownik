@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #MISE description="Generate bootable ISO"
-#USAGE arg "<target>" help="Target profile" { choices "N100" "8745" "5290" }
+#USAGE arg "<target>" help="Target profile" { choices "N100" "8745" "5290" "VM" }
 set -oue pipefail
 
 run0 bash -c "podman run \
