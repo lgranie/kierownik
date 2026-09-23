@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+# image will be published to ghcr.io/<user>/<name>
+name: krw-VM
+# description will be included in the image's metadata
+description: This is my personal OS image. Generic Hyprland VM guest (WHPX demo target).
+
+# the base image to build on top of (FROM) and the version tag to use
+base-image: quay.io/fedora/fedora-bootc
+image-version: 44
+
+platforms:
+  - linux/amd64
+
+# module configuration, executed in order
+# you can include multiple instances of the same module
+modules:
+  - from-file: base/all.yml
+  - from-file: vm/all.yml
+
+  - from-file: cpu/common/realtime.yml
+  - from-file: cpu/common/hardening.yml
+
+  - from-file: wm/common.yml
+  - from-file: wm/video/negativo17/qemu64.yml
+
+  - from-file: finalize/all.yml
+...

@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+---
+# VM guest codec stack: full ffmpeg/gstreamer via fedora-multimedia.
+# Guest GPU is virtio-gpu, so bare-metal VA-API media drivers
+# (intel/amd variants) stay out: no silicon to drive.
+modules:
+  - from-file: wm/video/negativo17/common.yml
+...
