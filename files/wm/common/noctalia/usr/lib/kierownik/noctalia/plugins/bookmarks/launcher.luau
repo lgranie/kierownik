@@ -21,55 +21,34 @@ end
 
 local dataDir = nil
 
-local function getDatabasePath()
+local function getDataPath(name)
     if not dataDir then
         local dir, err = noctalia.pluginDataDir()
         if not dir then
             noctalia.log("Linkding: pluginDataDir failed: " .. tostring(err))
-            return "database.json"
+            return name
         end
         dataDir = dir
     end
-    return dataDir .. "/database.json"
+    return dataDir .. "/" .. name
 end
 
-local function getUsagePath()
-    if not dataDir then
-        local dir, err = noctalia.pluginDataDir()
-        if not dir then
-            return "usage.json"
-        end
-        dataDir = dir
-    end
-    return dataDir .. "/usage.json"
-end
-
-local function writeDatabase()
-    local path = getDatabasePath()
+local function writeData(name, tbl)
+    local path = getDataPath(name)
     local ok, err = pcall(function()
-        local encoded, encErr = noctalia.json.encode(database)
+        local encoded, encErr = noctalia.json.encode(tbl)
         if not encoded then
-            noctalia.log("Linkding: json.encode failed: " .. tostring(encErr))
+            noctalia.log("Linkding: json.encode failed (" .. name .. "): " .. tostring(encErr))
             return
         end
         local wrote, werr = noctalia.writeFile(path, encoded)
         if not wrote then
-            noctalia.log("Linkding: writeFile failed: " .. tostring(werr))
+            noctalia.log("Linkding: writeFile failed (" .. name .. "): " .. tostring(werr))
         end
     end)
     if not ok then
-        noctalia.log("Linkding: writeDatabase failed: " .. tostring(err))
+        noctalia.log("Linkding: write failed (" .. name .. "): " .. tostring(err))
     end
-end
-
-local function writeUsage()
-    local path = getUsagePath()
-    pcall(function()
-        local encoded = noctalia.json.encode(usage)
-        if encoded then
-            noctalia.writeFile(path, encoded)
-        end
-    end)
 end
 
 local function updateCategories()
@@ -98,17 +77,24 @@ local function updateCategories()
 end
 
 local function loadUsage()
-    local data, err = noctalia.readFile(getUsagePath())
+    local data, err = noctalia.readFile(getDataPath("usage.json"))
     if data and data ~= "" then
         local parsed = noctalia.json.decode(data)
         if type(parsed) == "table" then
+            for k, _ in pairs(parsed) do
+                if tonumber(k) == nil then
+                    noctalia.log("Linkding: usage.json uses old url keys, resetting")
+                    usage = {}
+                    return
+                end
+            end
             usage = parsed
         end
     end
 end
 
 local function loadDatabase()
-    local data, err = noctalia.readFile(getDatabasePath())
+    local data, err = noctalia.readFile(getDataPath("database.json"))
     if not data then
         noctalia.log("Linkding: No database.json found yet: " .. tostring(err))
         return false
@@ -158,7 +144,7 @@ local function parseBookmarks(items)
     loading = false
     updateCategories()
     loadUsage()
-    writeDatabase()
+    writeData("database.json", database)
     noctalia.log("Linkding: Parsed " .. tostring(#items) .. " bookmarks")
     return #items
 end
@@ -233,55 +219,22 @@ local function formatBookmark(title, entry, score)
     }
 end
 
+local function fuzzyField(query, text)
+    if not text or text == "" then return 0 end
+    return noctalia.fuzzyScore(query, text)
+        or noctalia.fuzzyScore(query:lower(), text:lower())
+        or 0
+end
+
 local function scoreBookmark(title, entry, query)
-    local uKey = (entry.url ~= "" and entry.url) or title
-    local uInfo = usage[uKey] or { count = 0, last = 0 }
-    local usageBoost = math.log(1 + uInfo.count) * 15.0
-    if uInfo.last and (os.time() - uInfo.last) < 604800 then
-        usageBoost = usageBoost + 10.0
-    end
-
     if not query or query == "" then
-        return usageBoost
+        return 0
     end
 
-    local function getFuzzy(q, text)
-        if not text or text == "" then return nil end
-        local s = noctalia.fuzzyScore(q, text)
-        if not s then
-            s = noctalia.fuzzyScore(q:lower(), text:lower())
-        end
-        return s
-    end
+    local baseScore = fuzzyField(query, title)
+    if baseScore == 0 then return nil end
 
-    local titleScore = getFuzzy(query, title) or 0
-    local urlScore = getFuzzy(query, entry.url) or 0
-    local tagScore = 0
-    if entry.tags then
-        for _, tag in ipairs(entry.tags) do
-            local ts = getFuzzy(query, tag) or 0
-            if ts > tagScore then tagScore = ts end
-        end
-    end
-
-    local baseScore = math.max(titleScore * 1.0, urlScore * 0.6, tagScore * 0.8)
-    if baseScore == 0 and titleScore == 0 and urlScore == 0 and tagScore == 0 then
-        -- Check if any field matches substring as fallback
-        local lq = query:lower()
-        local matched = title:lower():find(lq, 1, true) or entry.url:lower():find(lq, 1, true)
-        if not matched and entry.tags then
-            for _, tag in ipairs(entry.tags) do
-                if tag:lower():find(lq, 1, true) then matched = true break end
-            end
-        end
-        if matched then
-            baseScore = 1.0
-        else
-            return nil
-        end
-    end
-
-    return baseScore + usageBoost
+    return baseScore
 end
 
 function onQuery(query)
@@ -384,7 +337,6 @@ function onQuery(query)
             table.insert(results, scoredList[i].result)
         end
     else
-    local lowerQuery = text:lower()
     for i = 1, #keys do
         local title = keys[i]
         local entry = database[title]
@@ -419,12 +371,12 @@ function onActivate(id)
     local settings = getSettings()
     local entry = database[id]
     if entry then
-        local uKey = (entry.url ~= "" and entry.url) or id
+        local uKey = tostring(entry.id)
         local uInfo = usage[uKey] or { count = 0, last = 0 }
         uInfo.count = uInfo.count + 1
         uInfo.last = os.time()
         usage[uKey] = uInfo
-        writeUsage()
+        writeData("usage.json", usage)
 
         local url = entry.url or ""
         local cmd = { settings.browser }
