@@ -21,12 +21,12 @@ hl.bind("SUPER + V", exec("wl-paste"))
 hl.bind("SUPER + CTRL + V", exec(ipc .. "panel-toggle clipboard"), { description = "Clipboard history" })
 
 -- 1. Applications
-hl.bind("SUPER + RETURN", exec("uwsm-app -a foot -- footclient"), { description = "Open a Terminal: foot client" })
-hl.bind("SUPER + ALT + RETURN", exec("uwsm-app -a foot-herdr -- footclient herdr"), { description = "Open a Terminal: foot client Herdr" })
-hl.bind("SUPER + SHIFT + RETURN", exec("uwsm-app -a foot -- foot"), { description = "Open a Terminal: foot" })
+hl.bind("SUPER + RETURN", exec("uwsm-app -t scope -a foot -- footclient"), { description = "Open a Terminal: foot client" })
+hl.bind("SUPER + ALT + RETURN", exec("uwsm-app -t scope -a foot-herdr -- footclient herdr"), { description = "Open a Terminal: foot client Herdr" })
+hl.bind("SUPER + SHIFT + RETURN", exec("uwsm-app -t scope -a foot -- foot"), { description = "Open a Terminal: foot" })
 hl.bind("SUPER + SPACE", exec(ipc .. "panel-toggle launcher"), { description = "Run an Application: Menu" })
 hl.bind("SUPER + B", exec(ipc .. "panel-toggle launcher '/bookmarks '"), { description = "Open Bookmark" })
-hl.bind("SUPER + ALT + K", exec("uwsm-app -a krw-task -- footclient --app-id=krw-task krw"), { description = "Run Task: krw menu" })
+hl.bind("SUPER + ALT + K", exec("uwsm-app -t scope -a krw-task -- footclient --app-id=krw-task krw"), { description = "Run Task: krw menu" })
 hl.bind("SUPER + ALT + L", exec(ipc .. "session lock"), { description = "Lock the Session" })
 
 -- 1b. Capture (headless variants; interactive ones live in krw menu)

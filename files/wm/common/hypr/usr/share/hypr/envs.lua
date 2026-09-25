@@ -22,6 +22,10 @@ hl.env("XDG_SESSION_DESKTOP", "Hyprland")
 -- Use XCompose file
 hl.env("XCOMPOSEFILE", "~/.XCompose")
 
+-- Keep uwsm-app launches as scopes: scope close never trips fumon,
+-- service close with nonzero exit does.
+hl.env("UWSM_APP_UNIT_TYPE", "scope")
+
 -- Style Gum confirm to match terminal theme
 hl.env("GUM_CONFIRM_PROMPT_FOREGROUND", "6")
 hl.env("GUM_CONFIRM_SELECTED_FOREGROUND", "0")
