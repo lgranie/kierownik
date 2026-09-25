@@ -1,23 +1,33 @@
 #!/usr/bin/env bash
 #MISE description="Build QCOW2 disk image for VM"
-#USAGE arg "<target>" help="Target profile" { choices "N100" "8745" "5290" "VM" }
+#USAGE arg "<target>" help="Target profile" { choices "5290" "8745" "vm" "x4cxl"}
 set -oue pipefail
+# shellcheck source=build/_oci_ref
+source "$(dirname "$0")/_oci_ref"
 
 mkdir -p /tmp/output
 
-run0 podman pull ghcr.io/lgranie/krw-"${usage_target}":latest
+IMGREF="$(oci_ref "${usage_target}")"
+
+# Image must be visible in root container storage: root, pull, local, build.
+oci_ensure "$IMGREF" "${usage_target}"
 
 run0 podman run --rm --privileged --pull=newer \
   --security-opt label=type:unconfined_t \
-  -v ./bib/config/qcow2.toml:/config.toml:ro \
-  -v ./bib/defs/kierownik-44.yaml:/usr/share/bootc-image-builder/defs/kierownik-44.yaml:ro \
+  -v ./.mise/tasks_assets/image-builder/config/qcow2-blueprint.json:/blueprint.json:ro \
   -v /tmp/output:/output \
   -v /var/lib/containers/storage:/var/lib/containers/storage \
-  -v /boot:/boot \
-  "${BIB_IMAGE}" \
-  --progress term \
-  --target-arch amd64 \
-  --type qcow2 \
-  --rootfs "${ROOTFS}" \
-  --installer-payload-ref "${BASE_IMAGE}" \
-  ghcr.io/lgranie/krw-"${usage_target}":latest
+  "${IMAGE_BUILDER}" \
+  build \
+  --output-dir /output \
+  --output-name "krw-${usage_target}" \
+  --blueprint /blueprint.json \
+  --arch x86_64 \
+  --bootc-ref "$IMGREF" \
+  --bootc-default-fs "${ROOTFS}" \
+  qcow2
+
+user_id=$(id -u)
+run0 bash -c "chown -R ${user_id} /tmp/output"
+
+echo "Done: /tmp/output/krw-${usage_target}.qcow2"
