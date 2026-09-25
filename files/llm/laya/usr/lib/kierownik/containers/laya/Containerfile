@@ -9,7 +9,7 @@ RUN \
   <<EOR
 set -eux
 apk add --no-cache ca-certificates
-pip install --no-cache-dir --prefix=/pkg "laya" "fastapi" "uvicorn"
+pip install --no-cache-dir --prefix=/pkg "onnxruntime" "transformers" "huggingface_hub" "numpy" "fastapi" "uvicorn"
 EOR
 
 FROM cgr.dev/chainguard/python:latest AS runtime
@@ -19,8 +19,7 @@ FROM cgr.dev/chainguard/python:latest AS runtime
 USER root
 WORKDIR /app
 
-ENV USE_TF=0
-ENV LAYA_MODEL=convaiinnovations/laya
+ENV LAYA_ONNX_MODEL=inferenceprince/laya-onnx
 ENV HF_HUB_CACHE=/cache
 ENV PORT=8000
 

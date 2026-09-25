@@ -3,13 +3,15 @@
 #MISE description="Build (or rebuild) the Laya Podman image"
 set -oue pipefail
 
+REPO="inferenceprince/laya-onnx"
+
 systemctl --user start laya-build.service
 
 gum log -sl info "Image 'localhost/laya:latest' built successfully."
 
-# Tag with the pip version too. Read from the image itself (no API race).
-VERSION="$(podman run --rm --entrypoint python localhost/laya:latest -c 'import importlib.metadata; print(importlib.metadata.version("laya"))' 2>/dev/null || true)"
-if [[ -n "${VERSION}" ]]; then
-  podman tag localhost/laya:latest "localhost/laya:${VERSION}"
-  gum log -sl info "Tagged 'localhost/laya:${VERSION}'."
+# Tag with the ONNX bundle revision too. Short sha of the HF repo.
+SHA="$(curl --silent --retry 3 "https://huggingface.co/api/models/${REPO}" | jq -r '.sha // empty' 2>/dev/null | cut -c1-7 || true)"
+if [[ -n "${SHA}" ]]; then
+  podman tag localhost/laya:latest "localhost/laya:onnx-${SHA}"
+  gum log -sl info "Tagged 'localhost/laya:onnx-${SHA}'."
 fi

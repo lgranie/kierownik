@@ -5,6 +5,7 @@ set -euo pipefail
 
 # --- config (group-specific) ---
 IMAGE="localhost/laya:latest"
+REPO="inferenceprince/laya-onnx"
 BUILD_TASK="laya:build"
 
 # --- shared logic (mirror in tasks/freellmapi/update) ---
@@ -14,20 +15,19 @@ podman image inspect "${IMAGE}" >/dev/null 2>&1 || {
   exit 0
 }
 
-CURRENT="$(podman run --rm --entrypoint python "${IMAGE}" -c 'import importlib.metadata; print(importlib.metadata.version("laya"))' 2>/dev/null || true)"
-LATEST="$(curl --silent --retry 3 "https://pypi.org/pypi/laya/json" | jq -r '.info.version // empty' 2>/dev/null || true)"
+REMOTE="$(curl --silent --retry 3 "https://huggingface.co/api/models/${REPO}" | jq -r '.sha // empty' 2>/dev/null | cut -c1-7 || true)"
 
-if [[ -z "${LATEST}" ]]; then
-  gum log -sl error "error: could not query latest release — check network" >&2
+if [[ -z "${REMOTE}" ]]; then
+  gum log -sl error "error: could not query latest revision — check network" >&2
   exit 1
 fi
 
-if [[ "${CURRENT}" == "${LATEST}" ]]; then
-  gum log -sl info "Already at latest version: ${CURRENT:-unknown}"
+if podman image inspect "localhost/laya:onnx-${REMOTE}" >/dev/null 2>&1; then
+  gum log -sl info "Already at latest revision: ${REMOTE}"
   exit 0
 fi
 
-gum log -sl info "Updating: ${CURRENT:-unknown} → ${LATEST}"
+gum log -sl info "Updating to revision: ${REMOTE}"
 
 mise run "${BUILD_TASK}"
 

@@ -10,7 +10,7 @@ mkdir -p "${DATA_DIR}"
 
 podman image inspect "localhost/laya:latest" >/dev/null 2>&1 || mise run laya:build
 
-gum log -sl info "Probing ${URL}/health (starts the container on demand; first boot downloads ~808 MB) ..."
+gum log -sl info "Probing ${URL}/health (starts the container on demand; first boot downloads ~846 MB) ..."
 for _ in $(seq 1 90); do
   if curl -fsS "${URL}/health" >/dev/null 2>&1; then
     HEALTHY=1
