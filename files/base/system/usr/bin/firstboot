@@ -12,8 +12,8 @@ if homectl list --json=short | jq -e '. | length > 0' >/dev/null; then
   exit 0
 fi
 
-trap '/usr/libexec/kier/firstboot;' EXIT
-trap '/usr/libexec/kier/firstboot;' SIGINT
+trap '/usr/bin/firstboot;' EXIT
+trap '/usr/bin/firstboot;' SIGINT
 
 FULLNAME="Laurent Granie"
 USERNAME="lgranie"
@@ -156,7 +156,7 @@ select_timezone() {
   mapfile -t zones < <(timedatectl list-timezones)
 
   while :; do
-    TIMEZONE=$(printf "%s\n" "${zones[@]}" | gum filter --limit 1 --placeholder "Search")
+    TIMEZONE=$(printf "%s\n" "${zones[@]}" | gum filter --limit 1 --value "$TIMEZONE" --placeholder "Search")
     [[ -n "$TIMEZONE" ]] && clear && break
     clear
     gum style --border thick "Timezone selection is required" 2>/dev/null
@@ -212,8 +212,8 @@ EOF
   SUBRANGE="524288-$(( 524288 + 65536 ))"
   usermod --add-subuids $SUBRANGE --add-subgids $SUBRANGE $USERNAME
 
-  # Register u2f key
-  if command -v pamu2fcfg >/dev/null 2>&1; then
+  # Register FIDO2 key (optional)
+  if command -v pamu2fcfg >/dev/null 2>&1 && gum confirm "Register FIDO2 security key now? (touch key when prompted)"; then
     pamu2fcfg -u $USERNAME >> /etc/u2f_mappings
   fi
 

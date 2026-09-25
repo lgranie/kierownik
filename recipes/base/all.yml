@@ -21,6 +21,7 @@ modules:
   - from-file: base/pico-key.yml
   - from-file: base/syncthing.yml
   - from-file: base/usbguard.yml
+  - from-file: base/installer.yml
 
   - type: files
     files:

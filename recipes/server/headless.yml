@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+---
+# Headless server: no graphical splash, text console boot.
+modules:
+  - type: kargs
+    arch: x86_64
+    kargs:
+      - plymouth.enable=0
