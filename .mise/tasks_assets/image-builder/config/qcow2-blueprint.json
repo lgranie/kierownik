@@ -1,10 +1,3 @@
 {
-  "customizations": {
-    "user": [
-      {
-        "name": "root",
-        "password": "$6$kierownik$XBwSNYuNH/1MKZsMEBIRp3EJGtO3DnX2qOrsvOGqm3ykdt0gmECxVZZk9hM2Sd7pAXsa/3VLI4QWoeaVSLrzN."
-      }
-    ]
-  }
+  "customizations": {}
 }

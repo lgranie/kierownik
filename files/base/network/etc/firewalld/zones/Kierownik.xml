@@ -2,6 +2,6 @@
 <zone>
   <short>Kierownik</short>
   <description>Kierownik config</description>
-  <!-- services added per-feature via firewall-offline-cmd snippets (localsend, sunshine, syncthing, ipp-client, mdns) -->
+  <!-- services added per-feature via firewall-offline-cmd snippets -->
   <forward/>
 </zone>

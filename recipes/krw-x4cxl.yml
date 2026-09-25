@@ -1,6 +1,5 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 ---
-# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 # image will be published to ghcr.io/<user>/<name>
 name: krw-x4cxl
 # description will be included in the image's metadata
@@ -13,11 +12,11 @@ image-version: 44
 platforms:
   - linux/amd64
 
-# module configuration, executed in order
-# you can include multiple instances of the same module
 modules:
   - from-file: base/all.yml
   - from-file: cpu/intel.yml
+  - from-file: server/sshd.yml
+  - from-file: server/headless.yml
 
   - from-file: finalize/all.yml
 ...
