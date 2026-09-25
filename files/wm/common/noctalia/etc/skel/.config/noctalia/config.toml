@@ -1,5 +1,6 @@
 [shell]
-launch_apps_as_systemd_services = true
+launch_apps_as_systemd_services = false
+launch_apps_custom_command = "uwsm-app -t scope -- $CMD"
 
 [[plugins.source]]
 name     = "kierownik"
