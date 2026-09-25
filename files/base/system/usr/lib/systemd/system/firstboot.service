@@ -6,6 +6,7 @@ After=home.mount systemd-homed.service
 
 [Service]
 Type=oneshot
+Environment=TERM=linux
 StandardInput=tty
 StandardOutput=tty
 TTYPath=/dev/tty1

@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+---
+# (users/keys via firstboot/ansible later).
+modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - openssh-server
+
+  - type: script
+    snippets:
+      - "systemctl unmask sshd.service sshd.socket"
+      - "firewall-offline-cmd --zone=Kierownik --add-service=ssh"
+
+  - type: systemd
+    system:
+      enabled:
+        - sshd.service
+...
