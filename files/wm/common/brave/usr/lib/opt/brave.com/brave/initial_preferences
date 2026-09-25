@@ -599,7 +599,8 @@
         "has_migrated_local_network_access": true,
         "notifications": 2
       },
-      "exit_type": "Crashed",
+      "exit_type": "Normal",
+      "exited_cleanly": true,
       "family_member_role": "not_in_family",
       "last_engagement_time": "",
       "last_time_obsolete_http_credentials_removed": "",
