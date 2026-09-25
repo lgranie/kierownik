@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+#MISE description="Build raw disk image (USB installer source)"
+#USAGE arg "<target>" help="Target profile" { choices "5290" "8745" "vm" "x4cxl"}
+set -oue pipefail
+# shellcheck source=build/_oci_ref
+source "$(dirname "$0")/_oci_ref"
+
+mkdir -p /tmp/output
+
+IMGREF="$(oci_ref "${usage_target}")"
+
+# Image must be visible in root container storage: root, pull, local, build.
+oci_ensure "$IMGREF" "${usage_target}"
+
+run0 podman run --rm --privileged --pull=newer \
+  --security-opt label=type:unconfined_t \
+  -v ./.mise/tasks_assets/image-builder/config/qcow2-blueprint.json:/blueprint.json:ro \
+  -v /tmp/output:/output \
+  -v /var/lib/containers/storage:/var/lib/containers/storage \
+  "${IMAGE_BUILDER}" \
+  build \
+  --output-dir /output \
+  --output-name "krw-${usage_target}" \
+  --blueprint /blueprint.json \
+  --arch x86_64 \
+  --bootc-ref "$IMGREF" \
+  --bootc-default-fs "${ROOTFS}" \
+  raw
+
+user_id=$(id -u)
+run0 bash -c "chown -R ${user_id} /tmp/output"
+
+gum log --time=false --level info "Done: /tmp/output/krw-${usage_target}.raw"
+gum log --time=false --level info "Write to USB, boot it, then run: krw install:to-disk"

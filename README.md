@@ -63,6 +63,22 @@ or use mise taks ( use run0 )
 mise run build:iso 5290
 ```
 
+### USB installer (bootc-native)
+
+```bash
+mise run build:raw 5290
+# dd /tmp/output/krw-5290.raw to USB, boot it, then on the live system:
+krw install:to-disk
+```
+
+Asks target disk + hibernation, installs via `bootc install to-filesystem` (network required), reboot lands on firstboot user setup.
+
+VM test (boots raw as USB + blank target disk, `--installed` boots the target after install):
+
+```bash
+mise run vm:raw x4cxl [--installed]
+```
+
 ### WSL
 
 ```bash

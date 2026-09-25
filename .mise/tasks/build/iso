@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+#MISE description="Build ISO installer image"
+#USAGE arg "<target>" help="Target profile" { choices "5290" "8745" "vm" "x4cxl" }
+set -oue pipefail
+# shellcheck source=build/_oci_ref
+source "$(dirname "$0")/_oci_ref"
+
+IMGREF="$(oci_ref "${usage_target}")"
+
+# Image must be visible in root container storage: root, pull, local, build.
+oci_ensure "$IMGREF" "${usage_target}"
+
+run0 bluebuild generate-iso --iso-name "krw-${usage_target}.iso" image "$IMGREF"
+
+gum log --time=false --level info "ISO created at ./krw-${usage_target}.iso"

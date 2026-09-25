@@ -12,8 +12,8 @@ if homectl list --json=short | jq -e '. | length > 0' >/dev/null; then
   exit 0
 fi
 
-trap '/usr/libexec/kier/firstboot;' EXIT
-trap '/usr/libexec/kier/firstboot;' SIGINT
+trap '/usr/bin/firstboot;' EXIT
+trap '/usr/bin/firstboot;' SIGINT
 
 FULLNAME="Laurent Granie"
 USERNAME="lgranie"

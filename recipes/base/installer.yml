@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+---
+# Live USB installer: `krw install:to-disk` partitions a target disk and
+# installs via `bootc install to-filesystem`. Pure bootc, no ostree/kickstart.
+modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - btrfs-progs
+        - dosfstools
+
+  - type: files
+    files:
+      - source: base/installer
+        destination: /

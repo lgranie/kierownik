@@ -1,0 +1,137 @@
+#!/usr/bin/env bash
+
+#MISE description="Install Kierownik to disk (USB installer)"
+set -euo pipefail
+
+# Live installer: boot a kierownik raw image from USB, run
+# `krw install:to-disk`, pick target disk, answer hibernation,
+# reboot into firstboot user setup. Pure bootc, no ostree/kickstart.
+# Override source image via INSTALL_REF env (default: booted image).
+
+MNT=/mnt/kier-target
+: "${INSTALL_REF:-}"
+
+if [ "$(id -u)" -ne 0 ]; then
+  exec run0 "$0" "$@"
+fi
+
+for bin in bootc sfdisk mkfs.vfat mkfs.btrfs lsblk jq gum findmnt udevadm blkid; do
+  command -v "$bin" >/dev/null || {
+    gum log -sl error "missing: $bin (rebuild image)"
+    exit 1
+  }
+done
+
+ref="${INSTALL_REF:-}"
+if [ -z "$ref" ]; then
+  ref="$(bootc status --json 2>/dev/null | jq -r '.status.booted.image.image.image // .spec.image.image.image // empty')"
+  ref="${ref##*:}"
+  ref="${ref#docker://}"
+fi
+if [ -z "$ref" ]; then
+  ref="$(gum input --value "ghcr.io/lgranie/" --placeholder "Image ref to install")"
+  [ -n "${ref:-}" ] || exit 0
+fi
+
+host="${ref%%/*}"
+if ! getent hosts "$host" >/dev/null; then
+  gum log -sl error "no network to $host (registry pull required)"
+  exit 1
+fi
+
+boot_src="$(findmnt -no SOURCE /)"
+boot_disk="$(lsblk -no PKNAME "$boot_src" 2>/dev/null || true)"
+rows=()
+while IFS= read -r line; do
+  name="${line%% *}"
+  [[ "$name" == /dev/zram* ]] && continue
+  [[ -n "$boot_disk" && "$name" == "/dev/$boot_disk" ]] && continue
+  rows+=("$line")
+done < <(lsblk -dnpo NAME,SIZE,MODEL,TRAN,TYPE | awk '$5=="disk"')
+if [ "${#rows[@]}" -eq 0 ]; then
+  gum log -sl error "no target disks found"
+  exit 1
+fi
+
+pick="$(printf '%s\n' "${rows[@]}" | gum choose --header "Target disk (WIPED)")"
+[ -n "${pick:-}" ] || exit 0
+disk="${pick%% *}"
+[ -b "$disk" ] || {
+  gum log -sl error "not a block device: $disk"
+  exit 1
+}
+
+hib=no
+if gum confirm "Enable hibernation? (swap partition = RAM size)"; then
+  hib=yes
+fi
+mem_mb="$(awk '/^MemTotal:/ {printf "%d", $2/1024}' /proc/meminfo)"
+
+plan=("Image: $ref" "Disk:  $disk (ALL DATA WIPED)" "ESP:   512MiB" "Root:  btrfs (rest)")
+if [ "$hib" = yes ]; then
+  plan+=("Swap:  ${mem_mb}MiB")
+fi
+gum style --border thick "${plan[@]}"
+gum confirm "WIPE $disk and install?" || {
+  gum log -sl warn "Cancelled, disk untouched."
+  exit 0
+}
+
+part() {
+  if [[ "$disk" =~ [0-9]$ ]]; then
+    printf '%sp%s' "$disk" "$1"
+  else
+    printf '%s%s' "$disk" "$1"
+  fi
+}
+
+gum log -sl info "Partitioning $disk (UEFI)"
+table='label: gpt
+unit: sectors
+size=512MiB, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B, name="ESP"'
+if [ "$hib" = yes ]; then
+  table+=$'\nsize='"${mem_mb}"'MiB, type=0657FD6D-A4AB-43C4-84E5-0933C84B4F4F, name="swap"'
+fi
+table+=$'\ntype=4F68BCE3-E8CD-4DB1-96E7-FBCAF984B709, name="root"'
+printf '%s\n' "$table" | sfdisk --wipe always --wipe-partitions always "$disk"
+udevadm settle --timeout=10 || true
+
+if [ "$hib" = yes ]; then
+  esp="$(part 1)"
+  swap="$(part 2)"
+  root="$(part 3)"
+else
+  esp="$(part 1)"
+  root="$(part 2)"
+fi
+
+mkfs.vfat -F32 -n ESP "$esp" >/dev/null
+mkfs.btrfs -f -L kier-root "$root" >/dev/null
+if [ "$hib" = yes ]; then
+  mkswap -L kier-swap "$swap" >/dev/null
+  swap_uuid="$(blkid -s UUID -o value "$swap")"
+fi
+
+mkdir -p "$MNT"
+mount "$root" "$MNT"
+mkdir -p "$MNT/boot/efi"
+mount "$esp" "$MNT/boot/efi"
+trap 'umount -R "$MNT" 2>/dev/null || true' EXIT
+
+gum log -sl info "Installing $ref"
+bootc install to-filesystem --source-imgref "docker://$ref" --target-imgref "$ref" "$MNT"
+
+if [ "$hib" = yes ]; then
+  printf 'UUID=%s none swap defaults 0 0\n' "$swap_uuid" >>"$MNT/etc/fstab"
+fi
+
+trap - EXIT
+umount -R "$MNT"
+
+gum style --border thick "Installed $ref on $disk" "Remove USB, then reboot." "First boot opens user setup."
+if [ "$hib" = yes ]; then
+  gum log -sl info "After first boot verify: krw hibernation:test"
+fi
+if gum confirm "Reboot now?"; then
+  systemctl reboot
+fi
