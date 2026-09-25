@@ -1,13 +1,24 @@
 #!/usr/bin/env bash
 
 #MISE description="Build OCI image"
-#USAGE arg "<target>" help="Target profile" { choices "N100" "8745" "5290" "VM" }
+#USAGE arg "<target>" help="Target profile" { choices "5290" "8745" "vm" "x4cxl"}
 
 set -oue pipefail
 
-bluebuild build recipes/krw-"${usage_target}".yml
+source "$(dirname "$0")/_oci_ref"
 
+#bluebuild build recipes/krw-"${usage_target}".yml
+
+# Tag branch build
+TAG="$(oci_tag)"
+echo "$TAG"
+if [ "$TAG" != "latest" ]; then
+  podman tag ghcr.io/lgranie/krw-${usage_target}:latest ghcr.io/lgranie/krw-${usage_target}:${TAG}
+fi
+
+# Copy to root if needed
+IMGREF="$(oci_ref "${usage_target}")"
 if [ "$(id -u)" -ne 0 ]; then
-  username=$(id -un)
-  run0 bash -c "podman image scp ${username}@localhost::ghcr.io/lgranie/krw-${usage_target}:latest root@localhost::"
+  gum confirm "Copy $IMGREF to root storage?" || exit 0
+  oci_copy "$IMGREF"
 fi
