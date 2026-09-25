@@ -34,4 +34,4 @@ CI: `.github/workflows/build.yml` + `.woodpecker/build.yml`. Matrix `krw-5290.ym
 - Never commit `cosign.*` secrets; images signed, verify via `cosign verify`.
 - New package/feature: recipe module + overlays + `from-file:` include; new top-level recipe -> add to GHA matrix (N100/WSL deliberately excluded).
 - On-image tasks: `files/*/usr/lib/kierownik/tasks/<group>/<name>`, run via `krw`; `recipes/finalize/all.yml` chmods +x.
-- Disk images: `bib/config/qcow2.toml` + `bib/defs/` feed `build:qcow2`. `next/*.md` = design notes, ignored by CI.
+- Disk images: `.mise/tasks_assets/image-builder/config/qcow2-blueprint.json` feeds `build:qcow2` (image-builder). `next/*.md` = design notes, ignored by CI.
