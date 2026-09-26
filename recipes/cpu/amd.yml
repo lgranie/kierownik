@@ -16,6 +16,10 @@ modules:
     arch: x86_64
     kargs:
       - amd_pstate=active
+      # Pin THP to madvise: llama.cpp marks its buffers MADV_HUGEPAGE, so it
+      # gets hugepages with zero boot-time RAM reservation. Slightly faster
+      # than always for llama.cpp CPU inference (Phoronix, Linux 6.18 LTS).
+      - transparent_hugepage=madvise
 
   - from-file: cpu/common/realtime.yml
   - from-file: cpu/common/hardening.yml

@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<service>
-  <short>ramalama</short>
-  <description>Ramalama</description>
-
-  <!-- Ramalama -->
-  <port protocol="tcp" port="8080"/>
-</service>
