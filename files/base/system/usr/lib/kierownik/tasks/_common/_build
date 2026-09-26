@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Sourced by */build tasks. No #MISE description: krw picker skips _-prefixed files.
+# Streams a quadlet .build service log live, blocks until done, fails loudly.
+# Usage: source "$(dirname "$0")/../_common/_build" && _build_service <service>
+
+_build_service() {
+  local svc="${1:?usage: _build_service <service>}"
+  journalctl --user -u "${svc}" -n 0 -f --no-hostname -o cat &
+  local jpid=$!
+  local rc=0
+  systemctl --user --wait start "${svc}" || rc=$?
+  kill "${jpid}" 2>/dev/null || true
+  wait "${jpid}" 2>/dev/null || true
+  if [[ "${rc}" -ne 0 ]] || systemctl --user is-failed --quiet "${svc}"; then
+    gum log -sl error "Build failed — see log above (journalctl --user -u ${svc})."
+    return 1
+  fi
+}
