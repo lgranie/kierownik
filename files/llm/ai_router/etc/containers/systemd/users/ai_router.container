@@ -3,8 +3,9 @@ Description=ai_router - laya-dispatched chain proxy over FreeLLMAPI
 ConditionUser=!@system
 Wants=network-online.target
 After=network-online.target
-# On-demand backend for ai_router-proxy.socket: started on first connection
-# via ai_router-proxy.service, stopped when the proxy goes idle.
+# Backends start alongside (socket cascade still covers direct users).
+Wants=freellmapi.service laya.service
+After=freellmapi.service laya.service
 StopWhenUnneeded=yes
 
 [Container]

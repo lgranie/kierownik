@@ -38,6 +38,7 @@ def _validate_config(cfg):
     if not isinstance(cfg, dict) or not isinstance(cfg.get("chains"), dict) or not cfg["chains"]:
         raise ValueError("config needs a non-empty 'chains' mapping")
     router = cfg.get("router") or {}
+    bench = cfg.get("bench") or {}
     if "chat" not in cfg["chains"]:
         raise ValueError("config needs a 'chat' chain (mandatory fallback)")
     for name, ch in cfg["chains"].items():
@@ -52,11 +53,11 @@ def _validate_config(cfg):
     return {"default_chain": router.get("default_chain", "chat"),
             "large_threshold_tokens": router.get("large_threshold_tokens", 12000),
             "laya_confidence_min": router.get("laya_confidence_min", 0.6),
-            "bench_max_tokens": router.get("bench_max_tokens", 128),
-            "bench_timeout_s": router.get("bench_timeout_s", 60),
-            "bench_top_n": router.get("bench_top_n", 3),
-            "bench_pool_cap": router.get("bench_pool_cap", 24),
-            "bench_concurrency": router.get("bench_concurrency", 4)}
+            "bench_max_tokens": bench.get("max_tokens", 128),
+            "bench_timeout_s": bench.get("timeout_s", 60),
+            "bench_top_n": bench.get("top_n", 3),
+            "bench_pool_cap": bench.get("pool_cap", 24),
+            "bench_concurrency": bench.get("concurrency", 4)}
 
 
 def match_caps(chain, caps):
@@ -219,7 +220,24 @@ def _sync_profiles():
         con.close()
 
 
+async def _wait_upstream(client):
+    for _ in range(90):  # ~3 min: freellmapi cold-boots behind its own socket
+        try:
+            r = await client.get(FREELLMAPI_URL + "/api/ping", timeout=5)
+            if r.status_code == 200:
+                return True
+        except Exception:  # noqa: BLE001 — not up yet, keep waiting
+            pass
+        await asyncio.sleep(2)
+    return False
+
+
 async def _bench_all(app_client):
+    STATE["bench"] = {"status": "waiting", "updated_at": int(time.time())}
+    if not await _wait_upstream(app_client):
+        print("bench skipped: freellmapi never answered /api/ping", flush=True)
+        STATE["bench"] = {"status": "idle", "updated_at": int(time.time())}
+        return
     STATE["bench"] = {"status": "running", "updated_at": int(time.time())}
     have = {(m.get("platform"), m.get("mid")) for es in STATE["chains"].values() for m in es}
     sem = asyncio.Semaphore(ROUTER["bench_concurrency"])
@@ -387,12 +405,21 @@ async def chat(body: dict, request: Request):
         chain = asked[6:]
     elif asked in ("auto", None, ""):
         choice = await _laya_route(client, prompt)
-        chain = resolve_route(set(CHAINS), choice, 1.0 if choice else 0.0,
-                              estimate_tokens(prompt), ROUTER["default_chain"],
-                              ROUTER["large_threshold_tokens"], ROUTER["laya_confidence_min"])
+        if choice is not None:
+            chain = resolve_route(set(CHAINS), choice, 1.0,
+                                  estimate_tokens(prompt), ROUTER["default_chain"],
+                                  ROUTER["large_threshold_tokens"], ROUTER["laya_confidence_min"])
+        else:
+            chain = None  # laya down/low-confidence: freellmapi default chain
     else:  # explicit model id: passthrough untouched
         return await _forward(client, body, {"Authorization": "Bearer " + FREELLMAPI_KEY,
                                              "Content-Type": "application/json"})
+    if chain is None:  # freellmapi active fallback chain, no model rewrite
+        resp = await _forward(client, dict(body, model="auto"),
+                              {"Authorization": "Bearer " + FREELLMAPI_KEY,
+                               "Content-Type": "application/json"})
+        resp.headers["X-AI-Router-Chain"] = "auto"
+        return resp
     entries = STATE["chains"].get(chain, [])
     entry = pick_model(entries, has_image)
     if entry is None:
