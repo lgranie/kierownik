@@ -5,7 +5,7 @@ set -oue pipefail
 
 REPO="inferenceprince/laya-onnx"
 
-systemctl --user start laya-build.service
+source "$(dirname "$0")/../_common/_build" && _build_service laya-build.service
 
 gum log -sl info "Image 'localhost/laya:latest' built successfully."
 

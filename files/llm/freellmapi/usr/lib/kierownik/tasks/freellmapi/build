@@ -3,7 +3,7 @@
 #MISE description="Build (or rebuild) the FreeLLMAPI Podman image"
 set -oue pipefail
 
-systemctl --user start freellmapi-build.service
+source "$(dirname "$0")/../_common/_build" && _build_service freellmapi-build.service
 
 gum log -sl info "Image 'localhost/freellmapi:latest' built successfully."
 

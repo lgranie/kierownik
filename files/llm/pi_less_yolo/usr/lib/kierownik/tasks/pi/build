@@ -3,7 +3,7 @@
 #MISE description="Build (or rebuild) the pi Podman image"
 set -euo pipefail
 
-systemctl --user start pi_less_yolo-build.service
+source "$(dirname "$0")/../_common/_build" && _build_service pi_less_yolo-build.service
 
 gum log -sl info "Image 'localhost/pi_less_yolo:latest' built successfully."
 

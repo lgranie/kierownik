@@ -3,6 +3,11 @@ FROM cgr.dev/chainguard/node:latest-dev AS builder
 # Chainguard node defaults to the non-root `node` user; apk needs root.
 USER root
 
+# 2026-09-25 node:latest-dev ships bash/busybox but no /bin/sh symlink,
+# and buildah hardcodes /bin/sh -c for shell-form RUN (SHELL is ignored in
+# OCI format). Symlink it once via exec-form RUN; later shell RUNs just work.
+RUN ["/bin/busybox", "ln", "-sf", "bash", "/bin/sh"]
+
 # git/curl/jq: fetch the source at the latest release tag.
 # python3/make/build-base: compile-from-source fallback for native modules
 # (better-sqlite3, sharp) when no prebuilt binary matches the Node version.
