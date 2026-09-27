@@ -21,7 +21,7 @@ PublishPort=127.0.0.1:8009:8000
 Volume=%h/.local/share/laya:/cache:Z
 # iGPU passthrough (780M on 8745HS, Intel iGPU on 5290). onnxruntime uses
 # CPU provider, so this stays future-proofing for a GPU provider.
-Device=/dev/dri
+AddDevice=/dev/dri
 # Model load needs >10s on CPU (bundle fetch + ORT init); default
 # podman stop -t 10 hits SIGKILL. Keep below TimeoutStopSec.
 StopTimeout=60
