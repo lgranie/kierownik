@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+#MISE description="Rebuild ai_router image and restart the service"
+set -oue pipefail
+
+mise run ai_router:build
+
+if systemctl --user is-active --quiet ai_router.service; then
+  systemctl --user restart ai_router.service
+  gum log -sl info "ai_router.service restarted on the new image."
+else
+  gum log -sl info "Container stopped (starts on first request)."
+fi
+
+# --- shared logic (mirror in tasks/freellmapi/update, tasks/laya/update) ---

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+#MISE description="Follow ai_router container logs"
+set -oue pipefail
+
+journalctl --user -fu ai_router.service

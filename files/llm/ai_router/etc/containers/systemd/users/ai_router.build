@@ -1,0 +1,12 @@
+[Unit]
+Description=Build ai_router Image
+ConditionUser=!@system
+Wants=network-online.target
+After=network-online.target
+
+[Build]
+Pull=newer
+Network=host
+ImageTag=localhost/ai_router:latest
+File=/usr/lib/kierownik/containers/ai_router/Containerfile
+SetWorkingDirectory=/usr/lib/kierownik/containers/ai_router

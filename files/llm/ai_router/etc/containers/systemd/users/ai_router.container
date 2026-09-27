@@ -1,0 +1,48 @@
+[Unit]
+Description=ai_router - laya-dispatched chain proxy over FreeLLMAPI
+ConditionUser=!@system
+Wants=network-online.target
+After=network-online.target
+# On-demand backend for ai_router-proxy.socket: started on first connection
+# via ai_router-proxy.service, stopped when the proxy goes idle.
+StopWhenUnneeded=yes
+
+[Container]
+# Locally built by ai_router-build.service (`mise run ai_router:build`)
+# from the Chainguard-based Containerfile; no registry pull.
+Image=localhost/ai_router:latest
+ContainerName=ai_router
+Environment=PORT=3003
+Environment=CONFIG=/config/chains.yaml
+Environment=DATA=/data/state.json
+Environment=FREEDB=/freedb/freeapi.db
+Environment=FREELLMAPI_URL=http://host.docker.internal:3001
+Environment=LAYA_URL=http://host.docker.internal:8008
+# Created by `mise run ai_router:init` (FREELLMAPI_KEY, mode 600) before the
+# on-demand socket is enabled, so it always exists when the container starts.
+# (No `-` optional prefix: quadlet treats it as a relative path and mangles it.)
+EnvironmentFile=%h/.config/ai_router/ai_router.env
+# Backend port: the public 3003 is held by ai_router-proxy.socket and
+# forwarded here by ai_router-proxy.service. Localhost-only either way.
+PublishPort=127.0.0.1:3004:3003
+Volume=%h/.config/ai_router:/config:Z
+Volume=%h/.local/share/ai_router:/data:Z
+# Freellmapi SQLite (same-user file): capability read + profile sync.
+Volume=%h/.local/share/freellmapi:/freedb:Z
+# Model load needs >10s on CPU (bench on first boot); default
+# podman stop -t 10 hits SIGKILL. Keep below TimeoutStopSec.
+StopTimeout=30
+# Lets the proxy reach host-local servers (freellmapi, laya).
+AddHost=host.docker.internal:host-gateway
+# No healthcheck: quadlet HealthCmd becomes CMD-SHELL, but the Chainguard
+# runtime has no shell, so every probe fails and its transient unit trips
+# fumon on each run. Liveness is covered by wait-ready + socket activation.
+HealthCmd=none
+
+[Service]
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=60
+# Idle stop (StopWhenUnneeded) kills the container via ExecStop's
+# `podman rm -f`, so the main process exits 137 - a clean stop, not a failure.
+SuccessExitStatus=137

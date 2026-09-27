@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+#MISE description="Initialize ai_router (config, unified key, image, on-demand socket)"
+set -oue pipefail
+
+CONF_DIR="${HOME}/.config/ai_router"
+DATA_DIR="${HOME}/.local/share/ai_router"
+ENV_FILE="${CONF_DIR}/ai_router.env"
+CHAINS_FILE="${CONF_DIR}/chains.yaml"
+URL="http://localhost:3003"
+
+mkdir -p "${CONF_DIR}" "${DATA_DIR}"
+
+if [[ -f "${CHAINS_FILE}" ]]; then
+  gum log -sl info "Keeping existing ${CHAINS_FILE}"
+else
+  cp /usr/lib/kierownik/ai_router/chains.default.yaml "${CHAINS_FILE}"
+  gum log -sl info "Seeded ${CHAINS_FILE} from packaged default — edit chains, then: mise run ai_router:bench"
+fi
+
+if [[ -f "${ENV_FILE}" ]]; then
+  gum log -sl info "Keeping existing ${ENV_FILE} (unified key preserved)"
+else
+  KEY="$(gum input --password --header "Paste the FreeLLMAPI unified key (dashboard Keys page header)")"
+  if [[ -z "${KEY}" ]]; then
+    gum log -sl error "Empty key — rerun when you have the unified key."
+    exit 1
+  fi
+  umask 077
+  printf 'FREELLMAPI_KEY=%s\n' "${KEY}" >"${ENV_FILE}"
+  umask 022
+  gum log -sl info "Wrote ${ENV_FILE}"
+fi
+
+chmod 600 "${ENV_FILE}"
+
+podman image inspect "localhost/ai_router:latest" >/dev/null 2>&1 || mise run ai_router:build
+
+gum log -sl info "Probing ${URL}/health (starts the container on demand; first boot benches chains) ..."
+for _ in $(seq 1 60); do
+  if curl -fsS "${URL}/health" >/dev/null 2>&1; then
+    HEALTHY=1
+    break
+  fi
+  sleep 2
+done
+
+if [[ "${HEALTHY:-0}" == "1" ]]; then
+  systemctl --user restart freellmapi.service
+  gum style --border thick "ai_router is running on demand at ${URL}"
+  gum style "Next: point any OpenAI client at ${URL}/v1 with any non-empty key (auth is server-side)."
+  gum style "Idle for a bit and the container stops itself; the next request starts it again."
+else
+  gum log -sl error "The API did not answer within 120s — check: mise run ai_router:logs"
+  exit 1
+fi

@@ -28,6 +28,7 @@ modules:
 
   - from-file: llm/freellmapi.yml
   - from-file: llm/laya.yml
+  - from-file: llm/ai_router.yml
   - from-file: llm/pi_less_yolo.yml
 
   - from-file: finalize/all.yml

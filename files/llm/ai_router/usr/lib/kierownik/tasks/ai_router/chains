@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+#MISE description="Show resolved ai_router chains and top models"
+set -oue pipefail
+
+URL="http://localhost:3003"
+
+CHAINS_JSON="$(curl -fsS "${URL}/chains" 2>/dev/null || true)"
+if [[ -z "${CHAINS_JSON}" ]]; then
+  gum log -sl error "ai_router unreachable at ${URL} — check: mise run ai_router:logs"
+  exit 1
+fi
+
+python3 -c "
+import json, sys
+doc = json.load(sys.stdin)
+print('bench:', doc['bench']['status'])
+for name, ch in doc['chains'].items():
+    print('== %s: %s' % (name, ch['description']))
+    for m in ch['models'] or ['(empty — run ai_router:bench)']:
+        print('   -', m)
+" <<<"${CHAINS_JSON}"

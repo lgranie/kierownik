@@ -1,0 +1,54 @@
+# ai_router chain intents. No model ids here: startup lists live freellmapi
+# models, constrains by requires/context, benches with probe, keeps top-N.
+# Suffix convention: {chain}-large wins when prompt estimate exceeds
+# router.large_threshold_tokens. `chat` is mandatory (laya fallback).
+router:
+  default_chain: chat
+  large_threshold_tokens: 12000
+  laya_confidence_min: 0.6
+  bench_max_tokens: 128
+  bench_timeout_s: 60
+  bench_top_n: 3
+  bench_pool_cap: 24
+  bench_concurrency: 4
+
+chains:
+  coding:
+    description: "code tasks: write, fix, refactor, explain code"
+    requires: [tools]
+    context:
+      min: 8000
+    probe: |
+      Fix this off-by-one, reply with the corrected function only:
+      ```python
+      def f(xs):
+          return [xs[i+1] for i in range(len(xs))]
+      ```
+
+  coding-large:
+    description: "code tasks on large context: repo-scale refactors, long files"
+    requires: [tools]
+    context:
+      min: 100000
+    probe: "Reply with exactly: ok"
+
+  search:
+    description: "search local and web: factual lookup, docs, fast answers"
+    requires: []
+    context:
+      min: 8000
+    probe: "In two sentences: what is Quadlet Pod= and when does a container join a pod?"
+
+  reason:
+    description: "hard reasoning: math, planning, multi-step analysis"
+    requires: []
+    context:
+      min: 16000
+    probe: "A train leaves at 14:07 averaging 96 km/h. What time after 38 km? One line."
+
+  chat:
+    description: "general chat: small talk, writing, anything else"
+    requires: []
+    context:
+      min: 0
+    probe: "Reply with exactly: ok"
