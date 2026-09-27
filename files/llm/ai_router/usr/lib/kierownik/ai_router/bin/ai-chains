@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ai-chains — inspect and update ai_router chains.
 # status: show bench state + top models per chain, flag weak chains.
-# tune:   interactively edit a chain in ~/.config/ai_router/chains.yaml,
+# tune:   interactively edit a chain in ~/.config/ai_router/config.yml,
 #         validate, restart router, wait for incremental bench.
 # add:    scaffold a new chain, then same validate/bench path as tune.
 # bench:  delegate to the full (quota-hungry) re-bench task.
@@ -9,7 +9,7 @@ set -oue pipefail
 
 URL="http://localhost:3003"
 CONF_DIR="${HOME}/.config/ai_router"
-CHAINS_FILE="${CONF_DIR}/chains.yaml"
+CHAINS_FILE="${CONF_DIR}/config.yml"
 
 need_init() {
   if [[ ! -f "${CHAINS_FILE}" ]]; then
@@ -68,7 +68,7 @@ for name, ch in cfg["chains"].items():
     ctx = (ch.get("context") or {}).get("min", 0)
     assert isinstance(ctx, int) and ctx >= 0, \
         "chain %r: context.min must be a non-negative int" % (name,)
-print("chains.yaml valid")
+print("config.yml valid")
 PY
 }
 

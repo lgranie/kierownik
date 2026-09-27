@@ -18,7 +18,7 @@ ContainerName=ai_router
 # addressed by container name; host users still go through the sockets.
 Network=llm.network
 Environment=PORT=3003
-Environment=CONFIG=/config/chains.yaml
+Environment=CONFIG=/config/config.yml
 Environment=DATA=/data/state.json
 Environment=FREEDB=/freedb/freeapi.db
 Environment=FREELLMAPI_URL=http://freellmapi:3001

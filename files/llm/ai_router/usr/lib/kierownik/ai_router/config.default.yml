@@ -2,6 +2,9 @@
 # models, constrains by requires/context, benches with probe, keeps top-N.
 # Suffix convention: {chain}-large wins when prompt estimate exceeds
 # router.large_threshold_tokens. `chat` is mandatory (laya fallback).
+# log_level: DEBUG enables per-request routing traces (Laya choice, model pick).
+log_level: INFO
+
 router:
   default_chain: chat
   large_threshold_tokens: 12000

@@ -2,11 +2,12 @@
 
 # ponytail: single file, SQLite profile sync is best-effort (dashboard cosmetic);
 # explicit model: forward is the real routing path, works without DB writes.
-# Config is user-only (~/.config/ai_router/chains.yaml, seeded by ai_router:init
+# Config is user-only (~/.config/ai_router/config.yml, seeded by ai_router:init
 # from the packaged /usr/lib default). Missing config fails fast, no silent default.
 
 import asyncio
 import json
+import logging
 import os
 import sqlite3
 import sys
@@ -21,10 +22,15 @@ from fastapi.responses import JSONResponse, StreamingResponse
 FREELLMAPI_URL = os.environ.get("FREELLMAPI_URL", "http://host.containers.internal:3001")
 FREELLMAPI_KEY = os.environ.get("FREELLMAPI_KEY", "")
 LAYA_URL = os.environ.get("LAYA_URL", "http://host.containers.internal:8008")
-CONFIG_PATH = os.environ.get("CONFIG", "/config/chains.yaml")
+CONFIG_PATH = os.environ.get("CONFIG", "/config/config.yml")
 STATE_PATH = os.environ.get("DATA", "/data/state.json")
 FREEDB_PATH = os.environ.get("FREEDB", "/freedb/freeapi.db")
 PORT = int(os.environ.get("PORT", "3003"))
+
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO").upper()
+logging.basicConfig(level=getattr(logging, LOG_LEVEL, logging.INFO),
+                    format="%(asctime)s [%(levelname)s] %(message)s")
+logger = logging.getLogger("ai_router")
 
 ALLOWED_REQUIRES = {"tools", "vision"}
 VISION_PX = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
@@ -58,6 +64,20 @@ def _validate_config(cfg):
             "bench_top_n": bench.get("top_n", 3),
             "bench_pool_cap": bench.get("pool_cap", 24),
             "bench_concurrency": bench.get("concurrency", 4)}
+
+
+def _set_log_level(cfg):
+    raw = (cfg.get("log_level") or (cfg.get("router") or {}).get("log_level")
+           or os.environ.get("LOG_LEVEL", "INFO")).upper()
+    level = getattr(logging, raw, logging.INFO)
+    logging.getLogger().setLevel(level)
+    for h in logging.getLogger().handlers:
+        h.setLevel(level)
+    logging.getLogger("ai_router").setLevel(level)
+    # httpx/httpcore DEBUG dumps full headers per request — never useful here.
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
+    return raw
 
 
 def match_caps(chain, caps):
@@ -190,7 +210,7 @@ def _sync_profiles():
     try:
         con = sqlite3.connect(FREEDB_PATH, timeout=30)
     except Exception as e:  # noqa: BLE001 — dashboard sync is cosmetic, routing works regardless
-        print("profile sync skipped: %s" % e, flush=True)
+        logger.warning("profile sync skipped: %s", e)
         return
     try:
         tables = {r[0] for r in con.execute("select name from sqlite_master where type='table'")}
@@ -215,7 +235,7 @@ def _sync_profiles():
                             " values (?,?,?,1)", (pid, e["db_id"], i + 1))
         con.commit()
     except Exception as e:  # noqa: BLE001 — see above
-        print("profile sync failed: %s" % e, flush=True)
+        logger.error("profile sync failed: %s", e)
     finally:
         con.close()
 
@@ -235,7 +255,7 @@ async def _wait_upstream(client):
 async def _bench_all(app_client):
     STATE["bench"] = {"status": "waiting", "updated_at": int(time.time())}
     if not await _wait_upstream(app_client):
-        print("bench skipped: freellmapi never answered /api/ping", flush=True)
+        logger.warning("bench skipped: freellmapi never answered /api/ping")
         STATE["bench"] = {"status": "idle", "updated_at": int(time.time())}
         return
     STATE["bench"] = {"status": "running", "updated_at": int(time.time())}
@@ -268,19 +288,28 @@ async def _bench_all(app_client):
             with open(STATE_PATH, "w") as f:
                 json.dump({"chains": STATE["chains"]}, f)
         except OSError as e:
-            print("state save failed: %s" % e, flush=True)
+            logger.error("state save failed: %s", e)
         await asyncio.to_thread(_sync_profiles)
     STATE["bench"] = {"status": "idle", "updated_at": int(time.time())}
 
 
 async def _laya_route(client, prompt):
     criteria = {n: c["description"] for n, c in CHAINS.items()}
+    body = {"state": {"prompt": prompt[:2000]},
+            "questions": {"route": {"type": "choice", "criteria": criteria,
+              "instructions": "Classify the user prompt by task. Pick exactly one."}}}
+    r = None
+    for attempt in range(3):  # laya cold-boots on demand (model load >10s)
+        try:
+            r = await client.post(LAYA_URL + "/predict", json=body, timeout=10)
+            break
+        except Exception as e:  # noqa: BLE001 — backend waking up, retry
+            logger.debug("laya attempt %d/3: %s", attempt + 1, type(e).__name__)
+            await asyncio.sleep(5)
+    if r is None:
+        logger.info("laya unreachable after 3 attempts — default chain")
+        return None
     try:
-        r = await client.post(LAYA_URL + "/predict",
-                              json={"state": {"prompt": prompt[:2000]},
-                                    "questions": {"route": {"type": "choice", "criteria": criteria,
-                                      "instructions": "Classify the user prompt by task. Pick exactly one."}}},
-                              timeout=10)
         r.raise_for_status()
         ans = (r.json().get("answers") or {}).get("route") or {}
         choice = ans.get("choice")
@@ -289,10 +318,13 @@ async def _laya_route(client, prompt):
             conf = float(conf)
         except (TypeError, ValueError):
             conf = 0
+        logger.debug("Laya classification: choice=%r confidence=%.4f (min_confidence=%.2f)", choice, conf, ROUTER["laya_confidence_min"])
         if choice in criteria and conf >= ROUTER["laya_confidence_min"]:
             return choice
+        else:
+            logger.debug("Laya choice rejected (choice valid? %s, confidence >= min? %s)", choice in criteria, conf >= ROUTER["laya_confidence_min"])
     except Exception as e:  # noqa: BLE001 — fail-open to default chain
-        print("laya fallback: %s" % type(e).__name__, flush=True)
+        logger.info("laya fallback: %s", type(e).__name__)
     return None
 
 
@@ -325,6 +357,9 @@ async def lifespan(app):
     CFG = cfg
     ROUTER = _validate_config(cfg)
     CHAINS = cfg["chains"]
+    level_name = _set_log_level(cfg)
+    logger.info("log level=%s default_chain=%s chains=%s", level_name,
+                ROUTER["default_chain"], sorted(CHAINS))
     try:
         with open(STATE_PATH) as f:
             STATE["chains"] = json.load(f).get("chains", {})
@@ -401,17 +436,22 @@ async def chat(body: dict, request: Request):
     client = request.app.state.client
     asked = body.get("model", "auto")
     prompt, has_image = _prompt_of(body)
+    token_count = estimate_tokens(prompt)
     if isinstance(asked, str) and asked.startswith("chain-") and asked[6:] in CHAINS:
         chain = asked[6:]
+        logger.debug("Routed by explicit chain= header: chain=%s (asked=%r)", chain, asked)
     elif asked in ("auto", None, ""):
         choice = await _laya_route(client, prompt)
         if choice is not None:
             chain = resolve_route(set(CHAINS), choice, 1.0,
-                                  estimate_tokens(prompt), ROUTER["default_chain"],
+                                  token_count, ROUTER["default_chain"],
                                   ROUTER["large_threshold_tokens"], ROUTER["laya_confidence_min"])
+            logger.debug("Routed by laya: laya_choice=%r confidence=1.0 tokens=%d chain=%s", choice, token_count, chain)
         else:
-            chain = None  # laya down/low-confidence: freellmapi default chain
+            chain = ROUTER["default_chain"]
+            logger.debug("Routed by default chain (laya missed): default=%s tokens=%d", chain, token_count)
     else:  # explicit model id: passthrough untouched
+        logger.debug("Routed by explicit model=%r — passthrough to freellmapi", asked)
         return await _forward(client, body, {"Authorization": "Bearer " + FREELLMAPI_KEY,
                                              "Content-Type": "application/json"})
     if chain is None:  # freellmapi active fallback chain, no model rewrite
@@ -423,8 +463,10 @@ async def chat(body: dict, request: Request):
     entries = STATE["chains"].get(chain, [])
     entry = pick_model(entries, has_image)
     if entry is None:
+        logger.warning("Chain %r has no models — returning 503 (entries=%d)", chain, len(entries))
         return JSONResponse({"error": {"message": "chain %r has no models" % chain,
                                        "type": "router_error"}}, status_code=503)
+    logger.info("Routed: chain=%s model=%s tokens=%d has_image=%s", chain, entry["mid"], token_count, has_image)
     body = dict(body, model=entry["mid"])
     headers = {"Authorization": "Bearer " + FREELLMAPI_KEY, "Content-Type": "application/json"}
     if chain.startswith("coding"):

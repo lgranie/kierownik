@@ -3,9 +3,10 @@ Description=Laya - English System 1 decision model API
 ConditionUser=!@system
 Wants=network-online.target
 After=network-online.target
-# On-demand backend for laya-proxy.socket: started on first connection
-# via laya-proxy.service, stopped when the proxy goes idle.
-StopWhenUnneeded=yes
+# Stays warm: ai_router dials the container directly (host loopback is
+# unreachable from pasta guests), so idle-stop would strand routing on a
+# stopped classifier. Small ONNX model — cheap to keep resident.
+# StopWhenUnneeded=yes
 
 [Container]
 # Locally built by laya-build.service (`mise run laya:build`)

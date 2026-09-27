@@ -6,7 +6,7 @@ set -oue pipefail
 CONF_DIR="${HOME}/.config/ai_router"
 DATA_DIR="${HOME}/.local/share/ai_router"
 ENV_FILE="${CONF_DIR}/ai_router.env"
-CHAINS_FILE="${CONF_DIR}/chains.yaml"
+CHAINS_FILE="${CONF_DIR}/config.yml"
 URL="http://localhost:3003"
 
 mkdir -p "${CONF_DIR}" "${DATA_DIR}"
@@ -23,8 +23,11 @@ fi
 
 if [[ -f "${CHAINS_FILE}" ]]; then
   gum log -sl info "Keeping existing ${CHAINS_FILE}"
+elif [[ -f "${CONF_DIR}/chains.yaml" ]]; then
+  mv "${CONF_DIR}/chains.yaml" "${CHAINS_FILE}"
+  gum log -sl info "Renamed chains.yaml → ${CHAINS_FILE}"
 else
-  cp /usr/lib/kierownik/ai_router/chains.default.yaml "${CHAINS_FILE}"
+  cp /usr/lib/kierownik/ai_router/config.default.yml "${CHAINS_FILE}"
   gum log -sl info "Seeded ${CHAINS_FILE} from packaged default — edit chains, then: mise run ai_router:bench"
 fi
 
