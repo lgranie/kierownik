@@ -25,8 +25,7 @@ Device=/dev/dri
 # Model load needs >10s on CPU (bundle fetch + ORT init); default
 # podman stop -t 10 hits SIGKILL. Keep below TimeoutStopSec.
 StopTimeout=60
-# Lets the API reach host-local servers if needed.
-AddHost=host.docker.internal:host-gateway
+# Host-local servers (if needed) via podman-builtin host.containers.internal.
 # No healthcheck: quadlet HealthCmd becomes CMD-SHELL, but the Chainguard
 # runtime has no shell, so every probe fails and its transient unit trips
 # fumon on each run. Liveness is covered by wait-ready + socket activation.

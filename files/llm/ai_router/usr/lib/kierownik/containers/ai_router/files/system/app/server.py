@@ -18,9 +18,9 @@ import yaml
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse, StreamingResponse
 
-FREELLMAPI_URL = os.environ.get("FREELLMAPI_URL", "http://host.docker.internal:3001")
+FREELLMAPI_URL = os.environ.get("FREELLMAPI_URL", "http://host.containers.internal:3001")
 FREELLMAPI_KEY = os.environ.get("FREELLMAPI_KEY", "")
-LAYA_URL = os.environ.get("LAYA_URL", "http://host.docker.internal:8008")
+LAYA_URL = os.environ.get("LAYA_URL", "http://host.containers.internal:8008")
 CONFIG_PATH = os.environ.get("CONFIG", "/config/chains.yaml")
 STATE_PATH = os.environ.get("DATA", "/data/state.json")
 FREEDB_PATH = os.environ.get("FREEDB", "/freedb/freeapi.db")

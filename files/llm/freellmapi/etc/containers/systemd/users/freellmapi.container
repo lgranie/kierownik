@@ -26,8 +26,8 @@ Volume=%h/.local/share/freellmapi:/app/server/data:Z
 # podman stop -t 10 hits SIGKILL. Keep below TimeoutStopSec so systemd
 # never kills podman rm first.
 StopTimeout=30
-# Lets custom providers reach host-local servers (ramalama, ollama, ...).
-AddHost=host.docker.internal:host-gateway
+# Custom providers reach host-local servers (ramalama, ollama, ...) via
+# podman-builtin host.containers.internal.
 # No healthcheck: quadlet HealthCmd becomes CMD-SHELL, but the Chainguard
 # runtime has no shell, so every probe fails and its transient unit trips
 # fumon on each run. Liveness is covered by wait-ready + socket activation.

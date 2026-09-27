@@ -16,8 +16,8 @@ Environment=PORT=3003
 Environment=CONFIG=/config/chains.yaml
 Environment=DATA=/data/state.json
 Environment=FREEDB=/freedb/freeapi.db
-Environment=FREELLMAPI_URL=http://host.docker.internal:3001
-Environment=LAYA_URL=http://host.docker.internal:8008
+Environment=FREELLMAPI_URL=http://host.containers.internal:3001
+Environment=LAYA_URL=http://host.containers.internal:8008
 # Created by `mise run ai_router:init` (FREELLMAPI_KEY, mode 600) before the
 # on-demand socket is enabled, so it always exists when the container starts.
 # (No `-` optional prefix: quadlet treats it as a relative path and mangles it.)
@@ -32,8 +32,8 @@ Volume=%h/.local/share/freellmapi:/freedb:Z
 # Model load needs >10s on CPU (bench on first boot); default
 # podman stop -t 10 hits SIGKILL. Keep below TimeoutStopSec.
 StopTimeout=30
-# Lets the proxy reach host-local servers (freellmapi, laya).
-AddHost=host.docker.internal:host-gateway
+# host.containers.internal is podman-builtin (no AddHost needed) and routes
+# through the proxy sockets, so backends still start on demand.
 # No healthcheck: quadlet HealthCmd becomes CMD-SHELL, but the Chainguard
 # runtime has no shell, so every probe fails and its transient unit trips
 # fumon on each run. Liveness is covered by wait-ready + socket activation.
