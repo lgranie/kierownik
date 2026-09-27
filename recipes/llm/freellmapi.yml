@@ -15,8 +15,4 @@ modules:
     user:
       enabled:
         - freellmapi-proxy.socket
-
-  - type: script
-    snippets:
-      - "chmod +x /usr/lib/kierownik/freellmapi/bin/wait-ready"
 ...

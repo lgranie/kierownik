@@ -12,6 +12,8 @@ StopWhenUnneeded=yes
 # from the Chainguard-based Containerfile; no registry pull.
 Image=localhost/freellmapi:latest
 ContainerName=freellmapi
+# Shared bridge with ai_router/laya (pasta guests cannot reach host loopback).
+Network=llm.network
 Environment=NODE_ENV=production
 Environment=PORT=3001
 # Created by `mise run freellmapi:init` (ENCRYPTION_KEY, mode 600) before the
@@ -21,7 +23,9 @@ EnvironmentFile=%h/.config/freellmapi/freellmapi.env
 # Backend port: the public 3001 is held by freellmapi-proxy.socket and
 # forwarded here by freellmapi-proxy.service. Localhost-only either way.
 PublishPort=127.0.0.1:3002:3001
-Volume=%h/.local/share/freellmapi:/app/server/data:Z
+# Shared :z (not private :Z): ai_router mounts the same dir for caps/profile
+# sync, and :Z would relabel on every start, locking out the other side.
+Volume=%h/.local/share/freellmapi:/app/server/data:z
 # Node needs >10s for graceful shutdown (SQLite checkpoint); default
 # podman stop -t 10 hits SIGKILL. Keep below TimeoutStopSec so systemd
 # never kills podman rm first.

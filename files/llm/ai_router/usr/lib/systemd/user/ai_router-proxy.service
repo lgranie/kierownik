@@ -7,5 +7,5 @@ After=ai_router.service
 [Service]
 # The socket queues connections while the container boots; only start
 # forwarding once the backend answers.
-ExecStartPre=/usr/lib/kierownik/ai_router/bin/wait-ready
+ExecStartPre=/usr/bin/wait-ready http://127.0.0.1:3004/health
 ExecStart=/usr/lib/systemd/systemd-socket-proxyd --exit-idle-time=600s 127.0.0.1:3004

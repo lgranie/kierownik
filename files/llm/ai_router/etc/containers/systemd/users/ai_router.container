@@ -13,12 +13,16 @@ StopWhenUnneeded=yes
 # from the Chainguard-based Containerfile; no registry pull.
 Image=localhost/ai_router:latest
 ContainerName=ai_router
+# Shared bridge: pasta guests cannot reach host loopback, so the proxy
+# sockets (127.0.0.1-only) are unreachable from inside. Backends are
+# addressed by container name; host users still go through the sockets.
+Network=llm.network
 Environment=PORT=3003
 Environment=CONFIG=/config/chains.yaml
 Environment=DATA=/data/state.json
 Environment=FREEDB=/freedb/freeapi.db
-Environment=FREELLMAPI_URL=http://host.containers.internal:3001
-Environment=LAYA_URL=http://host.containers.internal:8008
+Environment=FREELLMAPI_URL=http://freellmapi:3001
+Environment=LAYA_URL=http://laya:8000
 # Created by `mise run ai_router:init` (FREELLMAPI_KEY, mode 600) before the
 # on-demand socket is enabled, so it always exists when the container starts.
 # (No `-` optional prefix: quadlet treats it as a relative path and mangles it.)
@@ -29,12 +33,14 @@ PublishPort=127.0.0.1:3004:3003
 Volume=%h/.config/ai_router:/config:Z
 Volume=%h/.local/share/ai_router:/data:Z
 # Freellmapi SQLite (same-user file): capability read + profile sync.
-Volume=%h/.local/share/freellmapi:/freedb:Z
+# Shared :z (not private :Z): freellmapi mounts the same dir, and :Z would
+# relabel on every start, locking out whichever container started first.
+Volume=%h/.local/share/freellmapi:/freedb:z
 # Model load needs >10s on CPU (bench on first boot); default
 # podman stop -t 10 hits SIGKILL. Keep below TimeoutStopSec.
 StopTimeout=30
-# host.containers.internal is podman-builtin (no AddHost needed) and routes
-# through the proxy sockets, so backends still start on demand.
+# Backends join llm.network alongside (socket cascade still covers direct
+# host users); container-to-container traffic bypasses the proxy sockets.
 # No healthcheck: quadlet HealthCmd becomes CMD-SHELL, but the Chainguard
 # runtime has no shell, so every probe fails and its transient unit trips
 # fumon on each run. Liveness is covered by wait-ready + socket activation.

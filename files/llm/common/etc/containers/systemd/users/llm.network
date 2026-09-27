@@ -1,0 +1,12 @@
+[Unit]
+Description=LLM backend network (ai_router talks to freellmapi and laya by name)
+ConditionUser=!@system
+Wants=network-online.target
+After=network-online.target
+
+[Network]
+# Bridge with DNS: containers reach each other as freellmapi:3001, laya:8000.
+# Host-side sockets stay 127.0.0.1-only; pasta guests cannot reach host
+# loopback (host.containers.internal refuses), so inter-container traffic
+# bypasses the on-demand sockets entirely.
+Label=app=llm

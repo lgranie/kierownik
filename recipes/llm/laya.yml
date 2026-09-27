@@ -15,7 +15,3 @@ modules:
     user:
       enabled:
         - laya-proxy.socket
-
-  - type: script
-    snippets:
-      - "chmod +x /usr/lib/kierownik/laya/bin/wait-ready"
