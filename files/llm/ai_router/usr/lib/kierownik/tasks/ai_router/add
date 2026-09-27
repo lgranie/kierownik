@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+#MISE description="Add a new ai_router chain and bench it"
+#USAGE arg "[name]" help="Chain name (empty prompts)"
+set -oue pipefail
+
+exec /usr/lib/kierownik/ai_router/bin/ai-chains add "${usage_name:-}"

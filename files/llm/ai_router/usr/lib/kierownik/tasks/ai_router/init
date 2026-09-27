@@ -11,6 +11,16 @@ URL="http://localhost:3003"
 
 mkdir -p "${CONF_DIR}" "${DATA_DIR}"
 
+# opencode skill integration (mirrors herdr completion wiring): link the
+# packaged skill into the agent skills dir so planners see chain workflows.
+SKILL_SRC="/usr/lib/kierownik/ai_router/SKILL.md"
+SKILL_DST="${HOME}/.config/opencode/skills/ai-router-chains/SKILL.md"
+if [[ -f "${SKILL_SRC}" ]]; then
+  mkdir -p "$(dirname "${SKILL_DST}")"
+  ln -sfn "${SKILL_SRC}" "${SKILL_DST}"
+  gum log -sl info "Linked opencode skill ${SKILL_DST}"
+fi
+
 if [[ -f "${CHAINS_FILE}" ]]; then
   gum log -sl info "Keeping existing ${CHAINS_FILE}"
 else

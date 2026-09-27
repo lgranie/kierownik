@@ -18,4 +18,4 @@ modules:
 
   - type: script
     snippets:
-      - "chmod +x /usr/lib/kierownik/laya/wait-ready"
+      - "chmod +x /usr/lib/kierownik/laya/bin/wait-ready"

@@ -19,16 +19,22 @@ need_init() {
 }
 
 fetch_chains() {
-  curl -fsS "${URL}/chains" 2>/dev/null || {
+  local out
+  out="$(curl -fsS "${URL}/chains" 2>/dev/null)" || out=""
+  if [[ -z "${out}" ]]; then
     gum log -sl error "ai_router unreachable at ${URL} — check: mise run ai_router:logs"
     exit 1
-  }
+  fi
+  printf '%s' "${out}"
 }
 
 cmd_status() {
   fetch_chains | python3 -c "
 import json, sys
-doc = json.load(sys.stdin)
+raw = sys.stdin.read()
+if not raw.strip():
+    sys.exit(0)  # fetch_chains already reported the error
+doc = json.loads(raw)
 print('bench:', doc['bench']['status'])
 for name, ch in doc['chains'].items():
     models = ch['models'] or ['(empty — run ai_router:bench)']

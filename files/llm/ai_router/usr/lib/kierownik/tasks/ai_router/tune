@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+#MISE description="Edit an ai_router chain (probe, requires, context), re-bench"
+set -oue pipefail
+
+exec /usr/lib/kierownik/ai_router/bin/ai-chains tune
