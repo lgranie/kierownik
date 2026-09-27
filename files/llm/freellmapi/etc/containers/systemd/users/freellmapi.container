@@ -28,17 +28,10 @@ Volume=%h/.local/share/freellmapi:/app/server/data:Z
 StopTimeout=30
 # Lets custom providers reach host-local servers (ramalama, ollama, ...).
 AddHost=host.docker.internal:host-gateway
-# Script form: the runtime image has no shell, so no inline `node -e`.
-HealthCmd=node /app/healthcheck.js
-HealthInterval=120s
-HealthTimeout=5s
-HealthStartPeriod=15s
-HealthRetries=3
-# Startup probe: same endpoint, 2s cadence. The probe itself retries for
-# 15s while node boots, so the first run never exits 1 and the transient
-# healthcheck unit never fails (no unit-monitor ping on launch).
-HealthStartupCmd=node /app/healthcheck.js
-HealthStartupInterval=5s
+# No healthcheck: quadlet HealthCmd becomes CMD-SHELL, but the Chainguard
+# runtime has no shell, so every probe fails and its transient unit trips
+# fumon on each run. Liveness is covered by wait-ready + socket activation.
+HealthCmd=none
 
 [Service]
 Restart=on-failure
