@@ -3,6 +3,7 @@
 
 import json
 import os
+import shutil
 
 from fastapi import FastAPI, HTTPException
 
@@ -141,12 +142,24 @@ def _to_internal(qid, qdef):
     return q
 
 
+BUNDLE_DIR = os.path.join(CACHE, "bundle")
+
+
 def _download_bundle():
-    return snapshot_download(
+    # local_dir_use_symlinks=False: real files in one dir. The default HF
+    # blob/snapshot symlink layout splits model.onnx and model.onnx.data
+    # across blob dirs, which ONNX Runtime rejects (external data must stay
+    # in the model directory).
+    bundle = snapshot_download(
         ONNX_REPO,
         cache_dir=CACHE,
+        local_dir=BUNDLE_DIR,
+        local_dir_use_symlinks=False,
         allow_patterns=["model.onnx", "model.onnx.data", "tokenizer/*", "rl_agent_config.json"],
     )
+    for legacy in ("blobs", "snapshots"):
+        shutil.rmtree(os.path.join(CACHE, legacy), ignore_errors=True)
+    return bundle
 
 
 bundle = _download_bundle()

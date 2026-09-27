@@ -19,4 +19,5 @@ modules:
   - type: script
     snippets:
       - "chmod +x /usr/lib/kierownik/ai_router/wait-ready"
+      - "chmod +x /usr/bin/ai-chains"
 ...
