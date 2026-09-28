@@ -416,6 +416,16 @@ def models():
     return {"object": "list", "data": data}
 
 
+def _fwd_headers(request):
+    # freellmapi derives client_agent from User-Agent; forwarding the original
+    # keeps the dashboard attribution instead of logging "unknown".
+    h = {"Authorization": "Bearer " + FREELLMAPI_KEY, "Content-Type": "application/json"}
+    ua = request.headers.get("user-agent")
+    if ua:
+        h["User-Agent"] = ua
+    return h
+
+
 async def _forward(client, body, headers):
     r = await client.send(client.build_request("POST", FREELLMAPI_URL + "/v1/chat/completions",
                                                json=body, headers=headers,
@@ -452,12 +462,9 @@ async def chat(body: dict, request: Request):
             logger.debug("Routed by default chain (laya missed): default=%s tokens=%d", chain, token_count)
     else:  # explicit model id: passthrough untouched
         logger.debug("Routed by explicit model=%r — passthrough to freellmapi", asked)
-        return await _forward(client, body, {"Authorization": "Bearer " + FREELLMAPI_KEY,
-                                             "Content-Type": "application/json"})
+        return await _forward(client, body, _fwd_headers(request))
     if chain is None:  # freellmapi active fallback chain, no model rewrite
-        resp = await _forward(client, dict(body, model="auto"),
-                              {"Authorization": "Bearer " + FREELLMAPI_KEY,
-                               "Content-Type": "application/json"})
+        resp = await _forward(client, dict(body, model="auto"), _fwd_headers(request))
         resp.headers["X-AI-Router-Chain"] = "auto"
         return resp
     entries = STATE["chains"].get(chain, [])
@@ -468,7 +475,7 @@ async def chat(body: dict, request: Request):
                                        "type": "router_error"}}, status_code=503)
     logger.info("Routed: chain=%s model=%s tokens=%d has_image=%s", chain, entry["mid"], token_count, has_image)
     body = dict(body, model=entry["mid"])
-    headers = {"Authorization": "Bearer " + FREELLMAPI_KEY, "Content-Type": "application/json"}
+    headers = _fwd_headers(request)
     if chain.startswith("coding"):
         headers["X-FreeLLM-Task-Type"] = "code"
     resp = await _forward(client, body, headers)
@@ -478,9 +485,7 @@ async def chat(body: dict, request: Request):
 
 @app.post("/v1/embeddings")
 async def embeddings(body: dict, request: Request):
-    return await _forward(request.app.state.client, body,
-                          {"Authorization": "Bearer " + FREELLMAPI_KEY,
-                           "Content-Type": "application/json"})
+    return await _forward(request.app.state.client, body, _fwd_headers(request))
 
 
 def _demo():
