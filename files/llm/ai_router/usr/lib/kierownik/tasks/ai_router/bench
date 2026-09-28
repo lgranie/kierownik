@@ -1,30 +1,8 @@
 #!/usr/bin/env bash
 
-#MISE description="Re-bench all chains (clears cache, restarts router + freellmapi)"
+#MISE description="Removed: bench deleted, freellmapi owns model choice now"
 set -oue pipefail
 
-URL="http://localhost:3003"
-STATE_FILE="${HOME}/.local/share/ai_router/state.json"
-
-gum confirm "Full re-bench probes every live model per chain (uses free-tier quota). Proceed?" || exit 0
-
-rm -f "${STATE_FILE}"
-systemctl --user restart ai_router.service
-
-gum log -sl info "Waiting for bench to finish (polling ${URL}/chains) ..."
-for _ in $(seq 1 150); do
-  STATUS="$(curl -fsS "${URL}/chains" 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin)["bench"]["status"])' 2>/dev/null || true)"
-  if [[ "${STATUS}" == "idle" ]]; then
-    DONE=1
-    break
-  fi
-  sleep 10
-done
-
-if [[ "${DONE:-0}" == "1" ]]; then
-  systemctl --user restart freellmapi.service
-  gum style --border thick "Bench done — profiles synced, freellmapi restarted."
-  mise run ai_router:chains
-else
-  gum log -sl warn "Bench still running — check progress: mise run ai_router:chains"
-fi
+gum log -sl error "Bench was removed — ai_router forwards auto:<chain> and freellmapi picks the model."
+gum log -sl info "Use: mise run ai_router:chains (eligible pool) | ai_router:tune (edit chain)"
+exit 1

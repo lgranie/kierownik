@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-#MISE description="Show resolved ai_router chains and top models"
+#MISE description="Show ai_router chains and eligible models per chain"
 set -oue pipefail
 
 URL="http://localhost:3003"
@@ -14,9 +14,11 @@ fi
 python3 -c "
 import json, sys
 doc = json.load(sys.stdin)
-print('bench:', doc['bench']['status'])
 for name, ch in doc['chains'].items():
-    print('== %s: %s' % (name, ch['description']))
-    for m in ch['models'] or ['(empty — run ai_router:bench)']:
+    ms = ch['models']
+    print('== %s: %s [%d eligible]' % (name, ch['description'], len(ms)))
+    for m in ms[:10] or ['(empty — no eligible models)']:
         print('   -', m)
+    if len(ms) > 10:
+        print('   ... (+%d more)' % (len(ms) - 10))
 " <<<"${CHAINS_JSON}"

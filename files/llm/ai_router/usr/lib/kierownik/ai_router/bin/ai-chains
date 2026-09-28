@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 # ai-chains — inspect and update ai_router chains.
-# status: show bench state + top models per chain, flag weak chains.
+# status: show eligible models per chain (freellmapi owns the final pick).
 # tune:   interactively edit a chain in ~/.config/ai_router/config.yml,
-#         validate, restart router, wait for incremental bench.
-# add:    scaffold a new chain, then same validate/bench path as tune.
-# bench:  delegate to the full (quota-hungry) re-bench task.
+#         validate, restart router, resync freellmapi profiles.
+# add:    scaffold a new chain, then same validate/apply path as tune.
 set -oue pipefail
 
 URL="http://localhost:3003"
@@ -35,17 +34,18 @@ raw = sys.stdin.read()
 if not raw.strip():
     sys.exit(0)  # fetch_chains already reported the error
 doc = json.loads(raw)
-print('bench:', doc['bench']['status'])
 for name, ch in doc['chains'].items():
-    models = ch['models'] or ['(empty — run ai_router:bench)']
-    print('== %s: %s' % (name, ch['description']))
-    for m in models:
+    models = ch['models'] or ['(empty — no eligible models)']
+    print('== %s: %s [%d eligible]' % (name, ch['description'], len(ch['models'])))
+    for m in models[:10]:
         print('   -', m)
+    if len(ch['models']) > 10:
+        print('   ... (+%d more)' % (len(ch['models']) - 10))
 "
 }
 
-# Mirror of server _validate_config: chat mandatory, description+probe per
-# chain, requires in {tools, vision}, context.min a non-negative int.
+# Mirror of server _validate_config: chat mandatory, description per chain,
+# requires in {tools, vision}, context.min a non-negative int.
 validate() {
   python3 - "${CHAINS_FILE}" <<'PY'
 import sys
@@ -60,8 +60,8 @@ assert isinstance(cfg, dict) and isinstance(cfg.get("chains"), dict) and cfg["ch
     "config needs a non-empty 'chains' mapping"
 assert "chat" in cfg["chains"], "config needs a 'chat' chain (mandatory fallback)"
 for name, ch in cfg["chains"].items():
-    assert isinstance(ch, dict) and ch.get("description") and ch.get("probe"), \
-        "chain %r needs 'description' + 'probe'" % (name,)
+    assert isinstance(ch, dict) and ch.get("description"), \
+        "chain %r needs 'description'" % (name,)
     for req in ch.get("requires") or []:
         assert req in ("tools", "vision"), \
             "chain %r: unknown requires %r (allowed: tools, vision)" % (name, req)
@@ -72,26 +72,10 @@ print("config.yml valid")
 PY
 }
 
-wait_bench() {
-  gum log -sl info "Waiting for bench to go idle (polling ${URL}/chains) ..."
-  for _ in $(seq 1 90); do
-    STATUS="$(curl -fsS "${URL}/chains" 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin)["bench"]["status"])' 2>/dev/null || true)"
-    if [[ "${STATUS}" == "idle" ]]; then
-      DONE=1
-      break
-    fi
-    sleep 10
-  done
-  if [[ "${DONE:-0}" != "1" ]]; then
-    gum log -sl warn "Bench still running — check progress: mise run ai_router:chains"
-    exit 1
-  fi
-}
-
-apply_and_bench() {
+apply_and_sync() {
   validate
   systemctl --user restart ai_router.service
-  wait_bench
+  sleep 8  # startup syncs freellmapi profiles before serving
   systemctl --user restart freellmapi.service
   gum style --border thick "Chains updated — profiles synced, freellmapi restarted."
   cmd_status
@@ -105,7 +89,7 @@ cmd_tune() {
   need_init
   NAME="$(chain_names | gum filter --limit 1 --header "Tune chain" --placeholder "Pick chain")"
   [[ -n "${NAME:-}" ]] || exit 0
-  FIELD="$(printf 'description\nprobe\nrequires\ncontext.min\nbench.top_n' | gum filter --limit 1 --header "Field of ${NAME}")"
+  FIELD="$(printf 'description\nrequires\ncontext.min' | gum filter --limit 1 --header "Field of ${NAME}")"
   [[ -n "${FIELD:-}" ]] || exit 0
   CURRENT="$(python3 - "${CHAINS_FILE}" "${NAME}" "${FIELD}" <<'PY'
 import yaml, sys
@@ -115,8 +99,6 @@ if f == "requires":
     print(",".join(ch.get("requires") or []))
 elif f == "context.min":
     print((ch.get("context") or {}).get("min", 0))
-elif f == "bench.top_n":
-    print(yaml.safe_load(open(sys.argv[1])).get("bench", {}).get("top_n", 3))
 else:
     print(ch.get(f, ""))
 PY
@@ -131,15 +113,13 @@ if field == "requires":
     cfg["chains"][name]["requires"] = [r.strip() for r in value.split(",") if r.strip()]
 elif field == "context.min":
     cfg["chains"][name].setdefault("context", {})["min"] = int(value)
-elif field == "bench.top_n":
-    cfg.setdefault("bench", {})["top_n"] = int(value)
 else:
     cfg["chains"][name][field] = value
 with open(path, "w") as f:
     yaml.safe_dump(cfg, f, default_flow_style=False, allow_unicode=True)
 PY
   gum log -sl info "Set ${NAME}.${FIELD}, validating ..."
-  apply_and_bench
+  apply_and_sync
 }
 
 cmd_add() {
@@ -157,32 +137,29 @@ cmd_add() {
     exit 1
   fi
   DESC="$(gum input --header "One-line description (used by laya to classify prompts)")"
-  PROBE="$(gum input --header "Bench probe (small prompt proving the capability)")"
   REQ="$(gum input --header "requires (comma list of tools,vision; empty for none)" --value "")"
   CTX="$(gum input --header "context.min tokens" --value "8000")"
-  python3 - "${CHAINS_FILE}" "${NAME}" "${DESC}" "${PROBE}" "${REQ}" "${CTX}" <<'PY'
+  python3 - "${CHAINS_FILE}" "${NAME}" "${DESC}" "${REQ}" "${CTX}" <<'PY'
 import yaml, sys
-path, name, desc, probe, req, ctx = sys.argv[1:7]
+path, name, desc, req, ctx = sys.argv[1:6]
 with open(path) as f:
     cfg = yaml.safe_load(f)
 cfg["chains"][name] = {
     "description": desc,
     "requires": [r.strip() for r in req.split(",") if r.strip()],
     "context": {"min": int(ctx)},
-    "probe": probe,
 }
 with open(path, "w") as f:
     yaml.safe_dump(cfg, f, default_flow_style=False, allow_unicode=True)
 PY
   gum log -sl info "Added '${NAME}', validating ..."
-  apply_and_bench
+  apply_and_sync
 }
 
 case "${1:-status}" in
   status) cmd_status ;;
   tune) cmd_tune ;;
   add) cmd_add "${2:-}" ;;
-  bench) mise run ai_router:bench ;;
-  -h | --help) gum style --border thick "ai-chains status|tune|add [name]|bench" ;;
+  -h | --help) gum style --border thick "ai-chains status|tune|add [name]" ;;
   *) gum log -sl error "unknown subcommand: $1" ; exit 1 ;;
 esac

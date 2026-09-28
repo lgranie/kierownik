@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-#MISE description="Add a new ai_router chain and bench it"
+#MISE description="Add a new ai_router chain and resync"
 #USAGE arg "[name]" help="Chain name (empty prompts)"
 set -oue pipefail
 

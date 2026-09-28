@@ -10,13 +10,6 @@ router:
   large_threshold_tokens: 12000
   laya_confidence_min: 0.6
 
-bench:
-  max_tokens: 128
-  timeout_s: 60
-  top_n: 3
-  pool_cap: 24
-  concurrency: 4
-
 chains:
   coding:
     description: "code tasks: write, fix, refactor, explain code"

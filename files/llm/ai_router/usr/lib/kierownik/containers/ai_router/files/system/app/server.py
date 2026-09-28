@@ -1,29 +1,27 @@
-"""ai_router: OpenAI-compatible proxy routing prompts to freellmapi chains via laya."""
+"""ai_router: OpenAI-compatible proxy routing prompts to freellmapi profiles via laya."""
 
-# ponytail: single file, SQLite profile sync is best-effort (dashboard cosmetic);
-# explicit model: forward is the real routing path, works without DB writes.
+# ponytail: single file. ai_router classifies intent (laya) and forwards as
+# auto:<chain>; freellmapi owns model choice (quota-aware fallback, key
+# rotation). No bench, no probing, no per-model state.
 # Config is user-only (~/.config/ai_router/config.yml, seeded by ai_router:init
 # from the packaged /usr/lib default). Missing config fails fast, no silent default.
 
 import asyncio
-import json
 import logging
 import os
 import sqlite3
 import sys
-import time
 from contextlib import asynccontextmanager
 
 import httpx
 import yaml
 from fastapi import FastAPI, Request, Response
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import StreamingResponse
 
 FREELLMAPI_URL = os.environ.get("FREELLMAPI_URL", "http://host.containers.internal:3001")
 FREELLMAPI_KEY = os.environ.get("FREELLMAPI_KEY", "")
 LAYA_URL = os.environ.get("LAYA_URL", "http://host.containers.internal:8008")
 CONFIG_PATH = os.environ.get("CONFIG", "/config/config.yml")
-STATE_PATH = os.environ.get("DATA", "/data/state.json")
 FREEDB_PATH = os.environ.get("FREEDB", "/freedb/freeapi.db")
 PORT = int(os.environ.get("PORT", "3003"))
 
@@ -33,7 +31,6 @@ logging.basicConfig(level=getattr(logging, LOG_LEVEL, logging.INFO),
 logger = logging.getLogger("ai_router")
 
 ALLOWED_REQUIRES = {"tools", "vision"}
-VISION_PX = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
 
 
 def estimate_tokens(text):
@@ -44,12 +41,11 @@ def _validate_config(cfg):
     if not isinstance(cfg, dict) or not isinstance(cfg.get("chains"), dict) or not cfg["chains"]:
         raise ValueError("config needs a non-empty 'chains' mapping")
     router = cfg.get("router") or {}
-    bench = cfg.get("bench") or {}
     if "chat" not in cfg["chains"]:
         raise ValueError("config needs a 'chat' chain (mandatory fallback)")
     for name, ch in cfg["chains"].items():
-        if not isinstance(ch, dict) or not ch.get("description") or not ch.get("probe"):
-            raise ValueError("chain %r needs 'description' + 'probe'" % (name,))
+        if not isinstance(ch, dict) or not ch.get("description"):
+            raise ValueError("chain %r needs 'description'" % (name,))
         for req in ch.get("requires") or []:
             if req not in ALLOWED_REQUIRES:
                 raise ValueError("chain %r: unknown requires %r (allowed: tools, vision)" % (name, req))
@@ -58,12 +54,7 @@ def _validate_config(cfg):
             raise ValueError("chain %r: context.min must be a non-negative int" % (name,))
     return {"default_chain": router.get("default_chain", "chat"),
             "large_threshold_tokens": router.get("large_threshold_tokens", 12000),
-            "laya_confidence_min": router.get("laya_confidence_min", 0.6),
-            "bench_max_tokens": bench.get("max_tokens", 128),
-            "bench_timeout_s": bench.get("timeout_s", 60),
-            "bench_top_n": bench.get("top_n", 3),
-            "bench_pool_cap": bench.get("pool_cap", 24),
-            "bench_concurrency": bench.get("concurrency", 4)}
+            "laya_confidence_min": router.get("laya_confidence_min", 0.6)}
 
 
 def _set_log_level(cfg):
@@ -103,27 +94,10 @@ def resolve_route(descriptions, choice, confidence, prompt_tokens, default, larg
     return base
 
 
-def rank_results(results, top_n):
-    ok = sorted([r for r in results if r.get("ok")], key=lambda r: r.get("latency_ms", 1e18))
-    bad = [r for r in results if not r.get("ok")]
-    return (ok + bad)[:top_n]
-
-
-def pick_model(entries, has_image):
-    if not entries:
-        return None
-    if has_image:
-        for e in entries:
-            if e.get("vision"):
-                return e
-    return entries[0]
-
-
 CFG = {}
 ROUTER = {}
 CHAINS = {}
 CAPS = {}  # model_id -> {platform, db_id, context, vision, tools, speed, intel}
-STATE = {"chains": {}, "bench": {"status": "pending", "updated_at": 0}}
 
 
 def _load_caps_db():
@@ -165,45 +139,12 @@ async def _load_caps_api(client):
 
 
 def _chain_pool(name):
+    # All capability-eligible models, ranked. freellmapi owns the final pick
+    # (quota-aware fallback inside the profile); order seeds profile priority.
     ch = CHAINS[name]
     pool = [dict(mid=mid, **caps) for mid, caps in CAPS.items() if match_caps(ch, caps)]
     pool.sort(key=lambda e: (e["intel"], e["speed"]))
-    return pool[:ROUTER["bench_pool_cap"]]
-
-
-async def _probe(client, sem, model_id, chain_name):
-    ch = CHAINS[chain_name]
-    msgs = [{"role": "user", "content": ch["probe"]}]
-    body = {"model": model_id, "messages": msgs, "max_tokens": ROUTER["bench_max_tokens"],
-            "temperature": 0, "stream": False}
-    if "vision" in (ch.get("requires") or []):
-        msgs[0] = {"role": "user", "content": [
-            {"type": "text", "text": ch["probe"]},
-            {"type": "image_url", "image_url": {"url": "data:image/png;base64," + VISION_PX}}]}
-        body["messages"] = msgs
-    if "tools" in (ch.get("requires") or []):
-        body["tools"] = [{"type": "function", "function": {"name": "noop",
-                           "description": "No-op probe tool.",
-                           "parameters": {"type": "object", "properties": {}}}}]
-        body["tool_choice"] = "auto"
-    t0 = time.monotonic()
-    async with sem:
-        try:
-            r = await client.post(FREELLMAPI_URL + "/v1/chat/completions", json=body,
-                                  headers={"Authorization": "Bearer " + FREELLMAPI_KEY},
-                                  timeout=ROUTER["bench_timeout_s"])
-            ms = int((time.monotonic() - t0) * 1000)
-            if r.status_code != 200:
-                return {"ok": False, "latency_ms": ms, "error": "http %d" % r.status_code}
-            msg = (r.json().get("choices") or [{}])[0].get("message") or {}
-            ok = bool((msg.get("content") or "").strip() or msg.get("tool_calls"))
-            out = {"ok": ok, "latency_ms": ms}
-            if not ok:
-                out["error"] = "empty"
-            return out
-        except Exception as e:  # noqa: BLE001 — probe failure just excludes the model
-            return {"ok": False, "latency_ms": int((time.monotonic() - t0) * 1000),
-                    "error": type(e).__name__}
+    return pool
 
 
 def _sync_profiles():
@@ -216,7 +157,8 @@ def _sync_profiles():
         tables = {r[0] for r in con.execute("select name from sqlite_master where type='table'")}
         if not {"profiles", "profile_models"} <= tables:
             return
-        for name, entries in STATE["chains"].items():
+        for name in CHAINS:
+            entries = _chain_pool(name)
             row = con.execute("select id from profiles where name=?", (name,)).fetchone()
             if row is None:
                 cur = con.execute(
@@ -238,59 +180,6 @@ def _sync_profiles():
         logger.error("profile sync failed: %s", e)
     finally:
         con.close()
-
-
-async def _wait_upstream(client):
-    for _ in range(90):  # ~3 min: freellmapi cold-boots behind its own socket
-        try:
-            r = await client.get(FREELLMAPI_URL + "/api/ping", timeout=5)
-            if r.status_code == 200:
-                return True
-        except Exception:  # noqa: BLE001 — not up yet, keep waiting
-            pass
-        await asyncio.sleep(2)
-    return False
-
-
-async def _bench_all(app_client):
-    STATE["bench"] = {"status": "waiting", "updated_at": int(time.time())}
-    if not await _wait_upstream(app_client):
-        logger.warning("bench skipped: freellmapi never answered /api/ping")
-        STATE["bench"] = {"status": "idle", "updated_at": int(time.time())}
-        return
-    STATE["bench"] = {"status": "running", "updated_at": int(time.time())}
-    have = {(m.get("platform"), m.get("mid")) for es in STATE["chains"].values() for m in es}
-    sem = asyncio.Semaphore(ROUTER["bench_concurrency"])
-    changed = False
-    for name in CHAINS:
-        pool = _chain_pool(name)
-        todo = [e for e in pool if (e["platform"], e["mid"]) not in have]
-        if not todo and name in STATE["chains"]:
-            continue
-        res = await asyncio.gather(*[_probe(app_client, sem, e["mid"], name) for e in todo])
-        by_mid = dict(zip([e["mid"] for e in todo], res))
-        merged = []
-        for e in pool:
-            r = by_mid.get(e["mid"])
-            if r is None:  # cached from previous bench
-                old = next((m for m in STATE["chains"].get(name, []) if m["mid"] == e["mid"]), None)
-                if old is not None:
-                    merged.append(old)
-                continue
-            m = dict(e)
-            m.update(r)
-            merged.append(m)
-        STATE["chains"][name] = rank_results(merged, ROUTER["bench_top_n"])
-        changed = True
-    if changed:
-        try:
-            os.makedirs(os.path.dirname(STATE_PATH) or ".", exist_ok=True)
-            with open(STATE_PATH, "w") as f:
-                json.dump({"chains": STATE["chains"]}, f)
-        except OSError as e:
-            logger.error("state save failed: %s", e)
-        await asyncio.to_thread(_sync_profiles)
-    STATE["bench"] = {"status": "idle", "updated_at": int(time.time())}
 
 
 async def _laya_route(client, prompt):
@@ -329,22 +218,18 @@ async def _laya_route(client, prompt):
 
 
 def _prompt_of(body):
-    text, has_image = "", False
+    text = ""
     for m in reversed(body.get("messages") or []):
         if m.get("role") != "user":
             continue
         c = m.get("content")
         if isinstance(c, str):
-            return c, False
+            return c
         for part in c or []:
-            if not isinstance(part, dict):
-                continue
-            if part.get("type") == "text":
+            if isinstance(part, dict) and part.get("type") == "text":
                 text += part.get("text", "")
-            elif part.get("type") == "image_url":
-                has_image = True
-        return text, has_image
-    return text, has_image
+        return text
+    return text
 
 
 @asynccontextmanager
@@ -360,11 +245,8 @@ async def lifespan(app):
     level_name = _set_log_level(cfg)
     logger.info("log level=%s default_chain=%s chains=%s", level_name,
                 ROUTER["default_chain"], sorted(CHAINS))
-    try:
-        with open(STATE_PATH) as f:
-            STATE["chains"] = json.load(f).get("chains", {})
-    except (OSError, ValueError):
-        pass
+    if "bench" in cfg:
+        logger.warning("ignoring legacy 'bench' section in config (bench removed; freellmapi owns model choice)")
     client = httpx.AsyncClient()
     app.state.client = client
     try:
@@ -374,13 +256,9 @@ async def lifespan(app):
         print("db caps failed (%s), using /v1/models" % e, flush=True)
         try:
             CAPS.update(await _load_caps_api(client))
-        except Exception as e2:  # noqa: BLE001 — serve with empty pools until bench recovers
+        except Exception as e2:  # noqa: BLE001 — serve with capability-unfiltered pools until caps recover
             print("api caps failed (%s)" % e2, flush=True)
-    for name in CHAINS:  # rank-order fallback before bench finishes
-        if name not in STATE["chains"]:
-            STATE["chains"][name] = [{**e, "ok": True, "latency_ms": 10**9}
-                                     for e in rank_results(_chain_pool(name), ROUTER["bench_top_n"])]
-    asyncio.create_task(_bench_all(client))
+    _sync_profiles()  # profiles must exist before first auto:<chain> request
     yield
     await client.aclose()
 
@@ -396,15 +274,14 @@ def root():
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "bench": STATE["bench"]["status"],
-            "chains": {n: len(v) for n, v in STATE["chains"].items()}}
+    return {"status": "ok",
+            "chains": {n: len(_chain_pool(n)) for n in CHAINS}}
 
 
 @app.get("/chains")
 def chains():
-    return {"bench": STATE["bench"],
-            "chains": {n: {"description": CHAINS[n]["description"],
-                           "models": [e["mid"] for e in STATE["chains"].get(n, [])]}
+    return {"chains": {n: {"description": CHAINS[n]["description"],
+                           "models": [e["mid"] for e in _chain_pool(n)]}
                        for n in CHAINS}}
 
 
@@ -445,36 +322,29 @@ async def _forward(client, body, headers):
 async def chat(body: dict, request: Request):
     client = request.app.state.client
     asked = body.get("model", "auto")
-    prompt, has_image = _prompt_of(body)
+    prompt = _prompt_of(body)
     token_count = estimate_tokens(prompt)
     if isinstance(asked, str) and asked.startswith("chain-") and asked[6:] in CHAINS:
         chain = asked[6:]
-        logger.debug("Routed by explicit chain= header: chain=%s (asked=%r)", chain, asked)
+        logger.debug("Routed by explicit chain: chain=%s (asked=%r)", chain, asked)
     elif asked in ("auto", None, ""):
         choice = await _laya_route(client, prompt)
         if choice is not None:
             chain = resolve_route(set(CHAINS), choice, 1.0,
                                   token_count, ROUTER["default_chain"],
                                   ROUTER["large_threshold_tokens"], ROUTER["laya_confidence_min"])
-            logger.debug("Routed by laya: laya_choice=%r confidence=1.0 tokens=%d chain=%s", choice, token_count, chain)
+            logger.debug("Routed by laya: laya_choice=%r tokens=%d chain=%s", choice, token_count, chain)
         else:
             chain = ROUTER["default_chain"]
             logger.debug("Routed by default chain (laya missed): default=%s tokens=%d", chain, token_count)
     else:  # explicit model id: passthrough untouched
         logger.debug("Routed by explicit model=%r — passthrough to freellmapi", asked)
         return await _forward(client, body, _fwd_headers(request))
-    if chain is None:  # freellmapi active fallback chain, no model rewrite
-        resp = await _forward(client, dict(body, model="auto"), _fwd_headers(request))
-        resp.headers["X-AI-Router-Chain"] = "auto"
-        return resp
-    entries = STATE["chains"].get(chain, [])
-    entry = pick_model(entries, has_image)
-    if entry is None:
-        logger.warning("Chain %r has no models — returning 503 (entries=%d)", chain, len(entries))
-        return JSONResponse({"error": {"message": "chain %r has no models" % chain,
-                                       "type": "router_error"}}, status_code=503)
-    logger.info("Routed: chain=%s model=%s tokens=%d has_image=%s", chain, entry["mid"], token_count, has_image)
-    body = dict(body, model=entry["mid"])
+    # Delegate model choice to freellmapi: auto:<profile> walks the chain's
+    # models with quota-aware fallback + key rotation. Vision/capability gates
+    # are enforced router-side there.
+    logger.info("Routed: chain=%s profile=auto:%s tokens=%d", chain, chain, token_count)
+    body = dict(body, model="auto:" + chain)
     headers = _fwd_headers(request)
     if chain.startswith("coding"):
         headers["X-FreeLLM-Task-Type"] = "code"
@@ -500,14 +370,15 @@ def _demo():
     assert resolve_route(names, "coding", 0.9, 50000, "chat", 12000, 0.6) == "coding-large"
     assert resolve_route(names, "coding", 0.1, 500, "chat", 12000, 0.6) == "chat"
     assert resolve_route(names, "nope", 0.9, 500, "chat", 12000, 0.6) == "chat"
-    rs = [{"mid": "a", "ok": False}, {"mid": "b", "ok": True, "latency_ms": 9},
-          {"mid": "c", "ok": True, "latency_ms": 3}]
-    assert [r["mid"] for r in rank_results(rs, 2)] == ["c", "b"]
-    es = [{"mid": "t", "vision": False}, {"mid": "v", "vision": True}]
-    assert pick_model(es, False)["mid"] == "t" and pick_model(es, True)["mid"] == "v"
-    assert pick_model([], True) is None
+    assert _prompt_of({"messages": [{"role": "user", "content": "hi"}]}) == "hi"
+    assert _prompt_of({"messages": [{"role": "user", "content": [
+        {"type": "text", "text": "ab"}, {"type": "image_url"}]}]}) == "ab"
+    r = _validate_config({"chains": {"chat": {"description": "x"}}})  # probe optional now
+    assert r["default_chain"] == "chat"
+    assert _validate_config({"log_level": "DEBUG", "bench": {"top_n": 3},
+                             "chains": {"chat": {"description": "x"}}})["default_chain"] == "chat"  # legacy bench ignored
     try:
-        _validate_config({"chains": {"chat": {"description": "x", "probe": "y", "requires": ["audio"]}}})
+        _validate_config({"chains": {"chat": {"description": "x", "requires": ["audio"]}}})
     except ValueError:
         pass
     else:
