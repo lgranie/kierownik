@@ -1,27 +1,3 @@
 [shell]
 launch_apps_as_systemd_services = false
 launch_apps_custom_command = "uwsm-app -t scope -- $CMD"
-
-[[plugins.source]]
-name     = "kierownik"
-kind     = "path"
-location = "/usr/lib/kierownik/noctalia/plugins"
-enabled  = true
-
-# Idle: native Noctalia behaviors, no hypridle needed.
-# Suspend stays disabled: this fleet includes always-on
-# machines (remote access via sunshine must survive idle).
-[idle.behavior.lock]
-timeout = 600
-action = "lock"
-enabled = true
-
-[idle.behavior.screen-off]
-timeout = 660
-action = "screen_off"
-enabled = true
-
-[idle.behavior.suspend]
-timeout = 0
-action = "lock_and_suspend"
-enabled = false

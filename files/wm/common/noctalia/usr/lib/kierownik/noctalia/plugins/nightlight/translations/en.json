@@ -1,0 +1,11 @@
+{
+  "settings.night_palette_source.label": "Night palette source",
+  "settings.night_palette_source.description": "Where the night palette comes from (same kinds as color-scheme-set)",
+  "settings.night_palette_source.options.builtin": "Built-in",
+  "settings.night_palette_source.options.custom": "Custom file",
+  "settings.night_palette_source.options.community": "Community",
+  "settings.night_palette.label": "Night palette",
+  "settings.night_palette.description": "Palette name without .json (custom) while night light is active",
+  "settings.night_wallpapers_dir.label": "Night wallpapers",
+  "settings.night_wallpapers_dir.description": "Directory the night wallpaper is picked from while night light is active"
+}

@@ -1,0 +1,47 @@
+id = "kierownik/nightlight"
+name = "Night Light Sync"
+version = "1.1.0"
+plugin_api = 26
+author = "lgranie"
+license = "MIT"
+dependencies = []
+tags = ["theme", "wallpaper", "nightlight"]
+icon = "moon"
+description = "Applies a dedicated palette and wallpapers while night light is active, restores user settings after"
+
+[[service]]
+id = "sync"
+entry = "sync.luau"
+
+[[setting]]
+key = "night_palette_source"
+type = "select"
+label_key = "settings.night_palette_source.label"
+description_key = "settings.night_palette_source.description"
+default = "custom"
+
+[[setting.options]]
+value = "builtin"
+label_key = "settings.night_palette_source.options.builtin"
+
+[[setting.options]]
+value = "custom"
+label_key = "settings.night_palette_source.options.custom"
+
+[[setting.options]]
+value = "community"
+label_key = "settings.night_palette_source.options.community"
+
+[[setting]]
+key = "night_palette"
+type = "string"
+label_key = "settings.night_palette.label"
+description_key = "settings.night_palette.description"
+default = "Ristretto"
+
+[[setting]]
+key = "night_wallpapers_dir"
+type = "folder"
+label_key = "settings.night_wallpapers_dir.label"
+description_key = "settings.night_wallpapers_dir.description"
+default = "~/Pictures/Wallpapers-Night"
