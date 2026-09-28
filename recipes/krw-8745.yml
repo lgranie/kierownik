@@ -17,12 +17,12 @@ platforms:
 # you can include multiple instances of the same module
 modules:
   - from-file: base/all.yml
-  - from-file: cpu/amd.yml
 
-  - from-file: wm/common.yml
-  - from-file: wm/8745.yml
+  - from-file: cpu/amd.yml
   - from-file: cpu/common/madvise.yml
 
+  - from-file: wm/8745.yml
+  - from-file: wm/common.yml
 
   - from-file: finalize/all.yml
 ...
