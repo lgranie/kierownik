@@ -7,13 +7,18 @@
 -- stays with Noctalia's own wallpaper automation.
 -- Night state comes from the shell's live gamma log (sees manual force
 -- toggles, which are runtime-only and never reach the config), with the
--- config schedule as fallback.
+-- config enabled/force flags checked first. Gamma only logs when the target
+-- temperature changes, so a stable day or night produces no log lines for
+-- hours: the seed/freshness windows must span a full day/night cycle.
+-- When no fresh gamma line exists the plugin stays on day, matching Noctalia
+-- itself (no schedule = day temperature). Theme dark mode is deliberately NOT
+-- used here: it tracks user theme preference, not the sun.
 -- Settings live in plugin.toml (night_palette_source, night_palette,
 -- night_wallpapers_dir).
 
 local STATE_FILE = "night-sync.json"
 local IMAGE_EXTS = { png = true, jpg = true, jpeg = true, webp = true, gif = true, svg = true, ico = true, jxl = true }
-local GAMMA_FRESH_MS = 180000
+local GAMMA_FRESH_MS = 86400000
 
 local state = { active = "day", day_scheme = nil, day_wallpapers = nil, index = 0, images_sig = "" }
 local gamma = { night = nil, at_ms = 0 }
@@ -70,7 +75,7 @@ local function nightConfig()
     return {
         source = noctalia.getConfig("night_palette_source") or "custom",
         name = noctalia.getConfig("night_palette") or "Ristretto",
-        dir = noctalia.getConfig("night_wallpapers_dir") or "~/Pictures/Wallpapers/Night",
+        dir = noctalia.getConfig("night_wallpapers_dir") or "~/Pictures/Wallpapers-Night",
     }
 end
 
@@ -107,7 +112,7 @@ local function seedGamma(cb)
             if cb then cb() end
         end
     end
-    local ok = noctalia.runAsync("journalctl --user -u noctalia -o cat --since '5 minutes ago' --no-pager 2>/dev/null | grep '\\[gamma\\]' | tail -3", function(result)
+    local ok = noctalia.runAsync("journalctl --user -u noctalia -o cat --since '24 hours ago' --no-pager 2>/dev/null | grep '\\[gamma\\]' | tail -10", function(result)
         if result.exitCode == 0 then
             local count = 0
             for line in string.gmatch(result.stdout or "", "[^\n]+") do
@@ -128,14 +133,13 @@ local function seedGamma(cb)
 end
 
 local function nightState()
+    if noctalia.getSetting("nightlight.force") == true then return true, "force" end
+    if noctalia.getSetting("nightlight.enabled") ~= true then return false, "disabled" end
     if gamma.night ~= nil and (noctalia.nowMs() - gamma.at_ms) < GAMMA_FRESH_MS then
         if gamma.night then return true, "gamma" end
         return false, "gamma-day"
     end
-    if noctalia.getSetting("nightlight.force") == true then return true, "force" end
-    if noctalia.getSetting("nightlight.enabled") ~= true then return false, "disabled" end
-    if noctalia.isDarkMode() then return true, "schedule" end
-    return false, "daytime"
+    return false, "day-default"
 end
 
 local function parseScheme(output)
