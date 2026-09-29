@@ -3,5 +3,5 @@ modules:
   - type: script
     snippets:
       - "echo 'NoDisplay=true' >> /usr/share/applications/syncthing-start.desktop"
-      - "/tmp/files/scripts/common/install-noctalia-plugin syncthing"
+      - "/tmp/files/scripts/common/enable-noctalia-plugin rylos/syncthing"
 ...

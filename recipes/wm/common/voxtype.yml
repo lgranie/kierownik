@@ -4,7 +4,7 @@ modules:
     scripts:
       - wm/common/voxtype/install.sh
     snippets:
-      - "/tmp/files/scripts/common/install-noctalia-plugin voxtype"
+      - "/tmp/files/scripts/common/enable-noctalia-plugin gabedunn/voxtype"
 
   - type: dnf
     install:

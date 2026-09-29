@@ -70,7 +70,7 @@ local function nightConfig()
     return {
         source = noctalia.getConfig("night_palette_source") or "custom",
         name = noctalia.getConfig("night_palette") or "Ristretto",
-        dir = noctalia.getConfig("night_wallpapers_dir") or "~/Pictures/Wallpapers-Night",
+        dir = noctalia.getConfig("night_wallpapers_dir") or "~/Pictures/Wallpapers/Night",
     }
 end
 

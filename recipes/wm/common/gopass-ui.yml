@@ -11,6 +11,6 @@ modules:
 
   - type: script
     snippets:
-      - "/tmp/files/scripts/common/install-noctalia-plugin launcher-pass"
+      - "/tmp/files/scripts/common/enable-noctalia-plugin mellotanica/launcher-pass"
 
 ...

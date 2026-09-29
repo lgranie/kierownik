@@ -1,3 +1,5 @@
-[shell]
-launch_apps_as_systemd_services = false
-launch_apps_custom_command = "uwsm-app -t scope -- $CMD"
+# System Noctalia config lives in the image at
+# /usr/lib/kierownik/noctalia/config/ and is merged below your own keys.
+# Your own *.toml files in this directory override it; GUI Settings win over all.
+[include]
+files = ["/usr/lib/kierownik/noctalia/config/"]
