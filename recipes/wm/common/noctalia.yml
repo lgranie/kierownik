@@ -12,6 +12,10 @@ modules:
       - "/tmp/files/scripts/common/enable-noctalia-plugin kierownik/nightlight"
       - "/tmp/files/scripts/common/enable-noctalia-plugin linkding/bookmarks"
       - "/tmp/files/scripts/common/enable-noctalia-plugin noctalia/wallhaven"
+      - "/tmp/files/scripts/common/enable-noctalia-template --builtin gtk3"
+      - "/tmp/files/scripts/common/enable-noctalia-template --builtin gtk4"
+      - "/tmp/files/scripts/common/enable-noctalia-template --builtin qt"
+      - "/tmp/files/scripts/common/enable-noctalia-template opencode"
 
   - type: files
     files:

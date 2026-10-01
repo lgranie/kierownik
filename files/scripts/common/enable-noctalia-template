@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+#
+# Enable one Noctalia template by id at build time.
+# Usage: enable-noctalia-template [--builtin] <template-name>
+#   e.g. enable-noctalia-template opencode
+#   e.g. enable-noctalia-template --builtin foot
+#
+# Appends the id to `community_ids = [...]` (default) or
+# `builtin_ids = [...]` (--builtin) in the image system config at
+# ${NOCTALIA_SYSTEM_TEMPLATES_TOML:-/usr/lib/kierownik/noctalia/config/templates.toml},
+# creating the file when the noctalia recipe has not run yet, so recipe
+# order never matters. Idempotent: re-runs are no-ops.
+# Test override: NOCTALIA_SYSTEM_TEMPLATES_TOML=/tmp/test-templates.toml
+
+set -oue pipefail
+
+BUILTIN=0
+if [[ "${1:-}" == "--builtin" ]]; then
+    BUILTIN=1
+    shift
+fi
+
+ID="${1:?usage: enable-noctalia-template [--builtin] <template-name>}"
+if [[ "${BUILTIN}" -eq 1 ]]; then
+    KEY="builtin_ids"
+else
+    KEY="community_ids"
+fi
+TARGET="${NOCTALIA_SYSTEM_TEMPLATES_TOML:-/usr/lib/kierownik/noctalia/config/templates.toml}"
+
+if [[ "$#" -ne 1 ]]; then
+    echo "enable-noctalia-template: want exactly one template name (got $# args)" >&2
+    exit 1
+fi
+
+if [[ ! "${ID}" =~ ^[a-z0-9][a-z0-9_-]*$ ]]; then
+    echo "enable-noctalia-template: invalid template id '${ID}' (want lowercase [a-z0-9_-], e.g. opencode)" >&2
+    exit 1
+fi
+
+if [[ ! -f "${TARGET}" ]]; then
+    mkdir -p "$(dirname "${TARGET}")"
+    cat > "${TARGET}" <<'EOF'
+[theme.templates]
+builtin_ids = []
+community_ids = []
+EOF
+fi
+
+if grep -qF "\"${ID}\"" "${TARGET}"; then
+    echo "enable-noctalia-template: ${ID} already enabled"
+    exit 0
+fi
+
+# Append inside the `<key> = [...]` line (single-line array by convention).
+grep -Eq "^${KEY} = \[.*\]$" "${TARGET}" || {
+    echo "enable-noctalia-template: no single-line '${KEY} = [...]' in ${TARGET}" >&2
+    exit 1
+}
+
+tmp="$(mktemp)"
+awk -v key="${KEY}" -v id="${ID}" '
+$0 ~ "^" key " = \\[.*\\]$" && !done {
+    sub(/\]$/, ", \"" id "\"]")
+    sub("^" key " = \\[, ", key " = [")
+    done = 1
+}
+{ print }
+' "${TARGET}" > "${tmp}"
+cat "${tmp}" > "${TARGET}"
+rm -f "${tmp}"
+
+grep -qF "\"${ID}\"" "${TARGET}" || {
+    echo "enable-noctalia-template: append failed for ${ID}" >&2
+    exit 1
+}
+
+if command -v python3 >/dev/null; then
+    KEY="${KEY}" ID="${ID}" TARGET="${TARGET}" python3 -c "import os, tomllib; d = tomllib.load(open(os.environ['TARGET'],'rb')); assert os.environ['ID'] in d['theme']['templates'][os.environ['KEY']], 'id missing after edit'" || {
+        echo "enable-noctalia-template: ${TARGET} invalid TOML after edit" >&2
+        exit 1
+    }
+fi
+
+echo "enable-noctalia-template: ${ID} enabled (${KEY})"

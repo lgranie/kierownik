@@ -16,4 +16,8 @@ modules:
     files:
       - source: wm/common/hypr
         destination: /
+
+  - type: script
+    snippets:
+      - "/tmp/files/scripts/common/enable-noctalia-template --builtin hyprland"
 ...

@@ -1,0 +1,4 @@
+[theme.templates]
+# Enable the built-in or community catalog
+enable_builtin_templates = true
+enable_community_templates = true

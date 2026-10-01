@@ -63,4 +63,10 @@ modules:
         fzf --bash > /etc/profile.d/90-fzf.sh
         mise activate bash > /etc/profile.d/90-mise.sh
         zoxide init --cmd cd bash > /etc/profile.d/90-zoxide.sh
+      - "/tmp/files/scripts/common/enable-noctalia-template --builtin btop"
+      - "/tmp/files/scripts/common/enable-noctalia-template bat"
+      - "/tmp/files/scripts/common/enable-noctalia-template fzf"
+      - "/tmp/files/scripts/common/enable-noctalia-template herdr"
+      - "/tmp/files/scripts/common/enable-noctalia-template lazygit"
+      - "/tmp/files/scripts/common/enable-noctalia-template yazi"
 ...
