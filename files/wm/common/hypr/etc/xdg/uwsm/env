@@ -1,0 +1,3 @@
+# SSH agent socket for uwsm-managed sessions (sourced as shell by uwsm prepare-env.sh).
+# profile.d/10-gpg.sh is interactive-only, so GUI sessions never get it otherwise.
+export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/gnupg/S.gpg-agent.ssh"
