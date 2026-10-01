@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-#MISE description="Removed: bench deleted, freellmapi owns model choice now"
-set -oue pipefail
-
-gum log -sl error "Bench was removed — ai_router forwards auto:<chain> and freellmapi picks the model."
-gum log -sl info "Use: mise run ai_router:chains (eligible pool) | ai_router:tune (edit chain)"
-exit 1

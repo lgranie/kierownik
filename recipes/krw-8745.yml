@@ -21,13 +21,8 @@ modules:
 
   - from-file: wm/common.yml
   - from-file: wm/8745.yml
+  - from-file: cpu/common/madvise.yml
 
-  - from-file: llm/common.yml
-  - from-file: llm/freellmapi.yml
-  - from-file: llm/laya.yml
-  - from-file: llm/ai_router.yml
-  - from-file: llm/pi_less_yolo.yml
-  - from-file: llm/ramalama.yml
 
   - from-file: finalize/all.yml
 ...

@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-#MISE description="Build (or rebuild) the ai_router Podman image"
-set -oue pipefail
-
-source "$(dirname "$0")/../_common/_build" && _build_service ai_router-build.service
-
-gum log -sl info "Image 'localhost/ai_router:latest' built successfully."

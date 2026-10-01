@@ -26,7 +26,7 @@ CI: `.github/workflows/build.yml` + `.woodpecker/build.yml`. Matrix `krw-5290.ym
 
 - Line 1 schema required: `# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json`
 - dnf: `install-weak-deps: false`. files: relative `source:`, `destination: /`.
-- Top-level `recipes/krw-*.yml`; modules in `recipes/{base,cpu,wm,wsl,llm,finalize}/`. Overlays in `files/{base,cpu,wm,wsl,llm,scripts}/`.
+- Top-level `recipes/krw-*.yml`; modules in `recipes/{base,cpu,wm,wsl,finalize}/`. Overlays in `files/{base,cpu,wm,wsl,scripts}/`.
 
 ## Notes
 
