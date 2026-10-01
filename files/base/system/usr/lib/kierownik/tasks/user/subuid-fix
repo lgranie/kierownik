@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+#MISE description="Fix container subuids + podman migrate"
+set -euo pipefail
+
+USERNAME="$(id -nu)"
+[[ -n "${USERNAME}" && "${USERNAME}" != "root" ]] || { gum log -sl error "run as user, not root"; exit 1; }
+
+SUBRANGE="524288-$((524288 + 65536))"
+
+if grep -q "^${USERNAME}:" /etc/subuid 2>/dev/null && grep -q "^${USERNAME}:" /etc/subgid 2>/dev/null; then
+  gum log -sl info "subuids already present for ${USERNAME}"
+else
+  if homectl show "${USERNAME}" >/dev/null 2>&1; then
+    run0 homectl with "${USERNAME}" add-subuids 2>/dev/null || run0 usermod --add-subuids "${SUBRANGE}" --add-subgids "${SUBRANGE}" "${USERNAME}"
+  else
+    run0 usermod --add-subuids "${SUBRANGE}" --add-subgids "${SUBRANGE}" "${USERNAME}"
+  fi
+  gum log -sl info "subuids fixed for ${USERNAME}"
+fi
+
+if gum confirm "Run podman system migrate now (one-time, fixes storage after subuid change)?"; then
+  podman system migrate
+  gum log -sl info "podman migrated. Verify: podman run --rm hello-world"
+else
+  gum log -sl warn "skipped migrate. Run later: podman system migrate"
+fi
