@@ -45,9 +45,51 @@ modules:
       packages:
         - yazi
 
+  - type: github-releases
+    source: local
+    releases:
+      - repo: jdx/usage
+        asset: usage-x86_64-unknown-linux-gnu.tar.gz
+        dest: /usr/bin
+        member: usage
+        chmod: true
+      - repo: herdrdev/herdr
+        asset: herdr-linux-x86_64
+        dest: /usr/bin/herdr
+      - repo: bjarneo/cliamp
+        asset: cliamp-linux-amd64
+        dest: /usr/bin/cliamp
+      - repo: matheus-git/systemd-manager-tui
+        asset: systemd-manager-tui
+        dest: /usr/bin/systemd-manager-tui
+      - repo: jesseduffield/lazygit
+        asset: lazygit_{tag}_linux_x86_64.tar.gz
+        dest: /usr/bin
+        member: lazygit
+        chmod: true
+      - repo: jdx/mise
+        asset: mise-v{tag}-linux-x64.tar.gz
+        dest: /usr/bin
+        member: mise/bin/mise
+        strip: 2
+      - repo: HalFrgrd/flyline
+        asset: libflyline-v{tag}-x86_64-unknown-linux-gnu.tar.gz
+        dest: /usr/lib64
+        links:
+          /usr/lib64/libflyline.so: /usr/lib64/libflyline.so.{tag}
+
+  - type: noctalia
+    source: local
+    builtin_templates:
+      - btop
+    templates:
+      - bat
+      - fzf
+      - herdr
+      - lazygit
+      - yazi
+
   - type: script
-    scripts:
-      - base/non-packaged-tools.sh
     snippets:
       - |
         mkdir -p /usr/share/bash-completion/completions
@@ -62,10 +104,4 @@ modules:
         fzf --bash > /etc/profile.d/90-fzf.sh
         mise activate bash > /etc/profile.d/90-mise.sh
         zoxide init --cmd cd bash > /etc/profile.d/90-zoxide.sh
-      - "/tmp/files/scripts/common/enable-noctalia-template --builtin btop"
-      - "/tmp/files/scripts/common/enable-noctalia-template bat"
-      - "/tmp/files/scripts/common/enable-noctalia-template fzf"
-      - "/tmp/files/scripts/common/enable-noctalia-template herdr"
-      - "/tmp/files/scripts/common/enable-noctalia-template lazygit"
-      - "/tmp/files/scripts/common/enable-noctalia-template yazi"
 ...

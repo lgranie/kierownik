@@ -9,8 +9,9 @@ modules:
         - qtpass
         - wtype
 
-  - type: script
-    snippets:
-      - "/tmp/files/scripts/common/enable-noctalia-plugin mellotanica/launcher-pass"
+  - type: noctalia
+    source: local
+    plugins:
+      - mellotanica/launcher-pass
 
 ...
