@@ -1,19 +1,22 @@
 #!/usr/bin/env bash
 set -oue pipefail
 
-# krw — pick a kierownik system task with gum and run it via mise.
+# krw — kierownik command center: run system tasks via mise.
 # Catalog: /usr/lib/kierownik/tasks/<group>/<name>, invoked as mise
 # <group>:<name>, title from #MISE description="...". Tasks needing args
-# (#USAGE arg "<...>" without default=) stay hidden, the picker passes
-# no arguments.
+# (#USAGE arg "<...>" without default=) stay hidden from picker, visible
+# in help with (args required) marker.
 
 TASKS_DIR="${KRW_TASKS_DIR:-/usr/lib/kierownik/tasks}"
 
-print_usage() {
-  gum style --border thick "krw — run a kierownik system task" \
-    "Usage: krw [group:name] [args...]" \
-    "No args opens the task picker. The window stays open" \
-    "until you confirm close."
+print_global_help() {
+  local groups
+  groups="$(list_groups | tr '\n' ' ')"
+  gum style --border thick "krw — command center" \
+    "Usage: krw [group:name] [args...] | krw <group> <cmd> [args...]" \
+    "No args opens the task picker. Help and lists exit without pause." \
+    "Common: krw theme set <name> | krw capture screenshot | krw agent prompt \"...\" | krw update | krw debug" \
+    "Groups: ${groups}"
 }
 
 description_of() {
@@ -25,26 +28,66 @@ needs_arg() {
   grep -E '#USAGE arg "<' "$1" 2>/dev/null | grep -v 'default=' | grep -q .
 }
 
-collect_entries() {
-  local group group_path name path desc
-  local -a groups=()
+list_groups() {
   [[ -d "${TASKS_DIR}" ]] || return 0
   while IFS= read -r group; do
-    groups+=("${group}")
+    [[ "${group}" == _* ]] && continue
+    [[ -d "${TASKS_DIR}/${group}" ]] || continue
+    printf '%s\n' "${group}"
   done < <(ls -1 "${TASKS_DIR}" | sort)
-  for group in ${groups[@]+"${groups[@]}"}; do
+}
+
+# All runnable entries as group:name<TAB>description. needing-arg tasks
+# included with marker when include_all=1, skipped when 0.
+collect_all() {
+  local include_all="${1:-0}"
+  local group group_path name path desc
+  while IFS= read -r group; do
     group_path="${TASKS_DIR}/${group}"
-    [[ -d "${group_path}" ]] || continue
     while IFS= read -r name; do
       [[ "${name}" != _* && "${name}" != *.* ]] || continue
       path="${group_path}/${name}"
       [[ -f "${path}" ]] || continue
       desc="$(description_of "${path}")"
       [[ -n "${desc}" ]] || continue
-      needs_arg "${path}" && continue
+      if needs_arg "${path}"; then
+        [[ "${include_all}" == "1" ]] || continue
+        desc="${desc} (args required)"
+      fi
       printf '%s:%s\t%s\n' "${group}" "${name}" "${desc}"
     done < <(ls -1 "${group_path}" | sort)
-  done
+  done < <(list_groups)
+}
+
+collect_entries() {
+  collect_all 0
+}
+
+list_commands() {
+  collect_all 1
+}
+
+show_group_help() {
+  local group="$1"
+  [[ -d "${TASKS_DIR}/${group}" ]] || {
+    gum log -sl error "unknown group: ${group}"
+    return 1
+  }
+  gum style --border thick "krw ${group} — commands"
+  collect_all 1 | awk -F'\t' -v g="${group}:" '$1 ~ "^"g {print $1"  "$2}'
+}
+
+show_task_help() {
+  local selection="$1"
+  local task="${TASKS_DIR}/${selection//:/\/}"
+  [[ -f "${task}" ]] || {
+    gum log -sl error "task not found: ${selection}"
+    return 1
+  }
+  local desc
+  desc="$(description_of "${task}")"
+  gum style --border thick "krw ${selection}" "${desc:-no description}"
+  grep -E '^#USAGE' "${task}" 2>/dev/null || true
 }
 
 wait_for_close() {
@@ -73,9 +116,33 @@ run_task() {
   return "${rc}"
 }
 
-if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
-  print_usage
+# Space-form alias: krw <group> <cmd> -> krw group:cmd. Only when $1 has
+# no colon and $2 exists and is not a flag.
+if [[ $# -ge 2 && "${1:-}" != *:* && "${2:-}" != -* ]]; then
+  first="$1"
+  second="$2"
+  shift 2
+  set -- "${first}:${second}" "$@"
+fi
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" || "${1:-}" == "help" ]]; then
+  print_global_help
   exit 0
+fi
+
+if [[ "${1:-}" == "commands" ]]; then
+  list_commands
+  exit 0
+fi
+
+# Group help: krw <group> --help. Task help: krw group:name --help.
+if [[ "${2:-}" == "--help" ]]; then
+  if [[ "${1:-}" == *:* ]]; then
+    show_task_help "$1"
+    exit $?
+  fi
+  show_group_help "$1"
+  exit $?
 fi
 
 if [[ $# -ge 1 ]]; then
