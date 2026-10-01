@@ -1,8 +1,22 @@
 ---
 modules:
-  - type: script
-    scripts:
-      - wm/common/zed/install.sh
-    snippets:
-      - "/tmp/files/scripts/common/enable-noctalia-template zed"
+  - type: github-releases
+    source: local
+    releases:
+      - repo: zed-industries/zed
+        release: true
+        asset: zed-linux-x86_64.tar.gz
+        dest: /usr/lib/opt
+        links:
+          /usr/bin/zed: /usr/lib/opt/zed.app/bin/zed
+        desktop:
+          src: /usr/lib/opt/zed.app/share/applications/dev.zed.Zed.desktop
+        post:
+          - sed -i "s|Icon=zed|Icon=/usr/lib/opt/zed.app/share/icons/hicolor/512x512/apps/zed.png|g" /usr/share/applications/dev.zed.Zed.desktop
+          - sed -i "s|Exec=zed|Exec=/usr/lib/opt/zed.app/bin/zed|g" /usr/share/applications/dev.zed.Zed.desktop
+
+  - type: noctalia
+    source: local
+    templates:
+      - zed
 ...

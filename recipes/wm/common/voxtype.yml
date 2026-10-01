@@ -1,10 +1,19 @@
 ---
 modules:
-  - type: script
-    scripts:
-      - wm/common/voxtype/install.sh
-    snippets:
-      - "/tmp/files/scripts/common/enable-noctalia-plugin gabedunn/voxtype"
+  - type: github-releases
+    source: local
+    releases:
+      - repo: peteonrails/voxtype
+        asset: voxtype-{tag}-linux-x86_64-vulkan
+        dest: /usr/bin/voxtype
+        fetch:
+          - url: https://raw.githubusercontent.com/peteonrails/voxtype/main/packaging/completions/voxtype.bash
+            dest: /usr/share/bash-completion/completions/voxtype
+
+  - type: noctalia
+    source: local
+    plugins:
+      - gabedunn/voxtype
 
   - type: dnf
     install:

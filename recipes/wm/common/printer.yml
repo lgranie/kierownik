@@ -33,5 +33,9 @@ modules:
     snippets:
       - "firewall-offline-cmd --zone=Kierownik --add-service=ipp-client"
       - "firewall-offline-cmd --zone=Kierownik --add-service=mdns"
-      - "/tmp/files/scripts/common/enable-noctalia-plugin andrewdems/printers"
+
+  - type: noctalia
+    source: local
+    plugins:
+      - andrewdems/printers
 ...

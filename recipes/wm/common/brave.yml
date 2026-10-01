@@ -18,5 +18,9 @@ modules:
   - type: script
     snippets:
       - "rm -f /usr/share/applications/brave-browser.desktop"
-      - "/tmp/files/scripts/common/enable-noctalia-template brave"
+
+  - type: noctalia
+    source: local
+    templates:
+      - brave
 ...

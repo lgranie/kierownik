@@ -20,5 +20,9 @@ modules:
   - type: script
     snippets:
       - "desktop-file-edit --set-key=NoDisplay --set-value=true /usr/share/applications/foot-server.desktop"
-      - "/tmp/files/scripts/common/enable-noctalia-template --builtin foot"
+
+  - type: noctalia
+    source: local
+    builtin_templates:
+      - foot
 ...
