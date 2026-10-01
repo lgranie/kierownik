@@ -18,4 +18,10 @@ modules:
     system:
       masked:
         - geoclue.service
+
+  - type: script
+    snippets:
+      - |
+        desktop-file-edit --set-key=NoDisplay --set-value=true /usr/share/applications/btop.desktop
+        desktop-file-edit --set-key=NoDisplay --set-value=true /usr/share/applications/nvtop.desktop
 ...

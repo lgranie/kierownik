@@ -69,6 +69,4 @@ modules:
       - "/tmp/files/scripts/common/enable-noctalia-template herdr"
       - "/tmp/files/scripts/common/enable-noctalia-template lazygit"
       - "/tmp/files/scripts/common/enable-noctalia-template yazi"
-      - "desktop-file-edit --set-key=NoDisplay --set-value=true /usr/share/applications/btop.desktop"
-      - "desktop-file-edit --set-key=NoDisplay --set-value=true /usr/share/applications/nvtop.desktop"
 ...
