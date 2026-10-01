@@ -10,7 +10,7 @@ modules:
     snippets:
       - "desktop-file-edit --set-key=NoDisplay --set-value=true /usr/share/applications/dev.noctalia.Noctalia.desktop"
       - "/tmp/files/scripts/common/enable-noctalia-plugin kierownik/nightlight"
-      - "/tmp/files/scripts/common/enable-noctalia-plugin linkding/bookmarks"
+      - "/tmp/files/scripts/common/enable-noctalia-plugin kierownik/bookmarks"
       - "/tmp/files/scripts/common/enable-noctalia-plugin noctalia/wallhaven"
       - "/tmp/files/scripts/common/enable-noctalia-template --builtin gtk3"
       - "/tmp/files/scripts/common/enable-noctalia-template --builtin gtk4"
