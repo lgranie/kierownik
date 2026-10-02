@@ -1,0 +1,10 @@
+# Launcher: krw tasks as a persistent dmenu entry. Type /krw in the
+# launcher (user tasks carry a [user] tag, so /krw usr narrows to them).
+# Runs the pick in a krw terminal; tasks needing args prompt via gum there.
+[shell.launcher.dmenu.entry.krw]
+command = "{ krw --dmenu; krw --usr --dmenu | sed 's/\\t/\\t[user] /'; } | sort"
+label = "Krw Tasks"
+prefix = "krw"
+glyph = "terminal"
+global = false
+exec = "name=\"$(printf '%s' \"{selection}\" | cut -f1)\"; [ -n \"$name\" ] && footclient --app-id=krw-task krw \"$name\""

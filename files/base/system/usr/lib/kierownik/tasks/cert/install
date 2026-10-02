@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #MISE description="Install cert from url"
-#USAGE arg "<url>" help="Site url"
+#USAGE arg "[url]" help="Site url"
 set -euo pipefail
 
 if [[ -z "${usage_url:-}" ]]; then

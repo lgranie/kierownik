@@ -3,10 +3,23 @@ Name=Kierownik
 GenericName=Krw Task Runner
 Comment=Pick and run a kierownik system task
 TryExec=krw
-Exec=footclient --app-id=krw-task krw
+Exec=noctalia msg panel-toggle launcher "/krw "
 Icon=kierownik
 Terminal=false
 Type=Application
 Categories=System;ConsoleOnly;
-Keywords=tasks;system;maintenance;kierownik;
+Keywords=tasks;system;maintenance;kierownik;launcher;
 StartupNotify=false
+Actions=terminal;terminal-user;commands;
+
+[Desktop Action terminal]
+Name=Terminal picker (system)
+Exec=footclient --app-id=krw-task krw
+
+[Desktop Action terminal-user]
+Name=Terminal picker (user)
+Exec=footclient --app-id=krw-task krw --usr
+
+[Desktop Action commands]
+Name=List all commands
+Exec=footclient --app-id=krw-task krw commands --hold

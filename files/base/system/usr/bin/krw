@@ -6,15 +6,51 @@ set -oue pipefail
 # <group>:<name>, title from #MISE description="...". Tasks needing args
 # (#USAGE arg "<...>" without default=) stay hidden from picker, visible
 # in help with (args required) marker.
+#
+# Flags: --usr swaps the catalog to ~/.config/mise/tasks (user tasks;
+# top-level files count as bare names, subdirs as group:name). --dmenu
+# prints "name<TAB>description" lines for piping, e.g.:
+# krw --dmenu | noctalia dmenu -p "Run Task" | cut -f1 | xargs -r krw
+#
+# Convention for tasks needing args: declare them optional
+# (#USAGE arg "[name]") and prompt in-body via gum (gum input, or
+# gum choose for choices) when the usage_* var is empty.
 
 TASKS_DIR="${KRW_TASKS_DIR:-/usr/lib/kierownik/tasks}"
+USR_MODE=0
+DMENU_MODE=0
+while [[ $# -ge 1 ]]; do
+  case "$1" in
+    --usr)
+      USR_MODE=1
+      TASKS_DIR="${XDG_CONFIG_HOME:-${HOME}/.config}/mise/tasks"
+      shift
+      ;;
+    --dmenu)
+      DMENU_MODE=1
+      shift
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -h | --help) break ;;
+    --*)
+      gum log -sl error "unknown flag: $1 (see krw --help)"
+      exit 1
+      ;;
+    *) break ;;
+  esac
+done
 
 print_global_help() {
   local groups
   groups="$(list_groups | tr '\n' ' ')"
-  gum style --border thick "krw — command center" \
-    "Usage: krw [group:name] [args...] | krw <group> <cmd> [args...]" \
+  gum style --border thick -- "krw — command center" \
+    "Usage: krw [--usr] [--dmenu] [group:name] [args...] | krw [--usr] <group> <cmd> [args...]" \
     "No args opens the task picker. Help and lists exit without pause." \
+    "--usr: use tasks in ~/.config/mise/tasks instead of system tasks." \
+    "--dmenu: print name<TAB>description lines for piping, e.g. krw --dmenu | noctalia dmenu -p \"Run Task\" | cut -f1 | xargs -r krw" \
     "Common: krw theme set <name> | krw capture screenshot | krw agent prompt \"...\" | krw update | krw debug" \
     "Groups: ${groups}"
 }
@@ -57,6 +93,21 @@ collect_all() {
       printf '%s:%s\t%s\n' "${group}" "${name}" "${desc}"
     done < <(ls -1 "${group_path}" | sort)
   done < <(list_groups)
+  # Top-level files (user tasks without a group): bare name.
+  [[ -d "${TASKS_DIR}" ]] || return 0
+  local top top_path top_desc
+  while IFS= read -r top; do
+    [[ "${top}" != _* && "${top}" != *.* ]] || continue
+    top_path="${TASKS_DIR}/${top}"
+    [[ -f "${top_path}" && ! -d "${top_path}" ]] || continue
+    top_desc="$(description_of "${top_path}")"
+    [[ -n "${top_desc}" ]] || continue
+    if needs_arg "${top_path}"; then
+      [[ "${include_all}" == "1" ]] || continue
+      top_desc="${top_desc} (args required)"
+    fi
+    printf '%s\t%s\n' "${top}" "${top_desc}"
+  done < <(ls -1 "${TASKS_DIR}" | sort)
 }
 
 collect_entries() {
@@ -73,7 +124,7 @@ show_group_help() {
     gum log -sl error "unknown group: ${group}"
     return 1
   }
-  gum style --border thick "krw ${group} — commands"
+  gum style --border thick -- "krw ${group} — commands"
   collect_all 1 | awk -F'\t' -v g="${group}:" '$1 ~ "^"g {print $1"  "$2}'
 }
 
@@ -86,7 +137,7 @@ show_task_help() {
   }
   local desc
   desc="$(description_of "${task}")"
-  gum style --border thick "krw ${selection}" "${desc:-no description}"
+  gum style --border thick -- "krw ${selection}" "${desc:-no description}"
   grep -E '^#USAGE' "${task}" 2>/dev/null || true
 }
 
@@ -100,10 +151,25 @@ run_task() {
   local path_selection="${name_selection//:/\/}"
   local task="${TASKS_DIR}/${path_selection}"
   local rc=0
-  if [[ "${name_selection}" != *:* || "${name_selection}" == *\/* || "${name_selection}" == *..* ]]; then
+  if [[ "${name_selection}" == *\/* || "${name_selection}" == *..* ]]; then
+    gum log -sl error "invalid task: ${name_selection}"
+    wait_for_close
+    return 1
+  fi
+  if [[ "${name_selection}" != *:* && "${USR_MODE}" != "1" ]]; then
     gum log -sl error "invalid task (use group:name): ${name_selection}"
     wait_for_close
     return 1
+  fi
+  if [[ ! -f "${task}" ]]; then
+    # Cross-catalog fallback: a bare/system name also resolves user
+    # tasks and vice versa, so callers (e.g. launcher exec lines)
+    # need no --usr routing. mise resolves both catalogs by name.
+    local other_dir="${XDG_CONFIG_HOME:-${HOME}/.config}/mise/tasks"
+    [[ "${USR_MODE}" == "1" ]] && other_dir="/usr/lib/kierownik/tasks"
+    if [[ -f "${other_dir}/${path_selection}" ]]; then
+      task="${other_dir}/${path_selection}"
+    fi
   fi
   if [[ ! -f "${task}" ]]; then
     gum log -sl error "task not found: ${name_selection}"
@@ -131,17 +197,41 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" || "${1:-}" == "help" ]]; then
 fi
 
 if [[ "${1:-}" == "commands" ]]; then
+  if [[ "${2:-}" == "--hold" ]]; then
+    list_commands
+    wait_for_close
+    exit 0
+  fi
   list_commands
   exit 0
 fi
 
-# Group help: krw <group> --help. Task help: krw group:name --help.
+if [[ "${DMENU_MODE}" == "1" ]]; then
+  if [[ $# -ge 1 ]]; then
+    gum log -sl error "extra args not allowed with --dmenu (pipe the output instead)"
+    exit 1
+  fi
+  mapfile -t dmenu_rows < <(collect_entries)
+  if [[ ${#dmenu_rows[@]} -eq 0 ]]; then
+    gum log -sl error "no tasks found, check ${TASKS_DIR} exists and task files carry #MISE description"
+    exit 1
+  fi
+  printf '%s\n' "${dmenu_rows[@]}" | sort
+  exit 0
+fi
+
+# Group help: krw <group> --help. Task help: krw group:name --help
+# (or krw taskname --help for top-level user tasks with --usr).
 if [[ "${2:-}" == "--help" ]]; then
   if [[ "${1:-}" == *:* ]]; then
     show_task_help "$1"
     exit $?
   fi
-  show_group_help "$1"
+  if [[ -d "${TASKS_DIR}/$1" ]]; then
+    show_group_help "$1"
+    exit $?
+  fi
+  show_task_help "$1"
   exit $?
 fi
 
