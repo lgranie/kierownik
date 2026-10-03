@@ -34,7 +34,7 @@ bootstrap() {
   tmux has-session -t "${SESSION}" 2>/dev/null && return 0
   tmux new-session -ds "${SESSION}" -n monitor btop
   tmux split-window -vd -p 45 -t "${SESSION}:monitor" nvtop
-  tmux new-window -d -t "${SESSION}" -n services systemd-manager-tui
+  tmux new-window -d -t "${SESSION}" -n services systemd-manager-tui --no-notifications
   tmux new-window -d -t "${SESSION}" -n containers podman-tui
   tmux select-window -t "${SESSION}:monitor"
 }
