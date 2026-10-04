@@ -2,7 +2,7 @@
 # launcher (user tasks carry a [user] tag, so /krw usr narrows to them).
 # Runs the pick in a krw terminal; tasks needing args prompt via gum there.
 [shell.launcher.dmenu.entry.krw]
-command = "{ krw --dmenu; krw --usr --dmenu | sed 's/\\t/\\t[user] /'; } | sort"
+command = "{ krw --dmenu; krw --usr --dmenu 2>/dev/null | sed 's/\\t/\\t[user] /' || true; } | sort"
 label = "Krw Tasks"
 prefix = "krw"
 glyph = "terminal"
