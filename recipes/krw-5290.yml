@@ -18,13 +18,13 @@ platforms:
 modules:
   - from-file: base/all.yml
   - from-file: base/wifi.yml
-  - from-file: cpu/intel.yml
 
+  - from-file: cpu/intel.yml
   - from-file: cpu/hibernation/common.yml
   - from-file: cpu/hibernation/intel.yml
 
-  - from-file: wm/common.yml
   - from-file: wm/5290.yml
+  - from-file: wm/common.yml
 
   - from-file: finalize/all.yml
 ...
