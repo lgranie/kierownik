@@ -1,0 +1,5 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+---
+# AMD virtualization host. No IOMMU karg: only needed for PCI passthrough.
+modules:
+  - from-file: virt/common/qemu.yml

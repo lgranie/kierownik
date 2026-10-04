@@ -16,7 +16,6 @@ modules:
   - type: kargs
     arch: x86_64
     kargs:
-      - intel_iommu=on
       - intel_pstate=active
       - i915.disable_power_well=1
       - i915.enable_dc=4

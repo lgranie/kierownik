@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+---
+# Shared host-side QEMU stack for on-image VM testing (bcvk ephemeral + raw qemu).
+# QEMU needs no systemd units. Wired per-CPU via virt/amd.yml or virt/intel.yml.
+# Guest-side (run inside VM) lives in vm/all.yml; do not merge the two.
+modules:
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - bcvk
+        - edk2-ovmf
+        - qemu-kvm
+        - virtiofsd

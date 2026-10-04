@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+---
+# Intel virtualization host.
+modules:
+  - from-file: virt/common/qemu.yml
+
+  - type: kargs
+    arch: x86_64
+    kargs:
+      - intel_iommu=on
