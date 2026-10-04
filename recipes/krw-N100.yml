@@ -17,6 +17,7 @@ platforms:
 # you can include multiple instances of the same module
 modules:
   - from-file: base/all.yml
+
   - from-file: cpu/intel.yml
 
   - from-file: finalize/all.yml
