@@ -23,8 +23,9 @@ modules:
 
   - from-file: virt/amd.yml
 
-  - from-file: wm/8745.yml
+  - from-file: wm/video/rpmfusion/amd.yml
   - from-file: wm/common.yml
+  - from-file: wm/8745.yml
 
   - from-file: finalize/all.yml
 ...

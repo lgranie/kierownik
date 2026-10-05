@@ -10,16 +10,4 @@ modules:
     install:
       install-weak-deps: false
       packages:
-        - repo: rpmfusion-free
-          packages:
-            - mesa-va-drivers-freeworld
-            - mesa-vulkan-drivers-freeworld
         - vulkan-tools
-    replace:
-      - from-repo: rpmfusion-free
-        allow-erasing: true
-        install-weak-deps: false
-        packages:
-          - old: mesa-vulkan-drivers
-            new: mesa-vulkan-drivers-freeworld
-...
