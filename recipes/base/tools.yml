@@ -10,6 +10,7 @@ modules:
     install:
       install-weak-deps: false
       packages:
+        - bash-completion
         - bat
         - btop
         - delta
