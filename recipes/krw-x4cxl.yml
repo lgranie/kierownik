@@ -21,7 +21,9 @@ stages:
     modules:
       - type: containerfile
         snippets:
-          - "COPY kernels/x4cxl.config /tmp/kernelsrc/kernel.config"
+          - "COPY kernels/common.config /tmp/kernelsrc/common.config"
+          - "COPY kernels/common/bootc.config /tmp/kernelsrc/bootc.config"
+          - "COPY kernels/x4cxl.config /tmp/kernelsrc/machine.config"
       - type: script
         snippets:
           - "/tmp/files/scripts/kernel/build-kernel-rpm.sh"
