@@ -4,7 +4,7 @@ Kierownik is a personal operating system built with [BlueBuild](https://blue-bui
 
 * [krw-5290](https://github.com/lgranie/kierownik/blob/main/recipes/krw-5290.yml) — **Dell Latitude 5290 2-in-1** — Hyprland
 * [krw-8745](https://github.com/lgranie/kierownik/blob/main/recipes/krw-8745.yml) — **Chuwi AuBox 8745** — Hyprland
-* [krw-X4CXL](https://github.com/lgranie/kierownik/blob/main/recipes/krw-X4CXL.yml) — **Topton X4C-XL** Headless Server
+* [krw-x4cxl](https://github.com/lgranie/kierownik/blob/main/recipes/krw-x4cxl.yml) — **Topton X4C-XL** Headless Server
 * [krw-wsl](https://github.com/lgranie/kierownik/blob/main/recipes/krw-wsl.yml) — wsl
 
 Kierownik ships with:
