@@ -2,7 +2,7 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 # image will be published to ghcr.io/<user>/<name>
-name: krw-X4CXL
+name: krw-x4cxl
 # description will be included in the image's metadata
 description: This is my personal OS image. Topton X4C-XL Headless Server
 
@@ -21,7 +21,7 @@ stages:
     modules:
       - type: containerfile
         snippets:
-          - "COPY kernels/X4CXL.config /tmp/kernelsrc/kernel.config"
+          - "COPY kernels/x4cxl.config /tmp/kernelsrc/kernel.config"
       - type: script
         snippets:
           - "/tmp/files/scripts/kernel/build-kernel-rpm.sh"
