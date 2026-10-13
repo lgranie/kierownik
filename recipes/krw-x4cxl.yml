@@ -23,6 +23,7 @@ stages:
         snippets:
           - "COPY kernels/common.config /tmp/kernelsrc/common.config"
           - "COPY kernels/common/bootc.config /tmp/kernelsrc/bootc.config"
+          - "COPY kernels/common/intel.config /tmp/kernelsrc/intel.config"
           - "COPY kernels/x4cxl.config /tmp/kernelsrc/machine.config"
       - type: script
         snippets:

@@ -5,10 +5,11 @@
 # Runs inside the `kernel-builder` stage of the image build (see the `stages:`
 # block in the top-level recipes). The shared base is copied in as
 # /tmp/kernelsrc/common.config, the bootc/container base as
-# /tmp/kernelsrc/bootc.config, the optional workstation fragment as
-# /tmp/kernelsrc/extra.config (human-facing images only) and the machine
-# fragment as /tmp/kernelsrc/machine.config by that stage. The RPM is written to
-# /tmp/kernels, from where the main image installs it.
+# /tmp/kernelsrc/bootc.config, the optional Intel base as
+# /tmp/kernelsrc/intel.config (Intel images only), the optional workstation
+# fragment as /tmp/kernelsrc/extra.config (human-facing images only) and the
+# machine fragment as /tmp/kernelsrc/machine.config by that stage. The RPM is
+# written to /tmp/kernels, from where the main image installs it.
 set -oue pipefail
 
 SRC_DIR=/tmp/kernelsrc
@@ -37,7 +38,8 @@ rpmbuild -bp /root/rpmbuild/SPECS/kernel.spec
 SRCTREE="$(ls -d /root/rpmbuild/BUILD/kernel-*)"
 
 # Merge the shared base (common.config) with the bootc/container base
-# (bootc.config), the optional workstation fragment (extra.config, only
+# (bootc.config), the optional Intel base (intel.config, only copied in by
+# Intel images), the optional workstation fragment (extra.config, only
 # copied in by human-facing images) and the machine fragment
 # (machine.config); later files win on conflict. Every option missing from
 # all files gets its Kconfig default via olddefconfig.
@@ -48,6 +50,7 @@ SRCTREE="$(ls -d /root/rpmbuild/BUILD/kernel-*)"
   }
 cp "${SRC_DIR}/common.config" "${SRCTREE}/.config"
 fragments=("${SRC_DIR}/bootc.config")
+[[ -f "${SRC_DIR}/intel.config" ]] && fragments+=("${SRC_DIR}/intel.config")
 [[ -f "${SRC_DIR}/extra.config" ]] && fragments+=("${SRC_DIR}/extra.config")
 fragments+=("${SRC_DIR}/machine.config")
 "${SRCTREE}/scripts/kconfig/merge_config.sh" -m -O "${SRCTREE}" \
