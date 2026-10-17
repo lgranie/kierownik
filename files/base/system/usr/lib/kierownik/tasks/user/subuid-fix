@@ -4,7 +4,10 @@
 set -euo pipefail
 
 USERNAME="$(id -nu)"
-[[ -n "${USERNAME}" && "${USERNAME}" != "root" ]] || { gum log -sl error "run as user, not root"; exit 1; }
+[[ -n "${USERNAME}" && "${USERNAME}" != "root" ]] || {
+  gum log -sl error "run as user, not root"
+  exit 1
+}
 
 SUBRANGE="524288-$((524288 + 65536))"
 
