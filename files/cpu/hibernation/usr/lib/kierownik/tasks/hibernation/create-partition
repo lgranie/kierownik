@@ -3,9 +3,38 @@
 #MISE description="Create hibernation swap partition (shrinks btrfs if needed)"
 #USAGE arg "[disk]" help="Target disk, e.g. /dev/nvme0n1"
 #USAGE arg "[size]" help="Swap size, e.g. 32G (default: RAM size)"
+#USAGE flag "--allow-in-use-disk" help="Proceed even if the disk backs the running system"
 set -oue pipefail
 
 SWAP_GPT_GUID="0657FD6D-A4AB-43C4-84E5-0933C84B4F4F"
+
+# Unpartitioned sectors on a whole disk. Needs root to open the block device.
+free_sectors_of() {
+  local out
+  out="$(run0 sfdisk -F "$1")" || {
+    gum log -sl error "Cannot read partition table of $1."
+    return 1
+  }
+  printf '%s\n' "${out}" | awk '
+    /^Unpartitioned space/ {
+      for (i = 1; i <= NF; i++)
+        if ($i == "sectors") { s += $(i - 1); break }
+    }
+    END { print s + 0 }'
+}
+
+# True when the whole disk backs a critical mount of the running system.
+disk_hosts_system() {
+  local want="$1" mp src pd
+  for mp in /sysroot / /var /etc /home /boot /boot/efi /usr; do
+    src="$(findmnt -no SOURCE --target "${mp}" 2>/dev/null || true)"
+    src="${src%%[*}"
+    [[ -b "${src}" ]] || continue
+    pd="/dev/$(lsblk -no PKNAME "${src}" 2>/dev/null | head -1)"
+    [[ "${pd}" == "${want}" ]] && return 0
+  done
+  return 1
+}
 
 disk="${usage_disk:-}"
 if [[ -z "${disk}" ]]; then
@@ -21,6 +50,13 @@ fi
   gum log -sl error "Not a block device: ${disk}"
   exit 1
 }
+
+if [[ "${usage_allow_in_use_disk:-false}" != "true" ]] &&
+  disk_hosts_system "$(readlink -f "${disk}")"; then
+  gum log -sl error "${disk} backs the running system (/, /var, /boot, ...). Refusing online repartition."
+  gum log -sl info "Re-run from a live/rescue environment, or pass --allow-in-use-disk to override."
+  exit 1
+fi
 
 mem_gb=$((($(awk '/MemTotal/ {print $2}' /proc/meminfo) + 1048575) / 1048576))
 size="${usage_size:-}"
@@ -48,7 +84,7 @@ if [[ "${need_bytes}" -lt $((mem_gb * 1024 * 1024 * 1024)) ]]; then
 fi
 
 sector_bytes="$(lsblk -dn -o LOG-SEC "${disk}")"
-free_sectors="$(sfdisk -F "${disk}" 2>/dev/null | awk '/Unpartitioned space|unallocated/ {s+=$3} END {print s+0}')"
+free_sectors="$(free_sectors_of "${disk}")" || exit 1
 free_bytes=$((free_sectors * sector_bytes))
 gum log -sl info "Unpartitioned free space on ${disk}: $((free_bytes / 1024 / 1024 / 1024))G."
 
@@ -103,9 +139,12 @@ if [[ "${free_bytes}" -lt "${need_bytes}" ]]; then
     gum log -sl error "Partition table rewrite failed. Filesystem shrunk; fix table manually."
     exit 1
   }
-  run0 partx -u "${disk}" 2>/dev/null || run0 blockdev --rereadpt "${disk}" || true
+  if ! run0 partx -u "${disk}" 2>/dev/null && ! run0 blockdev --rereadpt "${disk}" 2>/dev/null; then
+    gum log -sl error "Kernel did not re-read the partition table; aborting."
+    exit 1
+  fi
 
-  free_sectors="$(sfdisk -F "${disk}" 2>/dev/null | awk '/Unpartitioned space|unallocated/ {s+=$3} END {print s+0}')"
+  free_sectors="$(free_sectors_of "${disk}")" || exit 1
   free_bytes=$((free_sectors * sector_bytes))
   gum log -sl info "Free space now: $((free_bytes / 1024 / 1024 / 1024))G."
   [[ "${free_bytes}" -ge "${need_bytes}" ]] || {
@@ -135,7 +174,10 @@ if ! run0 bash -c "echo ',${size},${part_type}' | sfdisk -a '${disk}' --force"; 
   gum log -sl error "Partition creation failed."
   exit 1
 fi
-run0 partx -u "${disk}" 2>/dev/null || run0 blockdev --rereadpt "${disk}" || true
+if ! run0 partx -u "${disk}" 2>/dev/null && ! run0 blockdev --rereadpt "${disk}" 2>/dev/null; then
+  gum log -sl error "Kernel did not re-read the partition table; aborting."
+  exit 1
+fi
 after="$(lsblk -ln -o PATH "${disk}")"
 newpart="$(comm -13 <(printf "%s\n" "${before}" | sort) <(printf "%s\n" "${after}" | sort) | head -1)"
 [[ -n "${newpart}" ]] || {
@@ -146,7 +188,7 @@ newpart="$(comm -13 <(printf "%s\n" "${before}" | sort) <(printf "%s\n" "${after
 run0 mkswap "${newpart}"
 run0 swapon "${newpart}"
 uuid="$(blkid -s UUID -o value "${newpart}")"
-if ! grep -q "${uuid}" /etc/fstab 2>/dev/null; then
+if ! grep -qF "${uuid}" /etc/fstab 2>/dev/null; then
   run0 bash -c "printf 'UUID=%s none swap defaults 0 0\n' '${uuid}' >> /etc/fstab"
 fi
 
