@@ -2,6 +2,10 @@
 # Install the kernel-kierownik RPM produced by the `kernel-builder` stage and
 # remove the stock Fedora kernels so the image ships a single kernel.
 # --noscripts skips kernel-install (no /boot exists in an ostree image).
+# The stock packages are removed one at a time (a single rpm -e with a missing
+# name aborts the whole transaction), then any modules dir that is not ours is
+# dropped, since the base image ships an unowned initramfs.img that would
+# otherwise keep the stock kernel bootable.
 modules:
   - type: copy
     from: kernel-builder
@@ -11,6 +15,12 @@ modules:
   - type: script
     snippets:
       - "dnf -y install /tmp/kernels/x86_64/*.rpm"
-      - "rpm -e --nodeps --noscripts kernel-core kernel-modules kernel-modules-extra 2>/dev/null || true"
+      - >-
+        for p in kernel kernel-core kernel-modules kernel-modules-core
+        kernel-modules-extra; do rpm -q "$p" >/dev/null 2>&1 &&
+        rpm -e --nodeps --noscripts "$p" || true; done
+      - >-
+        for d in /usr/lib/modules/*; do case "${d##*/}" in
+        *-kierownik) ;; *) rm -rf "$d" ;; esac; done
       - "rm -rf /tmp/kernels"
 ...
