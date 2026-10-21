@@ -5,6 +5,9 @@ modules:
       install-weak-deps: false
       packages:
         - mpv
+        # GTK pinentry for gpg PIN/passphrase prompts from GUI apps (no tty).
+        # Only pulls gcr-libs; polkit prompts stay with noctalia.
+        - pinentry-gnome3
         - upower
         - wl-clipboard
         - wlsunset

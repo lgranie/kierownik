@@ -29,5 +29,9 @@ modules:
     user:
       enabled:
         - dotfiles-init.service
+        # Socket units start gpg-agent at login, so GUI apps get a live
+        # SSH_AUTH_SOCK without waiting for a shell to autostart the agent.
+        - gpg-agent.socket
+        - gpg-agent-ssh.socket
         - podman.socket
 ...

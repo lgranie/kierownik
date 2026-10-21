@@ -8,8 +8,12 @@ krw_require_interactive || return 0 2>/dev/null || exit 0
 
 GPG_TTY="$(tty)"
 export GPG_TTY
-SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
-export SSH_AUTH_SOCK
-systemctl --user set-environment "SSH_AUTH_SOCK=$SSH_AUTH_SOCK"
+
+# environment.d/99-ssh-gpg.conf and uwsm/env already export this; only fall
+# back to gpgconf when the socket path is missing from the session.
+if [[ -z "${SSH_AUTH_SOCK:-}" ]]; then
+  SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+  export SSH_AUTH_SOCK
+fi
 
 gpg-connect-agent updatestartuptty /bye >/dev/null || true
