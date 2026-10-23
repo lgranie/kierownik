@@ -3,6 +3,7 @@
 cargo-binstall = "latest"
 gum = "latest"
 rust = "latest"
+node = "lts"
 opencode = "latest"
 
 [settings]
