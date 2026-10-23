@@ -9,7 +9,10 @@ modules:
       nonfree: rpmfusion
     install:
       install-weak-deps: false
+      exclude:
+        - "*.i686"
       packages:
+        - libdisplay-info
         - repo: rpmfusion-free
           packages:
             - mesa-va-drivers-freeworld
