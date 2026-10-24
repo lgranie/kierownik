@@ -1,0 +1,10 @@
+[Unit]
+Description=Apply Flatpak user-scope permission lockdown
+ConditionUser=!@system
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/flatpak-user-lockdown
+
+[Install]
+WantedBy=default.target

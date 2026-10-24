@@ -1,12 +1,12 @@
 [Unit]
-Description=Init Flatpak global overrides
+Description=Init Flatpak system-scope global grants
 ConditionPathExists=!/var/lib/flatpak/overrides/global
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/flatpak-default_config
+ExecStart=/usr/bin/flatpak-system-grants
 
 [Install]
 WantedBy=multi-user.target

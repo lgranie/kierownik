@@ -36,11 +36,11 @@ modules:
   - type: systemd
     system:
       enabled:
-        - flatpak-default_config.service
+        - flatpak-system-grants.service
         - flatpak-update.timer
     user:
       enabled:
-        - flatpak-lockdown.service
+        - flatpak-user-lockdown.service
 
   - type: script
     snippets:

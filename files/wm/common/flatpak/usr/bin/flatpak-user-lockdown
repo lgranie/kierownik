@@ -2,9 +2,10 @@
 
 set -euo pipefail
 
-# User-scope global lockdown applies to every flatpak (system apps included).
-# Only what flatpak-default_config grants globally (wayland + dri) reaches
-# apps; per-app exceptions below and Flatseal grants layer on top.
+# User scope: deny baseline layered over the system-scope grants
+# (flatpak-system-grants), applies to user- and system-installed apps
+# alike. Only the grants (wayland + dri) survive; per-app exceptions
+# below and Flatseal grants layer on top.
 
 flatpak override --user \
   --nosocket=x11 --nosocket=fallback-x11 --nosocket=pulseaudio --nosocket=pcsc \
