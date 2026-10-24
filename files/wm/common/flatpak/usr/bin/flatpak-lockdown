@@ -8,7 +8,7 @@ set -euo pipefail
 
 flatpak override --user \
   --nosocket=x11 --nosocket=fallback-x11 --nosocket=pulseaudio --nosocket=pcsc \
-  --nosocket=ssh-auth --nosocket=gpg-agent --nosocket=pkcs11 \
+  --nosocket=ssh-auth --nosocket=gpg-agent --nosocket=cups \
   --nosocket=session-bus --nosocket=system-bus \
   --unshare=network --unshare=ipc \
   --nofilesystem=home --nofilesystem=host --nofilesystem=host-etc \
