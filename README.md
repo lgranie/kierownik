@@ -15,7 +15,7 @@ Kierownik ships with:
   * mise for dev and system tasks
 * graphical flavors : Hyprland with scrolling layout as default
   * noctalia / noctalia-greeter
-  * flatpak / flathub / bazaar
+  * flatpak / flathub / bazaar, with a strict sandbox permission baseline (editable via Flatseal)
   * foot terminal
   * some nerd fonts
 

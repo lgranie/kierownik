@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# User-scope global lockdown applies to every flatpak (system apps included).
+# Only what flatpak-default_config grants globally (wayland + dri) reaches
+# apps; per-app exceptions below and Flatseal grants layer on top.
+
+flatpak override --user \
+  --nosocket=x11 --nosocket=fallback-x11 --nosocket=pulseaudio --nosocket=pcsc \
+  --nosocket=ssh-auth --nosocket=gpg-agent --nosocket=pkcs11 \
+  --nosocket=session-bus --nosocket=system-bus \
+  --unshare=network --unshare=ipc \
+  --nofilesystem=home --nofilesystem=host --nofilesystem=host-etc \
+  --disallow=devel --disallow=multiarch --disallow=bluetooth --disallow=canbus \
+  --no-talk-name=org.freedesktop.secrets \
+  --no-talk-name=org.gnome.Shell.Screenshot \
+  --no-talk-name=org.gnome.Shell.Screencast \
+  --system-no-talk-name=org.freedesktop.Flatpak \
+  --system-no-talk-name=org.freedesktop.timedate1 \
+  --system-no-talk-name=org.freedesktop.hostname1 \
+  --system-no-talk-name=org.freedesktop.NetworkManager
+
+# One flatpak override per app id; exceptions layered above the baseline.
+# Extend via Flatseal.
+
+# Localsend needs the LAN for discovery and send.
+flatpak override --user --share=network --filesystem=xdg-download \
+  org.localsend.localsend_app
+
+# Bazaar is the app store: download, index and search all need network.
+flatpak override --user --share=network io.github.kolunmi.Bazaar
+
+# Flatseal edits user-scope overrides and reads system-scope app metadata.
+flatpak override --user \
+  --filesystem=xdg-data/flatpak:rw \
+  --filesystem=/var/lib/flatpak:ro \
+  com.github.tchx84.Flatseal

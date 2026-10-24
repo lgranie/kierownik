@@ -25,6 +25,7 @@ modules:
           # - com.vscodium.codium
           - io.github.kolunmi.Bazaar
           - org.localsend.localsend_app
+          - com.github.tchx84.Flatseal
       - scope: user  # Also add Flathub user repo, but no user packages
         notify: false
         repo:
@@ -37,6 +38,9 @@ modules:
       enabled:
         - flatpak-default_config.service
         - flatpak-update.timer
+    user:
+      enabled:
+        - flatpak-lockdown.service
 
   - type: script
     snippets:
