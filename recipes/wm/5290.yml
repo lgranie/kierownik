@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 ---
 modules:
+  - from-file: wm/common/xdg-desktop.yml
   - from-file: wm/video/rpmfusion/intel.yml
   - from-file: wm/common/wvkbd.yml
 
