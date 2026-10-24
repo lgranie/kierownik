@@ -1,7 +1,6 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 ---
 modules:
-  - from-file: wm/common/xdg-desktop.yml
   - from-file: wm/common/audio.yml
   - from-file: wm/common/brave.yml
   #- from-file: wm/common/capture.yml
