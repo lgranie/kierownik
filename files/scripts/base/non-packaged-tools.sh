@@ -46,3 +46,10 @@ if [[ -n "$FLYLINE_TAG" ]]; then
     tar -xzf - -C /usr/lib64/
   ln -sf "/usr/lib64/libflyline.so.${FLYLINE_TAG#v}" /usr/lib64/libflyline.so
 fi
+
+# Install flycomp (flyline completion synthesis)
+FLYCOMP_TAG=$(/tmp/files/scripts/common/fetch_gh_latest_tag "HalFrgrd/flycomp")
+if [[ -n "$FLYCOMP_TAG" ]]; then
+  curl --silent --retry 3 -L --output - "https://github.com/HalFrgrd/flycomp/releases/download/${FLYCOMP_TAG}/flycomp-${FLYCOMP_TAG}-x86_64-unknown-linux-gnu.tar.gz" |
+    tar -xzf - -C /usr/bin/ flycomp
+fi
