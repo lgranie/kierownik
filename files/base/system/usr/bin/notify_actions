@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ -n "${NOTIFY_ACTION:-}" ]]; then
+    action_label=$(echo "$NOTIFY_ACTION" | cut -d':' -f1)
+    action_command=$(echo "$NOTIFY_ACTION" | cut -d':' -f2- | tr ':' ' ')
+
+    case "$action_label" in
+        "Reboot")
+            systemctl --user reboot
+            ;;
+        "Shutdown")
+            systemctl --user poweroff
+            ;;
+        "Suspend")
+            systemctl --user suspend
+            ;;
+        "Resume")
+            systemctl --user resume
+            ;;
+        "UpdateBootc")
+            krw bootc:update
+            ;;
+        "UpdateFirmware")
+            krw bootc:fw-update
+            ;;
+        "Update")
+            if [[ -n "$action_command" ]]; then
+                krw ${action_command}
+            else
+                echo "Update action missing command"
+                exit 1
+            fi
+            ;;
+        *)
+            echo "Unknown action: $action_label"
+            exit 1
+            ;;
+    esac
+fi
+
+exit 0

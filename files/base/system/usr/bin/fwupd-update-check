@@ -11,7 +11,7 @@ check_fwupd_updates() {
     fi
 
     if printf "%s" "${updates}" | grep -qi "available"; then
-        notify_all "Firmware" "Firmware updates available, run bootc/fw-update task."
+        notify_all "Firmware" "Firmware updates available, run bootc/fw-update task." "UpdateFirmware=Update firmware" "kierownik"
     fi
 }
 

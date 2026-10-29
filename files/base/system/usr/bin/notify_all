@@ -5,6 +5,10 @@ set -euo pipefail
 for id in $(loginctl list-sessions -j | jq -r '.[] | .session'); do
   source <(loginctl show-session -p Type -p Name ${id})
   if [[ ${Type} =~ (wayland|x11) ]]; then
-    systemd-run --machine=${Name}@.host --user notify-send "$1" "$2"
+    if output=$(systemd-run --machine=${Name}@.host --user notify-send "$1" "$2" "${3:+--action=$3}" "${4:+--app-name=$4}" 2>/dev/null); then
+      if [[ -n ${output} ]]; then
+        systemd-run --machine=${Name}@.host --user --setenv=NOTIFY_ACTION="${output}" /usr/bin/notify_actions
+      fi
+    fi
   fi
 done

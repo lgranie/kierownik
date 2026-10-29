@@ -11,7 +11,7 @@ check_bootc_updates() {
 
     if [[ -n "$staged" ]]; then
         if [[ "$staged" != "$deployed" ]]; then
-            notify_all "Bootc" "Update ready, reboot to apply."
+            notify_all "Bootc" "Update ready, reboot to apply." "Reboot=Reboot" "kierownik"
             return
         fi
     fi
@@ -21,7 +21,7 @@ check_bootc_updates() {
         if echo "$check_output" | grep -q "No changes"; then
             return
         else
-            notify_all "Bootc" "Update available"
+            notify_all "Bootc" "Update available" "UpdateBootc=Apply & reboot" "kierownik"
         fi
     fi
 }
