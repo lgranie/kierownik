@@ -1,0 +1,9 @@
+# Night Light: enable with a clock schedule so it is on at night
+# regardless of geolocation. kierownik/nightlight plugin reads noctalia's
+# gamma state (logs "[gamma] target ... force=...") and applies the night
+# palette + wallpapers while active, restoring user settings on exit.
+[nightlight]
+enabled = true
+schedule = "geolocation"
+dayTemperature = 6500
+nightTemperature = 3400
