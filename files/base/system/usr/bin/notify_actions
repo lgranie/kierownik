@@ -19,15 +19,17 @@ if [[ -n "${NOTIFY_ACTION:-}" ]]; then
         "Resume")
             systemctl --user resume
             ;;
+        # Update actions open a terminal: run0 needs a TTY to authenticate
+        # and the update tools need to show their progress.
         "UpdateBootc")
-            krw bootc:update
+            exec footclient --app-id=krw-task krw bootc:update
             ;;
         "UpdateFirmware")
-            krw bootc:fw-update
+            exec footclient --app-id=krw-task krw bootc:fw-update
             ;;
         "Update")
             if [[ -n "$action_command" ]]; then
-                krw ${action_command}
+                exec footclient --app-id=krw-task krw ${action_command}
             else
                 echo "Update action missing command"
                 exit 1

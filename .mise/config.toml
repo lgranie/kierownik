@@ -4,6 +4,7 @@ cargo-binstall = "latest"
 gum = "latest"
 rust = "latest"
 opencode = "latest"
+pi = "latest"
 
 [settings]
 # windows_default_inline_shell_args = "pwsh -c"

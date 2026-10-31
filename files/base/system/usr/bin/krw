@@ -142,6 +142,8 @@ show_task_help() {
 }
 
 wait_for_close() {
+  # No TTY (e.g. piped or spawned without a terminal): nothing to wait for.
+  [[ -t 0 && -t 1 ]] || return 0
   gum confirm "Close window?" || true
 }
 

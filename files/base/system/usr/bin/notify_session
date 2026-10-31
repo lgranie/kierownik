@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+# Send a desktop notification as the logged-in user, wait for its action and
+# dispatch it. Started by notify_all as a transient user unit so the check
+# service does not have to wait for the user to click.
+
+set -euo pipefail
+
+title="$1"
+body="$2"
+
+args=(--app-name="${4:-kierownik}")
+if [[ -n "${3:-}" ]]; then
+  args+=(--action="$3")
+fi
+
+action=$(notify-send "${args[@]}" "$title" "$body") || exit 0
+[[ -n "${action}" ]] || exit 0
+
+NOTIFY_ACTION="${action}" exec /usr/bin/notify_actions
