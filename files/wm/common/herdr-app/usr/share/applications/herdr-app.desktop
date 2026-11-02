@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Herdr App
+Comment=Terminals and coding agents that keep running
+TryExec=herdr-app
+Exec=herdr-app
+Icon=herdr
+Terminal=false
+Categories=Development;
+StartupWMClass=herdr-app

@@ -14,7 +14,7 @@ Kierownik ships with:
   * a collection of terminal tools ( lsd, zoxide, bat, tv, ... )
   * mise for dev and system tasks
 * graphical flavors : Hyprland with scrolling layout as default
-  * noctalia / noctalia-greeter
+  * noctalia / noctalia-greeter, with app theming templates (foot, gtk, qt, hyprland, herdr, herdr-app, ...)
   * flatpak / flathub / bazaar, with a strict sandbox permission baseline (editable via Flatseal)
   * foot terminal
   * some nerd fonts

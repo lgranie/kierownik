@@ -1,0 +1,13 @@
+# herdr-app theme files, rendered from the noctalia palette on every theme
+# change. Files-only on purpose: nothing is selected or hooked, "noctalia" and
+# "noctalia-light" just show up in herdr-app's own theme picker
+# (Settings > Appearance / theme menu), where the pick persists.
+[theme.templates]
+
+    [theme.templates.user.herdr-app-dark]
+    input_path = "/usr/lib/kierownik/noctalia/templates/herdr-app/noctalia-dark.json"
+    output_path = "$XDG_CONFIG_HOME/herdr-app/themes/noctalia.json"
+
+    [theme.templates.user.herdr-app-light]
+    input_path = "/usr/lib/kierownik/noctalia/templates/herdr-app/noctalia-light.json"
+    output_path = "$XDG_CONFIG_HOME/herdr-app/themes/noctalia-light.json"
