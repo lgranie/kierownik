@@ -1,0 +1,23 @@
+[Desktop Entry]
+Type=Application
+Name=Herdr
+Comment=Terminals and coding agents that keep running
+TryExec=herdr-app
+Exec=herdr-app
+Icon=herdr
+Terminal=false
+Categories=Development;
+StartupWMClass=herdr-app
+Actions=tui-start;tui-server-stop;tui-reload-config
+
+[Desktop Action tui-start]
+Name=Start TUI
+Exec=footclient --app-id=herdr herdr
+
+[Desktop Action tui-server-stop]
+Name=Stop TUI Server
+Exec=herdr server stop
+
+[Desktop Action tui-reload-config]
+Name=Reload TUI Config
+Exec=herdr server reload-config
