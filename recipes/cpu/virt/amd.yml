@@ -3,3 +3,4 @@
 # AMD virtualization host. No IOMMU karg: only needed for PCI passthrough.
 modules:
   - from-file: virt/common/qemu.yml
+...

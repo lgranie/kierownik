@@ -10,3 +10,4 @@ modules:
     files:
       - source: cpu/hibernation
         destination: /
+...

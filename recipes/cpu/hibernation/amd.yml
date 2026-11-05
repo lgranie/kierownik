@@ -6,3 +6,4 @@ modules:
       - amdgpu.gpu_recovery=1
       - amdgpu.dcdebugmask=0x10
       - amdgpu.ppfeaturemask=0xffffffff
+...

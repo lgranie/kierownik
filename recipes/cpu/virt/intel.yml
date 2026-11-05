@@ -8,3 +8,4 @@ modules:
     arch: x86_64
     kargs:
       - intel_iommu=on
+...
