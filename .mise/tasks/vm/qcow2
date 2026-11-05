@@ -1,22 +1,16 @@
 #!/usr/bin/env bash
-#MISE description="Boot ISO installer in VM via qemu"
-#USAGE arg "<target>" help="Target environment" { choices "N100" "8745" "5290" }
+#MISE description="Run image in VM via qemu"
+#USAGE arg "<target>" help="Target environment" { choices "5290" "8745" "vm" "x4cxl"}
 set -oue pipefail
 
-iso="build/krw-${usage_target}.iso"
-if [ ! -f "${iso}" ]; then
-  gum log -sl error "ISO not found: ${iso} (run 'mise run build:iso ${usage_target}' first)"
-  exit 1
-fi
-
-disk="/tmp/output/iso-test-${usage_target}.qcow2"
+disk="/tmp/output/krw-${usage_target}.qcow2"
 vars="${disk%.qcow2}-OVMF_VARS.fd"
 code="/usr/share/edk2/ovmf/OVMF_CODE.fd"
 vars_template="/usr/share/edk2/ovmf/OVMF_VARS.fd"
 
 if [ ! -f "${disk}" ]; then
-  gum log -sl info "Creating disk: ${disk} (10G)"
-  qemu-img create -f qcow2 "${disk}" 10G
+  gum log -sl error "Disk not found: ${disk} (run 'mise run build:qcow2 ${usage_target}' first)"
+  exit 1
 fi
 
 if [ ! -f "${vars}" ]; then
@@ -33,11 +27,10 @@ exec qemu-system-x86_64 \
   -drive if=pflash,format=raw,readonly=on,file="${code}" \
   -drive if=pflash,format=raw,file="${vars}" \
   -drive file="${disk}",format=qcow2,if=none,id=disk0 \
-  -device virtio-blk-pci,drive=disk0 \
-  -cdrom "${iso}" \
+  -device virtio-blk-pci,drive=disk0,bootindex=1 \
   -nic user,model=virtio-net-pci \
   -device virtio-vga-gl \
   -display gtk,gl=on \
   -device qemu-xhci \
   -device usb-tablet \
-  -boot order=d,menu=on
+  -boot menu=on
