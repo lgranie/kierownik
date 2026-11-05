@@ -13,10 +13,8 @@ modules:
         - "*.i686"
       packages:
         - libdisplay-info
-        - repo: rpmfusion-free
-          packages:
-            - mesa-va-drivers-freeworld
-            - mesa-vulkan-drivers-freeworld
+        - mesa-va-drivers-freeworld
+        - mesa-vulkan-drivers-freeworld
         - vulkan-tools
     replace:
       - from-repo: rpmfusion-free
