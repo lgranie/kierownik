@@ -7,7 +7,7 @@ set -oue pipefail
 
 source "$(dirname "$0")/_oci_ref"
 
-#bluebuild build recipes/krw-"${usage_target}".yml
+bluebuild build recipes/krw-"${usage_target}".yml
 
 # Tag branch build
 TAG="$(oci_tag)"
