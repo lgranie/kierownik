@@ -10,19 +10,24 @@ modules:
         - pam-u2f
         - pamu2fcfg
         - pcsc-lite
-        - sssd
 
   - type: systemd
     system:
       enabled:
         - pcscd.service
         - pcscd.socket
-        - sssd.service
         - systemd-homed
 
   - type: script
     snippets:
-      - "authselect select sssd with-systemd-homed with-faillock without-nullok with-pam-u2f"
+      # Keep the local profile: the sssd profile puts pam_localuser (with
+      # default=1) before the with-systemd-homed pam_systemd_home line, so
+      # homed users -- who are not in /etc/passwd -- skip pam_systemd_home
+      # during authentication. pam_unix then accepts the NSS shadow record,
+      # the home is only unlocked in the account phase, and the greeter asks
+      # for the password twice. The local profile keeps pam_systemd_home
+      # before pam_unix, so one prompt authenticates and unlocks the home.
+      - "authselect select local with-systemd-homed with-faillock without-nullok with-pam-u2f"
       - "authselect apply-changes"
       - "sed -i 's|^# minlen = 8|minlen = 6|' /etc/security/pwquality.conf"
 ...
