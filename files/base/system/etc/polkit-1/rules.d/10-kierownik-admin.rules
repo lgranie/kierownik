@@ -1,0 +1,18 @@
+// Auth identities for polkit admin actions (auth_admin).
+//
+// Kierownik users are created by /usr/bin/firstboot via homectl with
+// --member-of=wheel; systemd-homed stores group membership in the user
+// record, so /etc/group stays empty. polkit resolves group identities
+// through classic /etc/group enumeration and therefore sees no wheel
+// members, falls back to its hardcoded default admin (unix-user:root),
+// and every prompt asks for root's password -- which is locked on this
+// image, so authentication can never succeed (seen with run0 /
+// org.freedesktop.systemd1.manage-units).
+//
+// Fix: authenticate the calling user's own password when they are in
+// wheel; otherwise fall back to root as polkit would.
+polkit.addAdminRule(function(action, caller) {
+    return caller.isInGroup("wheel")
+        ? ["unix-user:" + caller.user]
+        : ["unix-user:root"];
+});
