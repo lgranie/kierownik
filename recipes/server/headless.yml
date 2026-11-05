@@ -6,3 +6,4 @@ modules:
     arch: x86_64
     kargs:
       - plymouth.enable=0
+...
