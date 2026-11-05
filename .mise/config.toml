@@ -3,6 +3,7 @@
 cargo-binstall = "latest"
 gum = "latest"
 rust = "latest"
+node = "lts"
 opencode = "latest"
 pi = "latest"
 
@@ -14,7 +15,7 @@ binstall = true
 binstall_quickinstall = true
 
 [env]
-BASE_IMAGE = 'quay.io/fedora/fedora-bootc:44'
+BASE_IMAGE = 'quay.io/fedora/fedora-bootc:45'
 BIB_IMAGE  = 'ghcr.io/osbuild/bootc-image-builder:latest'
 ROOTFS     = 'btrfs'
 BB_REGISTRY = 'ghcr.io/lgranie'

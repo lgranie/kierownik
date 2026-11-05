@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+---
+modules:
+  - type: dnf
+    repos:
+      cleanup: true
+      nonfree: rpmfusion
+    install:
+      install-weak-deps: false
+      packages:
+        - libopenjph
+        - libva-utils
+        - openh264
+        - mozilla-openh264
+        - libheif-freeworld
+
+    replace:
+      - from-repo: rpmfusion-free
+        allow-erasing: true
+        skip-unavailable: true
+        packages:
+          - old: ffmpeg-free
+            new: ffmpeg
+...
