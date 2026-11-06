@@ -13,4 +13,9 @@ modules:
     system:
       enabled:
         - tuned.service
+
+  - type: files
+    files:
+      - source: base/power-mgmt
+        destination: /
 ...
