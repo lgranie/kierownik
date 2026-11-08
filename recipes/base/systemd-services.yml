@@ -26,6 +26,7 @@ modules:
         - bootc-update-check.timer
         - firstboot
         - fwupd-update-check.timer
+        - polkit-agent-helper.socket
     user:
       enabled:
         - dotfiles-init.service

@@ -4,7 +4,7 @@ set -euo pipefail
 
 whitelist=(
   # "/usr/bin/nvidia-modprobe"
-  "/usr/lib/polkit-1/polkit-agent-helper-1"
+  # polkit 127: socket-activated agent helper, no SUID needed
   # "/usr/lib64/libhardened_malloc-light.so"
   # "/usr/lib64/libhardened_malloc-pkey.so"
   # "/usr/lib64/libhardened_malloc.so"

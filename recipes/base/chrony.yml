@@ -21,6 +21,8 @@ modules:
       - "sed -i 's/^pool 2\\.fedora\\.pool\\.ntp\\.org/#&/' /etc/chrony.conf"
       # Base chrony.conf only sources /run/chrony-dhcp; pick up our drop-ins.
       - "grep -qx 'sourcedir /etc/chrony.d' /etc/chrony.conf || echo 'sourcedir /etc/chrony.d' >> /etc/chrony.conf"
+      # Restrict chrony state dir (secureblue).
+      - "chmod 0750 /var/lib/chrony 2>/dev/null || true"
 
   - type: systemd
     system:
