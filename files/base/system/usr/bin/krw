@@ -178,7 +178,13 @@ run_task() {
     wait_for_close
     return 1
   fi
-  mise run "${name_selection}" "$@" || rc=$?
+  # Run from $HOME so mise does not scan (and warn about) task files in the
+  # caller's working directory; system tasks use absolute paths only.
+  if [[ "${USR_MODE}" == "1" ]]; then
+    mise run "${name_selection}" "$@" || rc=$?
+  else
+    mise -C "${HOME}" run "${name_selection}" "$@" || rc=$?
+  fi
   gum style -- "--- done: ${name_selection} (rc=${rc}) ---"
   wait_for_close
   return "${rc}"
