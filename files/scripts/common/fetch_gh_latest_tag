@@ -2,4 +2,21 @@
 
 set -euo pipefail
 
-curl --silent --retry 3 "https://api.github.com/repos/${1}/releases/latest" | jq -r '.tag_name // empty' 2>/dev/null || true
+repo="${1:-}"
+pattern="${2:-}"
+
+[[ -n "$repo" ]] || exit 0
+
+releases="$(curl --silent --retry 3 "https://api.github.com/repos/${repo}/releases?per_page=30" 2>/dev/null || true)"
+[[ -n "$releases" ]] || exit 0
+
+if [[ -n "$pattern" ]]; then
+  printf '%s\n' "$releases" | jq -r --arg p "$pattern" '
+    [ .[] | select(any(.assets[]?; (.name // "") | test($p))) ] | .[0].assets[]
+    | select(.name | test($p)) | .browser_download_url
+  ' 2>/dev/null | head -n 1
+else
+  printf '%s\n' "$releases" | jq -r '
+    [ .[] | select((.assets | length) > 0) ] | .[0].assets[0].browser_download_url
+  ' 2>/dev/null | head -n 1
+fi

@@ -25,31 +25,32 @@ for bin in "${!bins[@]}"; do
 done
 
 # Install lazygit
-LAZYGIT_TAG=$(/tmp/files/scripts/common/fetch_gh_latest_tag "jesseduffield/lazygit")
-if [[ -n "$LAZYGIT_TAG" ]]; then
-  curl --silent --retry 3 -L --output - "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_TAG:1}_linux_x86_64.tar.gz" |
+LAZYGIT_URL=$(/tmp/files/scripts/common/fetch_gh_latest_tag "jesseduffield/lazygit" "linux_x86_64.tar.gz")
+if [[ -n "$LAZYGIT_URL" ]]; then
+  curl --silent --retry 3 -L --output - "${LAZYGIT_URL}" |
     tar -xzf - -C /usr/bin/ lazygit
 fi
 
 # Install mise
-MISE_TAG=$(/tmp/files/scripts/common/fetch_gh_latest_tag "jdx/mise")
-if [[ -n "$MISE_TAG" ]]; then
-  curl --silent --retry 3 -L --output - "https://github.com/jdx/mise/releases/latest/download/mise-${MISE_TAG}-linux-x64.tar.gz" |
+MISE_URL=$(/tmp/files/scripts/common/fetch_gh_latest_tag "jdx/mise" "linux-x64.tar.gz")
+if [[ -n "$MISE_URL" ]]; then
+  curl --silent --retry 3 -L --output - "${MISE_URL}" |
     tar -xzf - --strip-components=2 \
       -C /usr/bin/ mise/bin/mise
 fi
 
 # Install Flyline
-FLYLINE_TAG=$(/tmp/files/scripts/common/fetch_gh_latest_tag "HalFrgrd/flyline")
-if [[ -n "$FLYLINE_TAG" ]]; then
-  curl --silent --retry 3 -L --output - "https://github.com/HalFrgrd/flyline/releases/latest/download/libflyline-${FLYLINE_TAG}-x86_64-unknown-linux-gnu.tar.gz" |
+FLYLINE_URL=$(/tmp/files/scripts/common/fetch_gh_latest_tag "HalFrgrd/flyline" "x86_64-unknown-linux-gnu.tar.gz")
+if [[ -n "$FLYLINE_URL" ]]; then
+  FLYLINE_TAG="$(basename "${FLYLINE_URL}" | sed -E 's/libflyline-(v[0-9.]+)-x86_64.*/\1/')"
+  curl --silent --retry 3 -L --output - "${FLYLINE_URL}" |
     tar -xzf - -C /usr/lib64/
   ln -sf "/usr/lib64/libflyline.so.${FLYLINE_TAG#v}" /usr/lib64/libflyline.so
 fi
 
 # Install flycomp (flyline completion synthesis)
-FLYCOMP_TAG=$(/tmp/files/scripts/common/fetch_gh_latest_tag "HalFrgrd/flycomp")
-if [[ -n "$FLYCOMP_TAG" ]]; then
-  curl --silent --retry 3 -L --output - "https://github.com/HalFrgrd/flycomp/releases/download/${FLYCOMP_TAG}/flycomp-${FLYCOMP_TAG}-x86_64-unknown-linux-gnu.tar.gz" |
+FLYCOMP_URL=$(/tmp/files/scripts/common/fetch_gh_latest_tag "HalFrgrd/flycomp" "x86_64-unknown-linux-gnu.tar.gz")
+if [[ -n "$FLYCOMP_URL" ]]; then
+  curl --silent --retry 3 -L --output - "${FLYCOMP_URL}" |
     tar -xzf - -C /usr/bin/ flycomp
 fi
