@@ -4,6 +4,7 @@ set -euo pipefail
 
 repo="${1:-}"
 pattern="${2:-}"
+no_pre="${3:-}"
 
 [[ -n "$repo" ]] || exit 0
 
@@ -11,12 +12,17 @@ releases="$(curl --silent --retry 3 "https://api.github.com/repos/${repo}/releas
 [[ -n "$releases" ]] || exit 0
 
 if [[ -n "$pattern" ]]; then
-  printf '%s\n' "$releases" | jq -r --arg p "$pattern" '
-    [ .[] | select(any(.assets[]?; (.name // "") | test($p))) ] | .[0].assets[]
-    | select(.name | test($p)) | .browser_download_url
-  ' 2>/dev/null | head -n 1
+  filter='[ .[]'
+  if [[ "$no_pre" == "--no-pre" ]]; then
+    filter+=' | select(.prerelease | not)'
+  fi
+  filter+=' | select(any(.assets[]?; (.name // "") | test($p))) ] | .[0].assets[] | select(.name | test($p)) | .browser_download_url'
+  printf '%s\n' "$releases" | jq -r --arg p "$pattern" "$filter" 2>/dev/null | head -n 1
 else
-  printf '%s\n' "$releases" | jq -r '
-    [ .[] | select((.assets | length) > 0) ] | .[0].assets[0].browser_download_url
-  ' 2>/dev/null | head -n 1
+  filter='[ .[]'
+  if [[ "$no_pre" == "--no-pre" ]]; then
+    filter+=' | select(.prerelease | not)'
+  fi
+  filter+=' | select((.assets | length) > 0) ] | .[0].assets[0].browser_download_url'
+  printf '%s\n' "$releases" | jq -r "$filter" 2>/dev/null | head -n 1
 fi
