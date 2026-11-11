@@ -22,8 +22,8 @@ Notes:
 - The keyboard base's keyboard arrives as the i8042 AT keyboard, so
   `/dev/input/by-path/*-kbd` disappearing is the detach signal. Verify by
   detaching the base and watching `udevadm monitor --subsystem-match=input`.
-- iio-sensor-proxy is **not** in the image yet; the `accel_3d` device was read
-  straight from sysfs during the probe. If the daemon reports no orientation
+- iio-sensor-proxy was **not** in the image when this was probed; the `accel_3d`
+  device was read straight from sysfs. If the daemon reports no orientation
   after installing it, check for the iio-sensor-proxy 3.7 regression (accel
   buffer claimed by udev; fixed in 3.8) and `monitor-sensor --accel`.
 
@@ -38,15 +38,17 @@ Notes:
     whether an internal keyboard is attached.
   - `rotate normal|right|inverted|left|next|prev|auto`, `lock on|off|toggle`,
     `status`, `probe`.
-  - Mapping (`right-up` → transform 3 is the standard one, confirmed by hand
-    on the device): `normal 0`, `right 3`, `inverted 2`, `left 1`.
+  - Mapping (`right-up` → transform 3 is the standard one for iio + Hyprland,
+    still to be confirmed by tilting the real machine): `normal 0`, `right 3`,
+    `inverted 2`, `left 1`.
   - Applied with `hyprctl eval` of `hl.monitor` + `hl.config input.touchdevice
     / input.tablet` + `hl.device` per touch/pen device. Binding a digitizer to
     an output does not rotate its axes, so the device transform is required.
   - Persistence: the same Lua is written to
     `$HOME/.local/state/kierownik/tablet/rotation.lua` (removed when upright)
-    and loaded at the end of `5290.lua`, so `hyprctl reload` keeps the panel
-    turned. `$HOME` rather than `$XDG_STATE_HOME` so the Lua side can find it.
+    and loaded by `additionals/tablet.lua`, after `5290.lua`, so `hyprctl
+    reload` keeps the panel turned. `$HOME` rather than `$XDG_STATE_HOME` so
+    the Lua side can find it.
   - A manual rotation takes the lock; `rotate auto` releases it. The lock file
     holds `$HYPRLAND_INSTANCE_SIGNATURE`, so it never survives a logout.
 - `krw wm tablet` — task wrapper with `gum choose`.
@@ -59,9 +61,9 @@ chain below.
 
 - Mode is on when any of these says so, in order: `krw-tablet mode on` (manual,
   tagged with the session signature), `SW_TABLET_MODE` from the Hyprland binds
-  in `5290.lua`, or no `/dev/input/by-path/*-kbd`. An "on" claim always wins,
-  so an undetected keyboard node or a lying switch cannot leave a keyless
-  tablet in laptop mode; `mode off` is the only way to hold it there.
+  in `additionals/tablet.lua`, or no `/dev/input/by-path/*-kbd`. An "on" claim
+  always wins, so an undetected keyboard node or a lying switch cannot leave a
+  keyless tablet in laptop mode; `mode off` is the only way to hold it there.
 - Enter: start `wvkbd.service`, rotate to the sensor (unless locked).
 - Exit: stop `wvkbd.service`, clear the rotation lock, straighten the panel.
 - `wvkbd.service` is no longer enabled at session start and `start-wvkbd`

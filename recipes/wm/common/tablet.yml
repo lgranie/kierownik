@@ -4,6 +4,8 @@
 # accelerometer, krw-tablet turns eDP-1 (and the digitizers) to match.
 # Included by wm/5290.yml only; no other machine here has a sensor.
 modules:
+  - from-file: wm/common/tablet.yml
+
   - type: dnf
     install:
       install-weak-deps: false
