@@ -1,0 +1,454 @@
+#!/usr/bin/env bash
+# krw-tablet — accelerometer-driven screen rotation for the Dell Latitude 5290
+# 2-in-1 (and any machine whose accelerometer iio-sensor-proxy can read).
+#
+# Rotation is applied to the live session with `hyprctl eval`, never with
+# `hyprctl keyword`: the Hyprland configuration is Lua. The same Lua is kept in
+# $HOME/.local/state/kierownik/tablet/rotation.lua, which 5290.lua loads after
+# its own monitor rule, so `hyprctl reload` does not straighten the panel.
+# Binding a digitizer to the output maps its coordinates but does not rotate
+# its axes, so every touch/pen device gets a matching transform.
+#
+# The lock file stores $HYPRLAND_INSTANCE_SIGNATURE: a lock never survives a
+# logout, and a stale file cannot freeze the panel after the next login.
+#
+# Subcommands:
+#   daemon                          follow the accelerometer (systemd unit)
+#   rotate normal|right|inverted|left|next|prev|auto
+#   lock on|off|toggle
+#   status
+#   probe
+
+set -oue pipefail
+
+# Hardcoded under $HOME (not $XDG_STATE_HOME) so this script and 5290.lua,
+# which only has os.getenv("HOME"), agree on one path.
+STATE_DIR="${HOME}/.local/state/kierownik/tablet"
+ROTATION_STATE="${STATE_DIR}/rotation"
+LOCK_STATE="${STATE_DIR}/lock"
+ROTATION_LUA="${STATE_DIR}/rotation.lua"
+DAEMON_LOCK="${STATE_DIR}/daemon.lock"
+
+OUTPUT="${KRW_TABLET_OUTPUT:-eDP-1}"
+INTERVAL="${KRW_TABLET_INTERVAL:-1}"
+FORCE="${KRW_TABLET_FORCE:-0}"
+
+log() { printf 'krw-tablet: %s\n' "$*" >&2; }
+die() {
+  log "$*"
+  exit 1
+}
+
+usage() {
+  cat <<'EOF'
+krw-tablet — rotate the internal panel from the accelerometer
+
+Usage:
+  krw-tablet daemon               follow the accelerometer (systemd unit)
+  krw-tablet rotate <mode>        normal|right|inverted|left|next|prev|auto
+  krw-tablet lock on|off|toggle   freeze the current rotation
+  krw-tablet status               rotation, sensor and keyboard gate
+  krw-tablet probe                what the session and the sensors expose
+
+A fixed `rotate` and `next`/`prev` take the lock; `rotate auto` returns to the
+accelerometer. Auto-rotation only runs while no internal keyboard is attached.
+
+Environment:
+  KRW_TABLET_OUTPUT    internal panel name (default eDP-1)
+  KRW_TABLET_INTERVAL  poll interval in seconds (default 1)
+  KRW_TABLET_FORCE     set to 1 to ignore the attached-keyboard gate
+EOF
+}
+
+# --- state -----------------------------------------------------------------
+
+write_file() {
+  local path="$1" body="$2" tmp
+  mkdir -p "$(dirname "$path")"
+  tmp="$(mktemp "${path}.XXXXXX")" || return 1
+  printf '%s\n' "$body" >"$tmp"
+  mv -f "$tmp" "$path"
+}
+
+state_rotation() {
+  local value=""
+  [[ -r "$ROTATION_STATE" ]] && value="$(<"$ROTATION_STATE")"
+  case "$value" in
+    normal | right | inverted | left) printf '%s' "$value" ;;
+    *) printf 'normal' ;;
+  esac
+}
+
+is_locked() {
+  [[ -r "$LOCK_STATE" ]] || return 1
+  local signature
+  signature="$(<"$LOCK_STATE")"
+  [[ -n "$signature" && "$signature" == "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]
+}
+
+lock_now() {
+  [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] ||
+    die "not inside a Hyprland session (HYPRLAND_INSTANCE_SIGNATURE unset)"
+  write_file "$LOCK_STATE" "${HYPRLAND_INSTANCE_SIGNATURE}"
+}
+
+# --- sensor ----------------------------------------------------------------
+
+sensor_property() {
+  busctl --system get-property net.hadess.SensorProxy /net/hadess/SensorProxy \
+    net.hadess.SensorProxy "$1" 2>/dev/null
+}
+
+sensor_raw_orientation() {
+  local raw
+  raw="$(sensor_property AccelerometerOrientation)" || return 1
+  raw="${raw#s }"
+  raw="${raw%\"}"
+  raw="${raw#\"}"
+  printf '%s' "$raw"
+}
+
+# iio-sensor-proxy names the orientation by the edge of the machine pointing
+# up; the transform is the counter-clockwise turn Hyprland applies to the
+# panel, so the two run in opposite directions.
+sensor_orientation() {
+  local raw
+  raw="$(sensor_raw_orientation)" || return 1
+  case "$raw" in
+    normal) printf 'normal' ;;
+    right-up) printf 'right' ;;
+    bottom-up) printf 'inverted' ;;
+    left-up) printf 'left' ;;
+    *) return 1 ;;
+  esac
+}
+
+orientation_transform() {
+  case "$1" in
+    normal) printf '0' ;;
+    right) printf '3' ;;
+    inverted) printf '2' ;;
+    left) printf '1' ;;
+    *) return 1 ;;
+  esac
+}
+
+# --- compositor ------------------------------------------------------------
+
+monitor_field() {
+  command -v hyprctl >/dev/null 2>&1 || return 0
+  hyprctl -j monitors all 2>/dev/null | jq -r --arg output "$OUTPUT" --arg field "$1" \
+    'first(.[] | select(.name == $output)) | .[$field] // empty' 2>/dev/null || true
+}
+
+monitor_mode() {
+  local width height rate
+  width="$(monitor_field width)"
+  height="$(monitor_field height)"
+  rate="$(monitor_field refreshRate)"
+  if [[ "$width" =~ ^[0-9]+$ && "$height" =~ ^[0-9]+$ && "$width" != "0" && "$rate" =~ ^[0-9.]+$ ]]; then
+    printf '%sx%s@%s' "$width" "$height" "$rate"
+  else
+    printf 'preferred'
+  fi
+}
+
+monitor_scale() {
+  local scale
+  scale="$(monitor_field scale)"
+  if [[ "$scale" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+    printf '%s' "$scale"
+  else
+    printf '1.33'
+  fi
+}
+
+# Touchscreens are listed under "touch", pens under "tablets". Pad and tool
+# entries have no name: the pad names its parent, the tool is anonymous.
+tablet_devices() {
+  command -v hyprctl >/dev/null 2>&1 || return 0
+  local name
+  hyprctl -j devices 2>/dev/null |
+    jq -r '[ (.touch // [])[].name,
+             ((.tablets // [])[] | select(.name != null) | .name) ]
+           | map(select(. != null and . != ""))
+           | unique[]' 2>/dev/null |
+    while IFS= read -r name; do
+      [[ -n "$name" ]] || continue
+      LC_ALL=C grep -q '[[:cntrl:]]' <<<"$name" && continue
+      printf '%s\n' "$name"
+    done
+}
+
+lua_string() {
+  local value="$1"
+  value="${value//\\/\\\\}"
+  value="${value//\"/\\\"}"
+  printf '"%s"' "$value"
+}
+
+# Mode and scale are taken from the running monitor: a per-output rule
+# replaces the wildcard one, and "preferred" would drop a custom refresh rate.
+rotation_statements() {
+  local transform="$1" mode scale name
+  mode="$(monitor_mode)"
+  scale="$(monitor_scale)"
+
+  printf 'hl.monitor({ output = %s, mode = %s, position = "auto", scale = "%s", transform = %d })\n' \
+    "$(lua_string "$OUTPUT")" "$(lua_string "$mode")" "$scale" "$transform"
+  printf 'hl.config({ input = { touchdevice = { output = %s, transform = %d }, tablet = { output = %s, transform = %d } } })\n' \
+    "$(lua_string "$OUTPUT")" "$transform" "$(lua_string "$OUTPUT")" "$transform"
+  while IFS= read -r name; do
+    [[ -n "$name" ]] || continue
+    printf 'hl.device({ name = %s, output = %s, transform = %d })\n' \
+      "$(lua_string "$name")" "$(lua_string "$OUTPUT")" "$transform"
+  done < <(tablet_devices)
+}
+
+hypr_eval() {
+  local code="$1" out
+  command -v hyprctl >/dev/null 2>&1 || {
+    log "hyprctl not found"
+    return 1
+  }
+  if ! out="$(hyprctl eval "$code" 2>&1)"; then
+    log "hyprctl eval failed: $out"
+    return 1
+  fi
+  if [[ "$out" != "ok" ]]; then
+    log "hyprctl eval failed: $out"
+    return 1
+  fi
+}
+
+# The file is written before the live change: if the eval is refused, the next
+# config reload still turns the panel instead of leaving state and screen
+# disagreeing.
+apply_rotation() {
+  local orientation="$1" transform lua code
+  transform="$(orientation_transform "$orientation")" || {
+    log "unknown orientation: $orientation"
+    return 1
+  }
+
+  lua="$(rotation_statements "$transform")"
+  code="${lua//$'\n'/ }"
+
+  if [[ "$transform" == "0" ]]; then
+    rm -f "$ROTATION_LUA"
+  else
+    write_file "$ROTATION_LUA" "$lua"
+  fi
+  write_file "$ROTATION_STATE" "$orientation"
+
+  hypr_eval "$code"
+}
+
+# --- keyboard gate ---------------------------------------------------------
+
+keyboard_attached() {
+  local node
+  for node in /dev/input/by-path/*-kbd; do
+    [[ -e "$node" ]] && return 0
+  done
+  return 1
+}
+
+auto_allowed() {
+  [[ "$FORCE" == "1" ]] && return 0
+  ! keyboard_attached
+}
+
+# --- commands --------------------------------------------------------------
+
+cmd_daemon() {
+  mkdir -p "$STATE_DIR"
+  exec 9>"$DAEMON_LOCK"
+  if ! flock -n 9; then
+    log "already running"
+    return 0
+  fi
+
+  local warned=0 pending="" pending_count=0 want wanted current
+  while :; do
+    if is_locked || ! auto_allowed; then
+      pending=""
+      pending_count=0
+      sleep "$INTERVAL"
+      continue
+    fi
+
+    if ! want="$(sensor_orientation)"; then
+      if [[ "$warned" == "0" ]]; then
+        log "no accelerometer orientation; auto-rotation idle (krw-tablet probe)"
+        warned=1
+      fi
+      sleep "$INTERVAL"
+      continue
+    fi
+    warned=0
+
+    wanted="$(orientation_transform "$want")"
+    current="$(monitor_field transform)"
+
+    # No panel (lid closed, session still coming up): never turn one on.
+    if [[ -z "$current" || "$current" == "$wanted" ]]; then
+      pending=""
+      pending_count=0
+      sleep "$INTERVAL"
+      continue
+    fi
+
+    # Two identical readings in a row: a machine resting on an edge flickers
+    # between two orientations, and one flap is not worth a rotation.
+    if [[ "$pending" == "$want" ]]; then
+      pending_count=$((pending_count + 1))
+    else
+      pending="$want"
+      pending_count=1
+    fi
+
+    if [[ "$pending_count" -ge 2 ]]; then
+      log "rotating to $want (transform $wanted)"
+      if apply_rotation "$want"; then
+        pending=""
+        pending_count=0
+      fi
+    fi
+
+    sleep "$INTERVAL"
+  done
+}
+
+cycle_orientation() {
+  local direction="$1" current index=0 i
+  local order=(normal right inverted left)
+  current="$(state_rotation)"
+  for i in "${!order[@]}"; do
+    [[ "${order[$i]}" == "$current" ]] && index="$i"
+  done
+  if [[ "$direction" == "next" ]]; then
+    index=$(((index + 1) % 4))
+  else
+    index=$(((index + 3) % 4))
+  fi
+  printf '%s' "${order[$index]}"
+}
+
+cmd_rotate() {
+  local action="${1:-}" orientation
+  case "$action" in
+    auto)
+      orientation="$(sensor_orientation)" ||
+        die "no accelerometer orientation; use a fixed rotation"
+      rm -f "$LOCK_STATE"
+      apply_rotation "$orientation" || exit 1
+      ;;
+    next | prev)
+      lock_now
+      orientation="$(cycle_orientation "$action")"
+      apply_rotation "$orientation" || exit 1
+      ;;
+    normal | right | inverted | left)
+      lock_now
+      apply_rotation "$action" || exit 1
+      ;;
+    *)
+      die "usage: krw-tablet rotate normal|right|inverted|left|next|prev|auto"
+      ;;
+  esac
+}
+
+cmd_lock() {
+  local action="${1:-}"
+  case "$action" in
+    on) lock_now ;;
+    off) rm -f "$LOCK_STATE" ;;
+    toggle)
+      if is_locked; then
+        rm -f "$LOCK_STATE"
+      else
+        lock_now
+      fi
+      ;;
+    *) die "usage: krw-tablet lock on|off|toggle" ;;
+  esac
+}
+
+cmd_status() {
+  local rotation applied raw
+
+  rotation="$(state_rotation)"
+  applied="$(monitor_field transform)"
+
+  printf 'rotation: %s (transform %s)\n' "$rotation" "$(orientation_transform "$rotation")"
+  printf 'applied:  %s on %s\n' "${applied:-<panel not present>}" "$OUTPUT"
+  if is_locked; then
+    printf 'locked:   yes\n'
+  else
+    printf 'locked:   no\n'
+  fi
+
+  if raw="$(sensor_raw_orientation)"; then
+    printf 'sensor:   %s%s\n' "$raw" "$(sensor_orientation >/dev/null 2>&1 && printf '' || printf ' (unmapped)')"
+  else
+    printf 'sensor:   unavailable\n'
+  fi
+
+  if keyboard_attached; then
+    if [[ "$FORCE" == "1" ]]; then
+      printf 'keyboard: attached, KRW_TABLET_FORCE=1 (auto-rotation active)\n'
+    else
+      printf 'keyboard: attached (auto-rotation paused)\n'
+    fi
+  else
+    printf 'keyboard: absent (auto-rotation active)\n'
+  fi
+
+  printf 'output:   %s %s scale %s\n' "$OUTPUT" "$(monitor_mode)" "$(monitor_scale)"
+}
+
+cmd_probe() {
+  local name node
+
+  printf '== sensors ==\n'
+  printf 'iio-sensor-proxy: %s\n' "$(systemctl is-active iio-sensor-proxy.service 2>/dev/null || true)"
+  printf 'HasAccelerometer: %s\n' "$(sensor_property HasAccelerometer 2>/dev/null || printf '<no answer>')"
+  printf 'AccelerometerOrientation: %s\n' "$(sensor_raw_orientation || printf '<unavailable>')"
+  printf 'iio devices: %s\n' "$(ls /sys/bus/iio/devices 2>/dev/null | tr '\n' ' ')"
+
+  printf '\n== session ==\n'
+  printf 'HYPRLAND_INSTANCE_SIGNATURE: %s\n' "${HYPRLAND_INSTANCE_SIGNATURE:-<unset>}"
+  printf 'hyprctl: %s\n' "$(command -v hyprctl || printf '<not found>')"
+
+  printf '\n== panel ==\n'
+  printf '%s: %s scale %s transform %s\n' "$OUTPUT" "$(monitor_mode)" \
+    "$(monitor_scale)" "$(monitor_field transform)"
+
+  printf '\n== digitizers ==\n'
+  while IFS= read -r name; do
+    [[ -n "$name" ]] && printf '%s\n' "$name"
+  done < <(tablet_devices)
+
+  printf '\n== keyboards ==\n'
+  for node in /dev/input/by-path/*-kbd; do
+    [[ -e "$node" ]] && printf '%s\n' "$node"
+  done
+  keyboard_attached || printf '<none>\n'
+}
+
+case "${1:-}" in
+  daemon) cmd_daemon ;;
+  rotate)
+    shift
+    cmd_rotate "$@"
+    ;;
+  lock)
+    shift
+    cmd_lock "$@"
+    ;;
+  status) cmd_status ;;
+  probe) cmd_probe ;;
+  "" | -h | --help | help) usage ;;
+  *) die "unknown command: $1 (see krw-tablet --help)" ;;
+esac

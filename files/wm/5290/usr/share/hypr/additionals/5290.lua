@@ -10,6 +10,11 @@ hl.config({
 			output = "eDP-1",
 			transform = 0,
 		},
+
+		tablet = {
+			output = "eDP-1",
+			transform = 0,
+		},
 	},
 
 	scrolling = {
@@ -41,3 +46,14 @@ hl.monitor({
 	scale = "1.33",
 	transform = 2,
 })
+
+------------------
+---- ROTATION ----
+------------------
+-- Written by krw-tablet while the panel is turned (accelerometer, or a manual
+-- `krw-tablet rotate`). Loaded last so it overrides the monitor rule above and
+-- survives `hyprctl reload`; absent while the panel is upright.
+local tablet_rotation = os.getenv("HOME") and (os.getenv("HOME") .. "/.local/state/kierownik/tablet/rotation.lua")
+if tablet_rotation then
+	pcall(dofile, tablet_rotation)
+end

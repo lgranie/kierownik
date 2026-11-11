@@ -1,0 +1,20 @@
+[Unit]
+Description=Tablet rotation daemon (accelerometer to Hyprland)
+Documentation=https://github.com/lgranie/kierownik
+ConditionUser=!@system
+# order startup after WM
+After=graphical-session.target wayland-session@hyprland.desktop.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+# Repurpose XDG Autostart filtering
+ExecCondition=/lib/systemd/systemd-xdg-autostart-condition "Hyprland" ""
+ExecStart=/usr/bin/krw-tablet daemon
+Restart=on-failure
+RestartSec=5
+Slice=app-graphical.slice
+
+[Install]
+WantedBy=graphical-session.target
+WantedBy=wayland-session@hyprland.desktop.target
