@@ -3,7 +3,7 @@ Description=Tablet rotation daemon (accelerometer to Hyprland)
 Documentation=https://github.com/lgranie/kierownik
 ConditionUser=!@system
 # order startup after WM
-After=graphical-session.target wayland-session@hyprland.desktop.target
+After=graphical-session.target wayland-session@hyprland.desktop.target noctalia.service
 PartOf=graphical-session.target
 
 [Service]

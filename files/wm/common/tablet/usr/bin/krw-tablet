@@ -5,10 +5,10 @@
 #
 # Rotation is applied to the live session with `hyprctl eval`, never with
 # `hyprctl keyword`: the Hyprland configuration is Lua. The same Lua is kept in
-# $HOME/.local/state/kierownik/tablet/rotation.lua, which 5290.lua loads after
-# its own monitor rule, so `hyprctl reload` does not straighten the panel.
-# Binding a digitizer to the output maps its coordinates but does not rotate
-# its axes, so every touch/pen device gets a matching transform.
+# $HOME/.local/state/kierownik/tablet/rotation.lua, which additionals/tablet.lua
+# loads after the monitor rule, so `hyprctl reload` does not straighten the
+# panel. Binding a digitizer to the output maps its coordinates but does not
+# rotate its axes, so every touch/pen device gets a matching transform.
 #
 # Tablet mode is on when any of these says so, in this order: `mode on|off`
 # (manual, wins), `SW_TABLET_MODE` from the Hyprland switch binds, or the
@@ -25,6 +25,12 @@
 #   lock on|off|toggle
 #   status
 #   probe
+#
+# Entering tablet mode also asks Noctalia to keep its bar on screen: that bar
+# reveals itself for a pointer at the screen edge, and a tablet has no pointer,
+# so an auto-hidden bar would be unreachable by touch. Only Noctalia's runtime
+# overrides are used, never its configuration, so nothing survives a rebuild of
+# the session.
 
 set -oue pipefail
 
@@ -39,6 +45,7 @@ MODE_LOCK="${STATE_DIR}/mode.lock"
 MODE_STATE="${STATE_DIR}/mode"
 MANUAL_STATE="${STATE_DIR}/manual"
 SWITCH_STATE="${STATE_DIR}/switch"
+NOCTALIA_STATE="${STATE_DIR}/noctalia"
 
 OUTPUT="${KRW_TABLET_OUTPUT:-eDP-1}"
 INTERVAL="${KRW_TABLET_INTERVAL:-1}"
@@ -64,7 +71,10 @@ Usage:
   krw-tablet probe                what the session and the sensors expose
 
 Tablet mode is on when `mode on` was given, or the tablet switch reports it,
-or the keyboard base is gone. Leaving turns the panel upright and stops wvkbd.
+or the keyboard base is gone. Entering also keeps the Noctalia bar on screen:
+it only reveals itself for a pointer at the screen edge. Leaving turns the
+panel upright, stops wvkbd and restores the bar. `mode on|off` re-applies even
+when the mode already matches, which repairs what a restarted shell undid.
 A fixed `rotate` and `next`/`prev` take the rotation lock; `rotate auto`
 returns to the accelerometer, which is only followed in tablet mode.
 
@@ -342,10 +352,104 @@ mode_reason() {
   printf 'keyboard'
 }
 
+# --- shell (Noctalia) ------------------------------------------------------
+
+# Noctalia may be absent from the image, not running, or restarted since the
+# last transition, so every call here is best effort and every override it
+# gets is runtime only: nothing is written to its configuration, and a shell
+# restart drops the overrides without leaving a trace. That is also why
+# `mode on` re-applies instead of doing nothing when mode is already on.
+
+noctalia_running() {
+  command -v noctalia >/dev/null 2>&1 || return 1
+  timeout 2 noctalia msg status >/dev/null 2>&1
+}
+
+noctalia_send() {
+  # A shell that vanished between the check and the call is not worth failing
+  # a mode transition over.
+  noctalia msg "$@" >/dev/null 2>&1 || true
+}
+
+# $1: config section (bar, dock). The merged dump of that section.
+noctalia_config() {
+  noctalia msg config-get "$1" 2>/dev/null
+}
+
+# "on", "off" or "smart" as configured for the section.
+noctalia_auto_hide() {
+  local dump
+  dump="$(noctalia_config "$1")" || return 1
+  [[ -n "$dump" ]] || return 1
+  if grep -qE '^[[:space:]]*smart_auto_hide = true$' <<<"$dump"; then
+    printf 'smart'
+  elif grep -qE '^[[:space:]]*auto_hide = true$' <<<"$dump"; then
+    printf 'on'
+  else
+    printf 'off'
+  fi
+}
+
+noctalia_dock_enabled() {
+  noctalia_config dock | grep -qE '^[[:space:]]*enabled = true$'
+}
+
+noctalia_bar_visible() {
+  noctalia msg status 2>/dev/null | tr -d ' \n' |
+    sed -n 's/.*"barVisible":\(true\|false\).*/\1/p'
+}
+
+# "visible, auto-hide on" — the same line for status and probe.
+noctalia_bar_state() {
+  printf '%s, auto-hide %s' \
+    "$([[ "$(noctalia_bar_visible)" == "false" ]] && printf hidden || printf visible)" \
+    "$(noctalia_auto_hide bar || printf '?')"
+}
+
+noctalia_enter() {
+  noctalia_running || return 0
+
+  local auto_hide visible
+  auto_hide="$(noctalia_auto_hide bar || true)"
+  visible="$(noctalia_bar_visible || true)"
+  [[ -n "$auto_hide" && -n "$visible" ]] || return 0
+
+  # "<auto-hide we override> <visible before we did>", so the exit restores
+  # exactly what this changed and nothing else.
+  if [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]; then
+    [[ "$visible" == "false" ]] && visible=hidden || visible=shown
+    write_session_value "$NOCTALIA_STATE" "$auto_hide $visible"
+  fi
+
+  # bar-show brings an auto-hidden (or given-up) bar back; turning auto-hide
+  # off is what keeps it there while the screen is touched instead of pointed.
+  [[ "$auto_hide" == "off" ]] || noctalia_send bar-auto-hide-set off
+  noctalia_send bar-show
+}
+
+noctalia_exit() {
+  local previous auto_hide visible
+  previous="$(session_value "$NOCTALIA_STATE" || true)"
+  [[ -n "$previous" ]] || return 0
+  rm -f "$NOCTALIA_STATE"
+
+  auto_hide="${previous%% *}"
+  visible="${previous#* }"
+  noctalia_running || return 0
+
+  [[ "$auto_hide" == "off" ]] || noctalia_send bar-auto-hide-set "$auto_hide"
+  case "$visible" in
+    hidden) noctalia_send bar-hide ;;
+    *) noctalia_send bar-show ;;
+  esac
+}
+
 enter_mode() {
   write_session_value "$MODE_STATE" on
   systemctl --user start wvkbd.service >/dev/null 2>&1 ||
     log "could not start wvkbd.service"
+
+  noctalia_enter
 
   if is_locked; then
     log "rotation locked, leaving the panel at $(state_rotation)"
@@ -365,6 +469,8 @@ exit_mode() {
   systemctl --user stop wvkbd.service >/dev/null 2>&1 ||
     log "could not stop wvkbd.service"
 
+  noctalia_exit
+
   # The lock belongs to tablet mode: the base is back, so the panel stands up.
   rm -f "$LOCK_STATE"
   if [[ -f "$ROTATION_LUA" || "$(monitor_field transform)" != "0" ]]; then
@@ -372,7 +478,9 @@ exit_mode() {
   fi
 }
 
-# Locked so the daemon and a CLI call cannot transition twice at once.
+# Locked so the daemon and a CLI call cannot transition twice at once. `force`
+# re-runs the transition even when mode already matches, which is how a manual
+# `mode on|off` repairs what a restart of Noctalia, wvkbd or Hyprland undid.
 apply_mode() {
   (
     mkdir -p "$STATE_DIR"
@@ -382,7 +490,7 @@ apply_mode() {
     local desired current
     desired="$(desired_mode)"
     current="$(state_mode)"
-    if [[ "$desired" == "$current" ]]; then
+    if [[ "$desired" == "$current" && "${1:-}" != "force" ]]; then
       exit 0
     fi
 
@@ -407,10 +515,21 @@ cmd_daemon() {
   fi
 
   local warned=0 pending="" pending_count=0 want wanted current
+  local noctalia_tries=0
   while :; do
     # The switch bind, the keyboard base coming and going and `krw-tablet
     # mode` all just move the files this reads.
     apply_mode
+
+    # Noctalia can come up after this daemon (a tablet booted with the base
+    # already off), so offer it the bar settings a few more times. The marker
+    # file stops this as soon as it has taken them, and the bound keeps a
+    # machine where the call never succeeds from running it forever.
+    if [[ "$noctalia_tries" -lt 30 && "$(state_mode)" == "on" ]] &&
+      ! session_value "$NOCTALIA_STATE" >/dev/null 2>&1; then
+      noctalia_tries=$((noctalia_tries + 1))
+      noctalia_enter
+    fi
 
     # Rotation only matters in tablet mode, and the lock freezes it.
     if [[ "$(state_mode)" != "on" ]] || is_locked; then
@@ -533,7 +652,7 @@ cmd_mode() {
     *) die "usage: krw-tablet mode on|off|auto|toggle" ;;
   esac
 
-  apply_mode
+  apply_mode force
 
   final="$(state_mode)"
   [[ -n "$final" ]] || final="$(desired_mode)"
@@ -584,6 +703,10 @@ cmd_status() {
     printf 'keyboard: absent\n'
   fi
 
+  if noctalia_running; then
+    printf 'shell:    Noctalia, bar %s\n' "$(noctalia_bar_state)"
+  fi
+
   printf 'output:   %s %s scale %s\n' "$OUTPUT" "$(monitor_mode)" "$(monitor_scale)"
 }
 
@@ -618,6 +741,20 @@ cmd_probe() {
     [[ -e "$node" ]] && printf '%s\n' "$node"
   done
   keyboard_attached || printf '<none>\n'
+
+  printf '\n== shell (Noctalia) ==\n'
+  printf 'noctalia: %s\n' "$(command -v noctalia || printf '<not found>')"
+  if noctalia_running; then
+    printf 'bar: %s (from the config; tablet mode overrides auto-hide while on)\n' \
+      "$(noctalia_bar_state)"
+    if noctalia_dock_enabled; then
+      printf 'dock: enabled, auto-hide %s\n' "$(noctalia_auto_hide dock || printf '?')"
+    else
+      printf 'dock: disabled\n'
+    fi
+  else
+    printf 'bar: <no running instance>\n'
+  fi
 }
 
 case "${1:-}" in

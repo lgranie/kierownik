@@ -1,7 +1,7 @@
 # Tablet mode (Dell Latitude 5290 2-in-1)
 
-Design notes for the 2-in-1 support. Implemented: **P1 (rotation)** and
-**P2 (tablet mode)**. `next/*.md` is ignored by CI.
+Design notes for the 2-in-1 support. Implemented: **P1 (rotation)**,
+**P2 (tablet mode)** and **P3 (Noctalia)**. `next/*.md` is ignored by CI.
 
 ## Hardware, probed on the 5290 (Hyprland 0.57.1)
 
@@ -71,6 +71,44 @@ chain below.
   can start and stop on detach/attach instead of only at login.
 - `krw wm tablet` gained `mode-on`, `mode-off`, `mode-auto`.
 
+## P3 — Noctalia (implemented)
+
+The problem is small but real: a Noctalia bar with `auto_hide` slides back in
+when the **pointer** reaches the screen edge, and a tablet has no pointer. An
+auto-hidden bar is therefore unreachable while the base is detached, and so is
+a bar hidden with `bar-hide` (which blocks edge reveal too).
+
+- Enter: if any bar auto-hides (`auto_hide` or `smart_auto_hide` in the merged
+  config), `bar-auto-hide-set off`; then `bar-show` for the bar itself. Both are
+  runtime only — Noctalia documents them as resetting on config reload or shell
+  restart — so the image config is never written to and the user's
+  `~/.config/noctalia` is left alone.
+- Exit: re-send the configured auto-hide mode, and `bar-hide` only if the bar
+  was hidden when the mode was entered. The pair is recorded in
+  `$STATE_DIR/noctalia` with the session signature: an exit with no record (a
+  plain `mode off` at login, or Noctalia was down) touches nothing at all.
+- The daemon retries the enter side up to 30 times, one per loop, while mode is
+  on and no record exists — a tablet booted with the base already off starts
+  before Noctalia can answer. After it succeeds the file says so and the retry
+  stops, so nothing is polled forever.
+- `mode on|off` now **force** the transition even when the mode already matches.
+  That is the repair command for what a Noctalia (or wvkbd, or Hyprland)
+  restart undid: the shell restart clears its runtime overrides and there is no
+  pointer to fix the bar by hand.
+- `status` gained one `shell:` line and `probe` a `== shell (Noctalia) ==`
+  section (bar visibility, configured auto-hide, dock state).
+
+Not done, on purpose:
+
+- The dock. It is `enabled = false` in the image, and `dock-show`/`dock-hide`
+  save an override rather than being a pure runtime flag, so showing it would
+  be a real change of the user's session. With the dock enabled *and*
+  auto-hiding it has the same touch problem as the bar; the fix belongs in the
+  config (`[dock.monitor."eDP-1"] auto_hide = false`), not in a mode switch.
+- Any `config-set`/`config-reload`: both would persist or reset unrelated user
+  choices. The bar scale is also left alone — bigger touch targets are a
+  config decision, not something a detach should silently change.
+
 ## Still to verify on the tablet
 
 1. `krw-tablet probe` with iio-sensor-proxy installed → `HasAccelerometer`,
@@ -86,9 +124,8 @@ chain below.
 5. `krw-tablet rotate lock`, tilt → no rotation; `rotate auto` → follows again.
 6. With the external `DP-1` attached, check `position = "auto"` does not put
    the turned panel under the external display.
-
-## P3 (next, if wanted): Noctalia
-
-Intentionally untouched so far. Later: `dock-show/hide` on enter/exit, and
-only after testing that an auto-hidden bar is reachable by touch (reveal is
-pointer-driven; touch is not `wl_pointer`).
+7. Noctalia: with `auto_hide = true` set by hand, detach the base and check the
+   bar stays put in all four rotations and that its widgets are tappable;
+   reattach and check the bar goes back to auto-hiding. Then
+   `systemctl --user restart noctalia` while in tablet mode and
+   `krw wm tablet` → `mode-on` to confirm the repair path.
