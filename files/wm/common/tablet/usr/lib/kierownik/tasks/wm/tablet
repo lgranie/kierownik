@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-#MISE description="Tablet rotation (accelerometer, 5290 2-in-1)"
-#USAGE arg "[action]" help="Rotation action" { choices "status" "auto" "normal" "right" "inverted" "left" "lock" "unlock" "probe" }
+#MISE description="Tablet mode and rotation (accelerometer, 5290 2-in-1)"
+#USAGE arg "[action]" help="Tablet action" { choices "status" "mode-on" "mode-off" "mode-auto" "auto" "normal" "right" "inverted" "left" "lock" "unlock" "probe" }
 set -euo pipefail
 
 command -v krw-tablet >/dev/null 2>&1 || {
@@ -11,14 +11,19 @@ command -v krw-tablet >/dev/null 2>&1 || {
 
 action="${usage_action:-}"
 if [[ -z "${action}" ]]; then
-  action="$(gum choose --header "Tablet rotation" \
-    "status" "auto" "normal" "right" "inverted" "left" "lock" "unlock" "probe")" || exit 0
+  action="$(gum choose --header "Tablet" \
+    "status" "mode-on" "mode-off" "mode-auto" \
+    "auto" "normal" "right" "inverted" "left" \
+    "lock" "unlock" "probe")" || exit 0
 fi
 [[ -n "${action}" ]] || exit 0
 
 case "${action}" in
-  status | probe) krw-tablet "${action}" ;;
-  auto | normal | right | inverted | left) krw-tablet rotate "${action}" ;;
-  lock) krw-tablet lock on ;;
-  unlock) krw-tablet lock off ;;
+  mode-on) exec krw-tablet mode on ;;
+  mode-off) exec krw-tablet mode off ;;
+  mode-auto) exec krw-tablet mode auto ;;
+  auto | normal | right | inverted | left) exec krw-tablet rotate "${action}" ;;
+  lock) exec krw-tablet lock on ;;
+  unlock) exec krw-tablet lock off ;;
+  status | probe) exec krw-tablet "${action}" ;;
 esac

@@ -1,7 +1,7 @@
 # Tablet mode (Dell Latitude 5290 2-in-1)
 
-Design notes for the 2-in-1 support. Implemented: **P1 (rotation only)**.
-`next/*.md` is ignored by CI.
+Design notes for the 2-in-1 support. Implemented: **P1 (rotation)** and
+**P2 (tablet mode)**. `next/*.md` is ignored by CI.
 
 ## Hardware, probed on the 5290 (Hyprland 0.57.1)
 
@@ -51,28 +51,42 @@ Notes:
     holds `$HYPRLAND_INSTANCE_SIGNATURE`, so it never survives a logout.
 - `krw wm tablet` — task wrapper with `gum choose`.
 
-Auto-rotation runs only while no `/dev/input/by-path/*-kbd` exists
-(`KRW_TABLET_FORCE=1` overrides). That is P1's only mode detection.
+Auto-rotation runs only in tablet mode, which P1 keyed off the internal keyboard
+alone (`KRW_TABLET_FORCE=1` overrides); P2 replaced that with the full trigger
+chain below.
+
+## P2 — tablet mode (implemented)
+
+- Mode is on when any of these says so, in order: `krw-tablet mode on` (manual,
+  tagged with the session signature), `SW_TABLET_MODE` from the Hyprland binds
+  in `5290.lua`, or no `/dev/input/by-path/*-kbd`. An "on" claim always wins,
+  so an undetected keyboard node or a lying switch cannot leave a keyless
+  tablet in laptop mode; `mode off` is the only way to hold it there.
+- Enter: start `wvkbd.service`, rotate to the sensor (unless locked).
+- Exit: stop `wvkbd.service`, clear the rotation lock, straighten the panel.
+- `wvkbd.service` is no longer enabled at session start and `start-wvkbd`
+  no longer checks for a keyboard itself: the daemon decides, so the keyboard
+  can start and stop on detach/attach instead of only at login.
+- `krw wm tablet` gained `mode-on`, `mode-off`, `mode-auto`.
 
 ## Still to verify on the tablet
 
 1. `krw-tablet probe` with iio-sensor-proxy installed → `HasAccelerometer`,
    `AccelerometerOrientation` changing on tilt.
-2. Detach the keyboard base, tilt in four directions: panel follows, taps and
-   pen land where the finger is. If a direction is wrong, fix the mapping in
-   `sensor_orientation` (or the mount matrix via
-   `/etc/udev/hwdb.d/61-sensor-local.hwdb` if the sensor itself is rotated).
-3. `hyprctl reload` while turned → stays turned.
-4. `krw-tablet rotate lock`, tilt → no rotation; `rotate auto` → follows again.
-5. With the external `DP-1` attached, check `position = "auto"` does not put
+2. Detach the keyboard base: mode should switch on (check whether the i8042
+   `-kbd` node disappears, and whether the switch bind fires at all —
+   `journalctl --user -u krw-tablet`), wvkbd appears on text focus, tilt in
+   four directions: panel follows, taps and pen land where the finger is. If a
+   direction is wrong, fix the mapping in `sensor_orientation` (or the mount
+   matrix via `/etc/udev/hwdb.d/61-sensor-local.hwdb` if the sensor is rotated).
+3. Re-attach the base: mode off, panel upright, wvkbd gone, lock cleared.
+4. `hyprctl reload` while turned → stays turned.
+5. `krw-tablet rotate lock`, tilt → no rotation; `rotate auto` → follows again.
+6. With the external `DP-1` attached, check `position = "auto"` does not put
    the turned panel under the external display.
 
-## P2 (next): tablet mode
+## P3 (next, if wanted): Noctalia
 
-- `hl.bind("switch:on:Intel Virtual Switches", …)` / `switch:off`, plus the
-  keyboard-presence poll and a manual `krw-tablet mode on|off|toggle`.
-- Enter: rotate, start `wvkbd.service` (`SIGRTMIN` if already running).
-  Exit: upright, stop wvkbd.
-- Noctalia: intentionally untouched in P1. Later: `dock-show/hide` on
-  enter/exit, and only after testing that an auto-hidden bar is reachable by
-  touch (reveal is pointer-driven; touch is not `wl_pointer`).
+Intentionally untouched so far. Later: `dock-show/hide` on enter/exit, and
+only after testing that an auto-hidden bar is reachable by touch (reveal is
+pointer-driven; touch is not `wl_pointer`).

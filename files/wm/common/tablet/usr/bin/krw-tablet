@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# krw-tablet — accelerometer-driven screen rotation for the Dell Latitude 5290
-# 2-in-1 (and any machine whose accelerometer iio-sensor-proxy can read).
+# krw-tablet — tablet mode for the Dell Latitude 5290 2-in-1: accelerometer
+# rotation, with the panel following the machine while the keyboard base is
+# gone (and the on-screen keyboard along with it).
 #
 # Rotation is applied to the live session with `hyprctl eval`, never with
 # `hyprctl keyword`: the Hyprland configuration is Lua. The same Lua is kept in
@@ -9,11 +10,17 @@
 # Binding a digitizer to the output maps its coordinates but does not rotate
 # its axes, so every touch/pen device gets a matching transform.
 #
-# The lock file stores $HYPRLAND_INSTANCE_SIGNATURE: a lock never survives a
-# logout, and a stale file cannot freeze the panel after the next login.
+# Tablet mode is on when any of these says so, in this order: `mode on|off`
+# (manual, wins), `SW_TABLET_MODE` from the Hyprland switch binds, or the
+# internal keyboard base being absent. Leaving turns the panel upright and
+# stops wvkbd; only the manual override and the switch need a file, and both
+# are tagged with $HYPRLAND_INSTANCE_SIGNATURE so they never leak into the next
+# session. The rotation lock is tagged the same way.
 #
 # Subcommands:
-#   daemon                          follow the accelerometer (systemd unit)
+#   daemon                          mode + rotation loop (systemd unit)
+#   mode on|off|auto|toggle         tablet mode by hand, or back to signals
+#   switch on|off                   switch event, called by the Hyprland binds
 #   rotate normal|right|inverted|left|next|prev|auto
 #   lock on|off|toggle
 #   status
@@ -28,6 +35,10 @@ ROTATION_STATE="${STATE_DIR}/rotation"
 LOCK_STATE="${STATE_DIR}/lock"
 ROTATION_LUA="${STATE_DIR}/rotation.lua"
 DAEMON_LOCK="${STATE_DIR}/daemon.lock"
+MODE_LOCK="${STATE_DIR}/mode.lock"
+MODE_STATE="${STATE_DIR}/mode"
+MANUAL_STATE="${STATE_DIR}/manual"
+SWITCH_STATE="${STATE_DIR}/switch"
 
 OUTPUT="${KRW_TABLET_OUTPUT:-eDP-1}"
 INTERVAL="${KRW_TABLET_INTERVAL:-1}"
@@ -41,22 +52,26 @@ die() {
 
 usage() {
   cat <<'EOF'
-krw-tablet — rotate the internal panel from the accelerometer
+krw-tablet — tablet mode and panel rotation for the 5290 2-in-1
 
 Usage:
-  krw-tablet daemon               follow the accelerometer (systemd unit)
+  krw-tablet daemon               mode + rotation loop (systemd unit)
+  krw-tablet mode <mode>          on|off|auto|toggle
+  krw-tablet switch on|off        switch event (Hyprland binds call this)
   krw-tablet rotate <mode>        normal|right|inverted|left|next|prev|auto
   krw-tablet lock on|off|toggle   freeze the current rotation
-  krw-tablet status               rotation, sensor and keyboard gate
+  krw-tablet status               mode, rotation, sensor and signals
   krw-tablet probe                what the session and the sensors expose
 
-A fixed `rotate` and `next`/`prev` take the lock; `rotate auto` returns to the
-accelerometer. Auto-rotation only runs while no internal keyboard is attached.
+Tablet mode is on when `mode on` was given, or the tablet switch reports it,
+or the keyboard base is gone. Leaving turns the panel upright and stops wvkbd.
+A fixed `rotate` and `next`/`prev` take the rotation lock; `rotate auto`
+returns to the accelerometer, which is only followed in tablet mode.
 
 Environment:
   KRW_TABLET_OUTPUT    internal panel name (default eDP-1)
   KRW_TABLET_INTERVAL  poll interval in seconds (default 1)
-  KRW_TABLET_FORCE     set to 1 to ignore the attached-keyboard gate
+  KRW_TABLET_FORCE     set to 1 to treat the machine as having no keyboard
 EOF
 }
 
@@ -77,6 +92,33 @@ state_rotation() {
     normal | right | inverted | left) printf '%s' "$value" ;;
     *) printf 'normal' ;;
   esac
+}
+
+state_mode() {
+  local value
+  value="$(session_value "$MODE_STATE" || true)"
+  case "$value" in
+    on | off) printf '%s' "$value" ;;
+    *) printf '' ;;
+  esac
+}
+
+# "<signature> <value>": the one kind of state that must not outlive the
+# session that wrote it (a manual override, or a switch event from a machine
+# that has since been rebooted).
+session_value() {
+  local path="$1" signature value
+  [[ -r "$path" ]] || return 1
+  read -r signature value <"$path" || return 1
+  [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" && "$signature" == "$HYPRLAND_INSTANCE_SIGNATURE" ]] ||
+    return 1
+  printf '%s' "$value"
+}
+
+write_session_value() {
+  [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] ||
+    die "not inside a Hyprland session (HYPRLAND_INSTANCE_SIGNATURE unset)"
+  write_file "$1" "${HYPRLAND_INSTANCE_SIGNATURE} $2"
 }
 
 is_locked() {
@@ -244,7 +286,7 @@ apply_rotation() {
   hypr_eval "$code"
 }
 
-# --- keyboard gate ---------------------------------------------------------
+# --- tablet mode -----------------------------------------------------------
 
 keyboard_attached() {
   local node
@@ -254,9 +296,104 @@ keyboard_attached() {
   return 1
 }
 
-auto_allowed() {
-  [[ "$FORCE" == "1" ]] && return 0
-  ! keyboard_attached
+# An "on" claim from anywhere wins, so a switch that lies about being folded
+# cannot leave a tablet keyless, and an undetected keyboard node cannot leave
+# it in laptop mode. Only the manual override can hold the machine in laptop
+# mode while the base is gone, and only while it is set.
+desired_mode() {
+  local manual switch_state
+  manual="$(session_value "$MANUAL_STATE" || true)"
+  case "$manual" in
+    on | off)
+      printf '%s' "$manual"
+      return 0
+      ;;
+  esac
+  switch_state="$(session_value "$SWITCH_STATE" || true)"
+  if [[ "$switch_state" == "on" ]]; then
+    printf 'on'
+    return 0
+  fi
+  if [[ "$FORCE" == "1" ]] || ! keyboard_attached; then
+    printf 'on'
+    return 0
+  fi
+  printf 'off'
+}
+
+mode_reason() {
+  local manual switch_state
+  manual="$(session_value "$MANUAL_STATE" || true)"
+  case "$manual" in
+    on | off)
+      printf 'manual'
+      return 0
+      ;;
+  esac
+  switch_state="$(session_value "$SWITCH_STATE" || true)"
+  if [[ "$switch_state" == "on" ]]; then
+    printf 'switch'
+    return 0
+  fi
+  if [[ "$FORCE" == "1" ]] || ! keyboard_attached; then
+    printf 'no keyboard'
+    return 0
+  fi
+  printf 'keyboard'
+}
+
+enter_mode() {
+  write_session_value "$MODE_STATE" on
+  systemctl --user start wvkbd.service >/dev/null 2>&1 ||
+    log "could not start wvkbd.service"
+
+  if is_locked; then
+    log "rotation locked, leaving the panel at $(state_rotation)"
+    return 0
+  fi
+
+  local orientation
+  if ! orientation="$(sensor_orientation)"; then
+    log "no accelerometer orientation, leaving the panel at $(state_rotation)"
+    return 0
+  fi
+  apply_rotation "$orientation" || true
+}
+
+exit_mode() {
+  write_session_value "$MODE_STATE" off
+  systemctl --user stop wvkbd.service >/dev/null 2>&1 ||
+    log "could not stop wvkbd.service"
+
+  # The lock belongs to tablet mode: the base is back, so the panel stands up.
+  rm -f "$LOCK_STATE"
+  if [[ -f "$ROTATION_LUA" || "$(monitor_field transform)" != "0" ]]; then
+    apply_rotation normal || true
+  fi
+}
+
+# Locked so the daemon and a CLI call cannot transition twice at once.
+apply_mode() {
+  (
+    mkdir -p "$STATE_DIR"
+    exec 9>"$MODE_LOCK"
+    flock 9
+
+    local desired current
+    desired="$(desired_mode)"
+    current="$(state_mode)"
+    if [[ "$desired" == "$current" ]]; then
+      exit 0
+    fi
+
+    if [[ "$desired" == "on" ]]; then
+      log "tablet mode on ($(mode_reason))"
+      enter_mode
+    else
+      log "tablet mode off ($(mode_reason))"
+      exit_mode
+    fi
+  )
 }
 
 # --- commands --------------------------------------------------------------
@@ -271,7 +408,12 @@ cmd_daemon() {
 
   local warned=0 pending="" pending_count=0 want wanted current
   while :; do
-    if is_locked || ! auto_allowed; then
+    # The switch bind, the keyboard base coming and going and `krw-tablet
+    # mode` all just move the files this reads.
+    apply_mode
+
+    # Rotation only matters in tablet mode, and the lock freezes it.
+    if [[ "$(state_mode)" != "on" ]] || is_locked; then
       pending=""
       pending_count=0
       sleep "$INTERVAL"
@@ -375,14 +517,53 @@ cmd_lock() {
   esac
 }
 
-cmd_status() {
-  local rotation applied raw
+cmd_mode() {
+  local action="${1:-}" final current
+  case "$action" in
+    on | off) write_session_value "$MANUAL_STATE" "$action" ;;
+    auto) rm -f "$MANUAL_STATE" ;;
+    toggle)
+      current="$(state_mode)"
+      if [[ "$current" == "on" ]]; then
+        write_session_value "$MANUAL_STATE" off
+      else
+        write_session_value "$MANUAL_STATE" on
+      fi
+      ;;
+    *) die "usage: krw-tablet mode on|off|auto|toggle" ;;
+  esac
 
+  apply_mode
+
+  final="$(state_mode)"
+  [[ -n "$final" ]] || final="$(desired_mode)"
+  printf 'mode: %s (%s)\n' "$final" "$(mode_reason)"
+}
+
+cmd_switch() {
+  local action="${1:-}"
+  case "$action" in
+    on | off) write_session_value "$SWITCH_STATE" "$action" ;;
+    *) die "usage: krw-tablet switch on|off" ;;
+  esac
+  apply_mode
+}
+
+cmd_status() {
+  local rotation applied raw switch_state mode desired
+
+  desired="$(desired_mode)"
+  mode="$(state_mode)"
+
+  printf 'mode:     %s (%s)\n' "$desired" "$(mode_reason)"
+  if [[ -n "$mode" && "$mode" != "$desired" ]]; then
+    printf 'applied:  %s (daemon has not caught up)\n' "$mode"
+  fi
   rotation="$(state_rotation)"
   applied="$(monitor_field transform)"
 
   printf 'rotation: %s (transform %s)\n' "$rotation" "$(orientation_transform "$rotation")"
-  printf 'applied:  %s on %s\n' "${applied:-<panel not present>}" "$OUTPUT"
+  printf 'panel:    transform %s on %s\n' "${applied:-<not present>}" "$OUTPUT"
   if is_locked; then
     printf 'locked:   yes\n'
   else
@@ -395,14 +576,12 @@ cmd_status() {
     printf 'sensor:   unavailable\n'
   fi
 
+  switch_state="$(session_value "$SWITCH_STATE" || true)"
+  printf 'switch:   %s\n' "${switch_state:-unknown}"
   if keyboard_attached; then
-    if [[ "$FORCE" == "1" ]]; then
-      printf 'keyboard: attached, KRW_TABLET_FORCE=1 (auto-rotation active)\n'
-    else
-      printf 'keyboard: attached (auto-rotation paused)\n'
-    fi
+    printf 'keyboard: attached\n'
   else
-    printf 'keyboard: absent (auto-rotation active)\n'
+    printf 'keyboard: absent\n'
   fi
 
   printf 'output:   %s %s scale %s\n' "$OUTPUT" "$(monitor_mode)" "$(monitor_scale)"
@@ -430,6 +609,10 @@ cmd_probe() {
     [[ -n "$name" ]] && printf '%s\n' "$name"
   done < <(tablet_devices)
 
+  printf '\n== tablet mode ==\n'
+  printf 'mode: %s (%s)\n' "$(desired_mode)" "$(mode_reason)"
+  printf 'switch: %s\n' "$(session_value "$SWITCH_STATE" || printf 'unknown')"
+
   printf '\n== keyboards ==\n'
   for node in /dev/input/by-path/*-kbd; do
     [[ -e "$node" ]] && printf '%s\n' "$node"
@@ -439,6 +622,14 @@ cmd_probe() {
 
 case "${1:-}" in
   daemon) cmd_daemon ;;
+  mode)
+    shift
+    cmd_mode "$@"
+    ;;
+  switch)
+    shift
+    cmd_switch "$@"
+    ;;
   rotate)
     shift
     cmd_rotate "$@"

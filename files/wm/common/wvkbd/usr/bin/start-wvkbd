@@ -1,33 +1,16 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -oue pipefail
 
-# On-screen keyboard only makes sense without a physical keyboard.
-# by-path event-kbd nodes cover AT (laptop) and USB keyboards.
-# KRW_FORCE_OSK=1 overrides (folded 2-in-1: kbd present but unusable).
-has_kbd=0
-for node in /dev/input/by-path/*-kbd; do
-  [[ -e "${node}" ]] && {
-    has_kbd=1
-    break
-  }
-done
-if [[ "${KRW_FORCE_OSK:-0}" != "1" && "${has_kbd}" == "1" ]]; then
-  exit 0
-fi
-
-# Define temporary state files
+# Started and stopped by krw-tablet, which knows when the keyboard base is gone
+# (and honours the manual override), so this script does not second-guess it.
 PID_FILE="${XDG_RUNTIME_DIR}/wvkbd.pid"
-echo "${PID_FILE}"
-
-# Remove old PID file if it exists
 rm -f "${PID_FILE}"
 
 # Start hidden; --auto shows on text-input focus, hides on unfocus.
 /usr/bin/wvkbd-mobintl -L 240 --hidden --auto &
 PID=$!
 
-# Store PID
-echo "${PID}" > "${PID_FILE}"
+echo "${PID}" >"${PID_FILE}"
 
 wait "${PID}"
