@@ -378,16 +378,32 @@ noctalia_config() {
 }
 
 # "on", "off" or "smart" as configured for the section.
+# Uses tq (tomlq) for reliable TOML parsing when available, falls back to grep.
 noctalia_auto_hide() {
   local dump
   dump="$(noctalia_config "$1")" || return 1
   [[ -n "$dump" ]] || return 1
-  if grep -qE '^[[:space:]]*smart_auto_hide = true$' <<<"$dump"; then
-    printf 'smart'
-  elif grep -qE '^[[:space:]]*auto_hide = true$' <<<"$dump"; then
-    printf 'on'
+
+  if command -v tq >/dev/null 2>&1; then
+    local smart auto_hide
+    smart="$(printf '%s\n' "$dump" | tq -o json '.' 2>/dev/null | jq -r '.default?.smart_auto_hide // false')"
+    auto_hide="$(printf '%s\n' "$dump" | tq -o json '.' 2>/dev/null | jq -r '.default?.auto_hide // false')"
+    if [[ "$smart" == "true" ]]; then
+      printf 'smart'
+    elif [[ "$auto_hide" == "true" ]]; then
+      printf 'on'
+    else
+      printf 'off'
+    fi
   else
-    printf 'off'
+    # Fallback to grep for systems without tq
+    if grep -qE '^[[:space:]]*smart_auto_hide = true$' <<<"$dump"; then
+      printf 'smart'
+    elif grep -qE '^[[:space:]]*auto_hide = true$' <<<"$dump"; then
+      printf 'on'
+    else
+      printf 'off'
+    fi
   fi
 }
 
@@ -781,6 +797,13 @@ self_check() {
       ((errors++))
     }
   done
+
+  # Check optional commands
+  if command -v tq >/dev/null 2>&1; then
+    log "INFO: tq (tomlq) found - Noctalia config parsing will use it"
+  else
+    log "INFO: tq (tomlq) not found - using grep fallback for Noctalia config"
+  fi
 
   # Check orientation mapping is valid
   for dir in normal right inverted left; do
