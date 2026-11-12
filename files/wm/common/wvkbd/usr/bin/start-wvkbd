@@ -8,7 +8,9 @@ PID_FILE="${XDG_RUNTIME_DIR}/wvkbd.pid"
 rm -f "${PID_FILE}"
 
 # Start hidden; --auto shows on text-input focus, hides on unfocus.
-/usr/bin/wvkbd-mobintl -L 240 --hidden --auto &
+# Use the 'simple' layer which includes visible modifier keys (Ctrl, Alt, Super)
+# This is important for tablet mode where users need to exit scratchpad with SUPER+?
+/usr/bin/wvkbd-mobintl -L 240 --hidden --auto -l simple &
 PID=$!
 
 echo "${PID}" >"${PID_FILE}"
