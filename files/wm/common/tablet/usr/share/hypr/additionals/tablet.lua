@@ -2,8 +2,10 @@
 ---- TABLET ----
 ------------------
 -- SW_TABLET_MODE from the EC ("Intel Virtual Switches" in hyprctl devices).
--- krw-tablet also polls the keyboard base, so a bind that never fires on some
--- build only costs one signal, not the whole mode.
+-- On the 5290 this switch does not move when the base is unclipped; krw-tablet
+-- watches the base's USB keyboard/touchpad for that. The binds stay because a
+-- fold or another 2-in-1 still reports through them, and a signal that never
+-- fires only costs one trigger, not the whole mode.
 pcall(function()
 	hl.bind("switch:on:Intel Virtual Switches", function()
 		hl.exec_cmd("/usr/bin/krw-tablet switch on")
