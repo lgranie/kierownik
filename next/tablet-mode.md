@@ -167,6 +167,16 @@ base's USB device `1-2 044e:1218 Alps Touchpad` (interfaces `ID_USB_INTERFACES=
   (tablet)`; `probe` has a `== base ==` section listing the keyboard nodes and
   both USB verdicts, which is how the next hardware round gets diagnosed.
 
+**The on-screen keyboard could not start at all.** `wvkbd.service` is masked as
+`~/.config/systemd/user/wvkbd.service -> /dev/null` on this machine, left over
+from before the unit was meant to be started on demand. A mask in `$HOME` wins
+over the unit in the image, so every enter said `could not start
+wvkbd.service` and carried on without a keyboard. `enter_mode` now reads
+`systemctl --user is-enabled` and says `wvkbd.service is masked; run:
+systemctl --user unmask wvkbd.service`; `probe` prints the unit state and the
+`wvkbd-mobintl` path next to the base section. The mask itself is the user's
+choice to undo — nothing here writes to `~/.config`.
+
 ## Still to verify on the tablet
 
 1. `krw-tablet probe` → `AccelerometerOrientation` live (not `undefined`), and

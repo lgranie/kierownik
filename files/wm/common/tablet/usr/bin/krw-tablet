@@ -554,14 +554,39 @@ noctalia_exit() {
   esac
 }
 
+# `is-enabled` is the only cheap way to tell "you disabled it" from "it is
+# masked in ~/.config", and the difference matters: a mask left over from
+# before this feature existed silently wins over the unit in the image, and the
+# only fix is one command in the user's own service directory.
+# is-enabled exits non-zero for every state but "enabled", so read its answer
+# instead of its exit code.
+wvkbd_unit_state() {
+  local state
+  state="$(systemctl --user is-enabled wvkbd.service 2>/dev/null)" || true
+  printf '%s' "${state:-absent}"
+}
+
+wvkbd_masked() {
+  [[ "$(wvkbd_unit_state)" == "masked" ]]
+}
+
+wvkbd_start() {
+  systemctl --user start wvkbd.service >/dev/null 2>&1 && return 0
+  if wvkbd_masked; then
+    log "wvkbd.service is masked; run: systemctl --user unmask wvkbd.service"
+  else
+    log "could not start wvkbd.service"
+  fi
+  return 1
+}
+
 enter_mode() {
   local panel_transform
   panel_transform="$(monitor_field transform)"
 
   # Always write mode state and start services
   write_session_value "$MODE_STATE" on
-  systemctl --user start wvkbd.service >/dev/null 2>&1 ||
-    log "could not start wvkbd.service"
+  wvkbd_start || true
 
   noctalia_enter
 
@@ -586,8 +611,7 @@ enter_mode() {
 
 exit_mode() {
   write_session_value "$MODE_STATE" off
-  systemctl --user stop wvkbd.service >/dev/null 2>&1 ||
-    log "could not stop wvkbd.service"
+  systemctl --user stop wvkbd.service >/dev/null 2>&1 || true
 
   noctalia_exit
 
@@ -863,6 +887,8 @@ cmd_probe() {
   else
     printf 'base: detached (slate only, so tablet mode)\n'
   fi
+  printf 'wvkbd: unit %s, %s\n' "$(wvkbd_unit_state)" \
+    "$(command -v wvkbd-mobintl || printf '<binary missing>')"
 
   printf '\n== shell (Noctalia) ==\n'
   printf 'noctalia: %s\n' "$(command -v noctalia || printf '<not found>')"
