@@ -12,6 +12,9 @@ hl.on("hyprland.start", function()
 end)
 
 hl.on("hyprland.shutdown", function()
+    -- Noctalia does not terminate on SIGTERM; kill it outright so uwsm stop
+    -- does not stall for TimeoutStopSec (see noctalia.service).
+    os.execute("systemctl --user kill --signal=KILL noctalia.service 2>/dev/null || true")
     os.execute("uwsm stop && sleep 0.1")
     -- uses a blocking exec function and sleeps a bit to give things time to close
     -- you might also want to kill troublesome/crashing non-systemd background services here:

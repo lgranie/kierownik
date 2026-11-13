@@ -12,6 +12,9 @@ ExecCondition=/lib/systemd/systemd-xdg-autostart-condition "Hyprland" ""
 ExecStart=/usr/bin/noctalia
 ExecReload=kill -SIGUSR2 $MAINPID
 Restart=on-failure
+# Noctalia does not exit on SIGTERM during shutdown; cap the wait so
+# uwsm stop (see hypr/autostart.lua) does not block for the default 45s.
+TimeoutStopSec=5s
 Slice=app-graphical.slice
 
 [Install]
