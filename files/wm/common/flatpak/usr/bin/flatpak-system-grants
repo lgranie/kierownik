@@ -11,4 +11,4 @@ flatpak override --system --socket=wayland --device=dri
 # org.localsend.localsend_app
 flatpak override --system --filesystem=xdg-download org.localsend.localsend_app
 
-notify_all "Flatpak" "System configuration set"
+notify_all "Flatpak" "System configuration set" "" "Application"
