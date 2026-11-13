@@ -8,7 +8,10 @@ curl --silent --retry 3 -L --output - "${ZED_URL}" |
 
 # Detect extracted app dir (zed.app / zed-preview.app / …)
 ZED_APP_DIR=$(find /usr/lib/opt -maxdepth 1 -mindepth 1 -name 'zed*.app' -type d | head -n 1)
-[[ -n "${ZED_APP_DIR}" ]] || { echo "zed: no zed*.app dir found under /usr/lib/opt" >&2; exit 1; }
+[[ -n "${ZED_APP_DIR}" ]] || {
+  echo "zed: no zed*.app dir found under /usr/lib/opt" >&2
+  exit 1
+}
 
 # Link binary
 ln -sf "${ZED_APP_DIR}/bin/zed" /usr/bin/zed
