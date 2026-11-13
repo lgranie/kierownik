@@ -1,15 +1,16 @@
 [Unit]
 Description=Wvkbd Service
 ConditionUser=!@system
-StartLimitIntervalSec=500
-StartLimitBurst=5
+# Started and stopped as the keyboard base comes and goes, so the default
+# start limit would refuse a legitimate start after a few toggles.
+StartLimitIntervalSec=0
 After=network.target graphical-session-pre.target
 PartOf=graphical-session.target
 ConditionEnvironment=XDG_RUNTIME_DIR
 
 [Service]
 Type=simple
-ExecStartPre=sleep 3
+# Started on demand by krw-tablet when the tablet has no keyboard base.
 ExecStart=/usr/bin/start-wvkbd
 PIDFile=%t/wvkbd.pid
 Restart=on-failure

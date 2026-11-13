@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+---
+# Tablet rotation for the 5290 2-in-1: iio-sensor-proxy reads the
+# accelerometer, krw-tablet turns eDP-1 (and the digitizers) to match.
+# Included by wm/5290.yml only; no other machine here has a sensor.
+modules:
+  - from-file: wm/common/wvkbd.yml
+
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        # Provides monitor-sensor and the net.hadess.SensorProxy D-Bus API.
+        - iio-sensor-proxy
+
+  - type: files
+    files:
+      - source: wm/common/tablet
+        destination: /
+
+  - type: script
+    snippets:
+      - "chmod +x /usr/bin/krw-tablet"
+
+  - type: systemd
+    system:
+      enabled:
+        - iio-sensor-proxy.service
+    user:
+      enabled:
+        - krw-tablet.service

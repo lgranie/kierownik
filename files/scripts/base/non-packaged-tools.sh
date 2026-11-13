@@ -5,10 +5,18 @@ set -euo pipefail
 # Install tar.gz github latest releases
 declare -A tgz_bins=(
   ["usage"]=https://github.com/jdx/usage/releases/latest/download/usage-x86_64-unknown-linux-gnu.tar.gz
+  # tomlq archive contains binary named "tq"
+  ["tomlq"]=https://github.com/cryptaliagy/tomlq/releases/latest/download/tomlq.amd64.tgz
 )
 for bin in "${!tgz_bins[@]}"; do
-  curl --silent --retry 3 -L --output - "${tgz_bins[$bin]}" | tar -xzf - -C /usr/bin/ "${bin}"
-  chmod +x "/usr/bin/${bin}"
+  if [[ "$bin" == "tomlq" ]]; then
+    # Archive contains binary named "tq", extract and rename
+    curl --silent --retry 3 -L --output - "${tgz_bins[$bin]}" | tar -xzf - -C /usr/bin/ tq
+    chmod +x /usr/bin/tq
+  else
+    curl --silent --retry 3 -L --output - "${tgz_bins[$bin]}" | tar -xzf - -C /usr/bin/ "${bin}"
+    chmod +x "/usr/bin/${bin}"
+  fi
 done
 
 # Install binaries github releases

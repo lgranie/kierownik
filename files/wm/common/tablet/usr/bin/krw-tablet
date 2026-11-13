@@ -1,0 +1,979 @@
+#!/usr/bin/env bash
+# krw-tablet — tablet mode for the Dell Latitude 5290 2-in-1: accelerometer
+# rotation, with the panel following the machine while the keyboard base is
+# gone (and the on-screen keyboard along with it).
+#
+# Rotation is applied to the live session with `hyprctl eval`, never with
+# `hyprctl keyword`: the Hyprland configuration is Lua. The same Lua is kept in
+# $HOME/.local/state/kierownik/tablet/rotation.lua, which additionals/tablet.lua
+# loads after the monitor rule, so `hyprctl reload` does not straighten the
+# panel. Binding a digitizer to the output maps its coordinates but does not
+# rotate its axes, so every touch/pen device gets a matching transform.
+#
+# Tablet mode is on when any of these says so, in this order: `mode on|off`
+# (manual, wins), `SW_TABLET_MODE` from the Hyprland switch binds, or the
+# keyboard base being absent. "Absent" means the USB keyboard/touchpad of the
+# base is gone: the firmware does not raise the switch on detach here, and the
+# EC keyboard controller stays in the slate, so neither signal alone would do.
+# Leaving turns the panel upright and stops wvkbd; only the manual override and
+# the switch need a file, and both are tagged with $HYPRLAND_INSTANCE_SIGNATURE
+# so they never leak into the next session. The rotation lock is tagged the same
+# way.
+#
+# Subcommands:
+#   daemon                          mode + rotation loop (systemd unit)
+#   mode on|off|auto|toggle         tablet mode by hand, or back to signals
+#   switch on|off                   switch event, called by the Hyprland binds
+#   rotate normal|right|inverted|left|next|prev|auto
+#   lock on|off|toggle
+#   status
+#   probe
+#
+# Entering tablet mode also asks Noctalia to keep its bar on screen: that bar
+# reveals itself for a pointer at the screen edge, and a tablet has no pointer,
+# so an auto-hidden bar would be unreachable by touch. Only Noctalia's runtime
+# overrides are used, never its configuration, so nothing survives a rebuild of
+# the session.
+
+set -oue pipefail
+
+# Hardcoded under $HOME (not $XDG_STATE_HOME) so this script and 5290.lua,
+# which only has os.getenv("HOME"), agree on one path.
+STATE_DIR="${HOME}/.local/state/kierownik/tablet"
+ROTATION_STATE="${STATE_DIR}/rotation"
+LOCK_STATE="${STATE_DIR}/lock"
+ROTATION_LUA="${STATE_DIR}/rotation.lua"
+DAEMON_LOCK="${STATE_DIR}/daemon.lock"
+MODE_LOCK="${STATE_DIR}/mode.lock"
+MODE_STATE="${STATE_DIR}/mode"
+MANUAL_STATE="${STATE_DIR}/manual"
+SWITCH_STATE="${STATE_DIR}/switch"
+NOCTALIA_STATE="${STATE_DIR}/noctalia"
+
+OUTPUT="${KRW_TABLET_OUTPUT:-eDP-1}"
+INTERVAL="${KRW_TABLET_INTERVAL:-1}"
+FORCE="${KRW_TABLET_FORCE:-0}"
+# Only the tests point this elsewhere; the real tree is udev's.
+INPUT_DIR="${KRW_TABLET_INPUT_DIR:-/dev/input/by-path}"
+
+log() { printf 'krw-tablet: %s\n' "$*" >&2; }
+die() {
+  log "$*"
+  exit 1
+}
+
+usage() {
+  cat <<'EOF'
+krw-tablet — tablet mode and panel rotation for the 5290 2-in-1
+
+Usage:
+  krw-tablet daemon               mode + rotation loop (systemd unit)
+  krw-tablet mode <mode>          on|off|auto|toggle
+  krw-tablet switch on|off        switch event (Hyprland binds call this)
+  krw-tablet rotate <mode>        normal|right|inverted|left|next|prev|auto
+  krw-tablet lock on|off|toggle   freeze the current rotation
+  krw-tablet status               mode, rotation, sensor and signals
+  krw-tablet probe                what the session and the sensors expose
+
+Tablet mode is on when `mode on` was given, or the tablet switch reports it,
+or the keyboard base is gone (its USB keyboard and touchpad left the bus; the
+firmware does not switch on detach and the EC keyboard stays behind). Entering
+also keeps the Noctalia bar on screen: it only reveals itself for a pointer at
+the screen edge. Leaving turns the panel upright, stops wvkbd and restores the
+bar. `mode on|off` re-applies even when the mode already matches, which repairs
+what a restarted shell undid. A fixed `rotate` and `next`/`prev` take the
+rotation lock; `rotate auto` returns to the accelerometer, which is only
+followed in tablet mode.
+
+Environment:
+  KRW_TABLET_OUTPUT    internal panel name (default eDP-1)
+  KRW_TABLET_INTERVAL  mode/lock tick in seconds, and the read timeout on the
+                       accelerometer stream (default 1)
+  KRW_TABLET_FORCE     set to 1 to pretend the base is gone (testing)
+  KRW_TABLET_INPUT_DIR input tree to read (default /dev/input/by-path)
+EOF
+}
+
+# --- state -----------------------------------------------------------------
+
+write_file() {
+  local path="$1" body="$2" tmp
+  mkdir -p "$(dirname "$path")"
+  tmp="$(mktemp "${path}.XXXXXX")" || return 1
+  printf '%s\n' "$body" >"$tmp"
+  mv -f "$tmp" "$path"
+}
+
+state_rotation() {
+  local value=""
+  [[ -r "$ROTATION_STATE" ]] && value="$(<"$ROTATION_STATE")"
+  case "$value" in
+    normal | right | inverted | left) printf '%s' "$value" ;;
+    *) printf 'normal' ;;
+  esac
+}
+
+state_mode() {
+  local value
+  value="$(session_value "$MODE_STATE" || true)"
+  case "$value" in
+    on | off) printf '%s' "$value" ;;
+    *) printf '' ;;
+  esac
+}
+
+# "<signature> <value>": the one kind of state that must not outlive the
+# session that wrote it (a manual override, or a switch event from a machine
+# that has since been rebooted).
+session_value() {
+  local path="$1" signature value
+  [[ -r "$path" ]] || return 1
+  read -r signature value <"$path" || return 1
+  [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" && "$signature" == "$HYPRLAND_INSTANCE_SIGNATURE" ]] ||
+    return 1
+  printf '%s' "$value"
+}
+
+write_session_value() {
+  [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] ||
+    die "not inside a Hyprland session (HYPRLAND_INSTANCE_SIGNATURE unset)"
+  write_file "$1" "${HYPRLAND_INSTANCE_SIGNATURE} $2"
+}
+
+is_locked() {
+  [[ -r "$LOCK_STATE" ]] || return 1
+  local signature
+  signature="$(<"$LOCK_STATE")"
+  [[ -n "$signature" && "$signature" == "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]
+}
+
+lock_now() {
+  [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] ||
+    die "not inside a Hyprland session (HYPRLAND_INSTANCE_SIGNATURE unset)"
+  write_file "$LOCK_STATE" "${HYPRLAND_INSTANCE_SIGNATURE}"
+}
+
+# --- sensor ----------------------------------------------------------------
+
+# iio-sensor-proxy only computes AccelerometerOrientation while some client
+# holds a claim, and a claim lives exactly as long as its D-Bus connection:
+# one-shot calls (`busctl get-property`, `gdbus call`) read "undefined" on a
+# machine where nothing else claims the accelerometer — which is why the first
+# cut of this daemon never saw an orientation at all. `monitor-sensor --accel`
+# is the client meant for that job: it holds the claim and prints a line per
+# change, so the daemon runs it as both the claim and the event stream.
+sensor_property() {
+  busctl --system get-property net.hadess.SensorProxy /net/hadess/SensorProxy \
+    net.hadess.SensorProxy "$1" 2>/dev/null
+}
+
+# The property, if some claimer is keeping it up to date.
+sensor_property_orientation() {
+  local raw
+  raw="$(sensor_property AccelerometerOrientation)" || return 1
+  raw="${raw#s }"
+  raw="${raw%\"}"
+  raw="${raw#\"}"
+  case "$raw" in
+    "" | undefined) return 1 ;;
+  esac
+  printf '%s' "$raw"
+}
+
+# "    Accelerometer orientation changed: right-up" → "right-up".
+sensor_line_orientation() {
+  local line="$1"
+  [[ "$line" == *"orientation changed: "* ]] || return 1
+  line="${line##*orientation changed: }"
+  printf '%s' "${line%% *}"
+}
+
+# Without the daemon there is no claim, so make one briefly and take the first
+# answer monitor-sensor prints. Only the CLI paths pay for this.
+sensor_claim_once() {
+  command -v monitor-sensor >/dev/null 2>&1 || return 1
+  local out raw
+  out="$(timeout 2 monitor-sensor --accel 2>/dev/null | head -4)" || true
+  raw="$(sed -n 's/.*orientation changed: \([a-z-]*\).*/\1/p' <<<"$out" | head -1)"
+  [[ -n "$raw" ]] ||
+    raw="$(sed -n 's/.*(orientation: \([a-z-]*\),.*/\1/p' <<<"$out" | head -1)"
+  case "$raw" in
+    "" | undefined) return 1 ;;
+  esac
+  printf '%s' "$raw"
+}
+
+sensor_raw_orientation() {
+  sensor_property_orientation || sensor_claim_once
+}
+
+# iio-sensor-proxy names the orientation by the edge of the machine pointing
+# up; the transform is the counter-clockwise turn Hyprland applies to the
+# panel, so the two run in opposite directions.
+orientation_name() {
+  case "$1" in
+    normal) printf 'normal' ;;
+    right-up) printf 'right' ;;
+    bottom-up) printf 'inverted' ;;
+    left-up) printf 'left' ;;
+    *) return 1 ;;
+  esac
+}
+
+sensor_orientation() {
+  local raw
+  raw="$(sensor_raw_orientation)" || return 1
+  orientation_name "$raw"
+}
+
+sensor_stream_start() {
+  sensor_stream_stop
+  command -v monitor-sensor >/dev/null 2>&1 || return 1
+  coproc SENSOR { exec monitor-sensor --accel 2>/dev/null; }
+  SENSOR_FD="${SENSOR[0]}"
+}
+
+sensor_stream_stop() {
+  [[ -n "${SENSOR_PID:-}" ]] || return 0
+  kill "$SENSOR_PID" 2>/dev/null || true
+  wait "$SENSOR_PID" 2>/dev/null || true
+  eval "exec ${SENSOR_FD:-}<&-" 2>/dev/null
+  SENSOR_PID=""
+  SENSOR_FD=""
+}
+
+orientation_transform() {
+  case "$1" in
+    normal) printf '0' ;;
+    right) printf '3' ;;
+    inverted) printf '2' ;;
+    left) printf '1' ;;
+    *) return 1 ;;
+  esac
+}
+
+# --- compositor ------------------------------------------------------------
+
+monitor_field() {
+  command -v hyprctl >/dev/null 2>&1 || return 0
+  hyprctl -j monitors all 2>/dev/null | jq -r --arg output "$OUTPUT" --arg field "$1" \
+    'first(.[] | select(.name == $output)) | .[$field] // empty' 2>/dev/null || true
+}
+
+monitor_mode() {
+  local width height rate
+  width="$(monitor_field width)"
+  height="$(monitor_field height)"
+  rate="$(monitor_field refreshRate)"
+  if [[ "$width" =~ ^[0-9]+$ && "$height" =~ ^[0-9]+$ && "$width" != "0" && "$rate" =~ ^[0-9.]+$ ]]; then
+    printf '%sx%s@%s' "$width" "$height" "$rate"
+  else
+    printf 'preferred'
+  fi
+}
+
+monitor_scale() {
+  local scale
+  scale="$(monitor_field scale)"
+  if [[ "$scale" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+    printf '%s' "$scale"
+  else
+    printf '1.33'
+  fi
+}
+
+# Touchscreens are listed under "touch", pens under "tablets". Pad and tool
+# entries have no name: the pad names its parent, the tool is anonymous.
+tablet_devices() {
+  command -v hyprctl >/dev/null 2>&1 || return 0
+  command -v jq >/dev/null 2>&1 || return 0
+  local name
+  hyprctl -j devices 2>/dev/null |
+    jq -r '[ (.touch // [])[].name,
+             ((.tablets // [])[] | select(.name != null) | .name) ]
+           | map(select(. != null and . != ""))
+           | unique[]' 2>/dev/null |
+    while IFS= read -r name; do
+      [[ -n "$name" ]] || continue
+      LC_ALL=C grep -q '[[:cntrl:]]' <<<"$name" && continue
+      printf '%s\n' "$name"
+    done
+}
+
+lua_string() {
+  local value="$1"
+  value="${value//\\/\\\\}"
+  value="${value//\"/\\\"}"
+  printf '"%s"' "$value"
+}
+
+# Mode and scale are taken from the running monitor: a per-output rule
+# replaces the wildcard one, and "preferred" would drop a custom refresh rate.
+rotation_statements() {
+  local transform="$1" mode scale name
+  mode="$(monitor_mode)"
+  scale="$(monitor_scale)"
+
+  printf 'hl.monitor({ output = %s, mode = %s, position = "auto", scale = "%s", transform = %d })\n' \
+    "$(lua_string "$OUTPUT")" "$(lua_string "$mode")" "$scale" "$transform"
+  printf 'hl.config({ input = { touchdevice = { output = %s, transform = %d }, tablet = { output = %s, transform = %d } } })\n' \
+    "$(lua_string "$OUTPUT")" "$transform" "$(lua_string "$OUTPUT")" "$transform"
+  while IFS= read -r name; do
+    [[ -n "$name" ]] || continue
+    printf 'hl.device({ name = %s, output = %s, transform = %d })\n' \
+      "$(lua_string "$name")" "$(lua_string "$OUTPUT")" "$transform"
+  done < <(tablet_devices)
+}
+
+hypr_eval() {
+  local code="$1" out
+  command -v hyprctl >/dev/null 2>&1 || {
+    log "hyprctl not found"
+    return 1
+  }
+  if ! out="$(hyprctl eval "$code" 2>&1)"; then
+    log "hyprctl eval failed: $out"
+    return 1
+  fi
+  if [[ "$out" != "ok" ]]; then
+    log "hyprctl eval failed: $out"
+    return 1
+  fi
+}
+
+# The file is written before the live change: if the eval is refused, the next
+# config reload still turns the panel instead of leaving state and screen
+# disagreeing.
+apply_rotation() {
+  local orientation="$1" transform lua code
+  transform="$(orientation_transform "$orientation")" || {
+    log "unknown orientation: $orientation"
+    return 1
+  }
+
+  lua="$(rotation_statements "$transform")"
+  code="${lua//$'\n'/ }"
+
+  if [[ "$transform" == "0" ]]; then
+    rm -f "$ROTATION_LUA"
+  else
+    write_file "$ROTATION_LUA" "$lua"
+  fi
+  write_file "$ROTATION_STATE" "$orientation"
+
+  hypr_eval "$code"
+}
+
+# --- tablet mode -----------------------------------------------------------
+
+# On this machine the keyboard controller of the base is the EC (i8042), and
+# platform-i8042-serio-0-event-kbd stays behind in the slate after the base is
+# unclipped, so a plain "any -kbd node" test always says attached. Nor does the
+# firmware raise SW_TABLET_MODE on detach. What does disappear is the base as a
+# USB device: the Alps touchpad 044e:1218, whose input nodes are named for the
+# USB path. So the base counts as attached when a keyboard *or* a touchpad sits
+# on the USB bus; an i8042 keyboard alone never counts.
+#
+# The touchscreen also reports as a mouse to udev, hence the TOUCHPAD check:
+# the slate's digitizer is ID_INPUT_TABLET, the base's is ID_INPUT_TOUCHPAD.
+usb_keyboard_attached() {
+  local node
+  for node in "$INPUT_DIR"/*-kbd; do
+    [[ -e "$node" ]] || continue
+    [[ "${node##*/}" == *usb-* ]] && return 0
+  done
+  return 1
+}
+
+usb_touchpad_attached() {
+  local node
+  for node in "$INPUT_DIR"/*event-mouse; do
+    [[ -e "$node" ]] || continue
+    [[ "${node##*/}" == *usb-* ]] || continue
+    udevadm info --query=property --name="$node" 2>/dev/null |
+      grep -qx 'ID_INPUT_TOUCHPAD=1' && return 0
+  done
+  return 1
+}
+
+base_attached() {
+  usb_keyboard_attached || usb_touchpad_attached
+}
+
+# An "on" claim from anywhere wins, so a switch that lies about being folded
+# cannot leave a tablet keyless, and an undetected keyboard node cannot leave
+# it in laptop mode. Only the manual override can hold the machine in laptop
+# mode while the base is gone, and only while it is set.
+desired_mode() {
+  local manual switch_state
+  manual="$(session_value "$MANUAL_STATE" || true)"
+  case "$manual" in
+    on | off)
+      printf '%s' "$manual"
+      return 0
+      ;;
+  esac
+  switch_state="$(session_value "$SWITCH_STATE" || true)"
+  if [[ "$switch_state" == "on" ]]; then
+    printf 'on'
+    return 0
+  fi
+  if [[ "$FORCE" == "1" ]] || ! base_attached; then
+    printf 'on'
+    return 0
+  fi
+  printf 'off'
+}
+
+mode_reason() {
+  local manual switch_state
+  manual="$(session_value "$MANUAL_STATE" || true)"
+  case "$manual" in
+    on | off)
+      printf 'manual'
+      return 0
+      ;;
+  esac
+  switch_state="$(session_value "$SWITCH_STATE" || true)"
+  if [[ "$switch_state" == "on" ]]; then
+    printf 'switch'
+    return 0
+  fi
+  if [[ "$FORCE" == "1" ]] || ! base_attached; then
+    printf 'no base'
+    return 0
+  fi
+  printf 'base'
+}
+
+# --- shell (Noctalia) ------------------------------------------------------
+
+# Noctalia may be absent from the image, not running, or restarted since the
+# last transition, so every call here is best effort and every override it
+# gets is runtime only: nothing is written to its configuration, and a shell
+# restart drops the overrides without leaving a trace. That is also why
+# `mode on` re-applies instead of doing nothing when mode is already on.
+
+noctalia_running() {
+  command -v noctalia >/dev/null 2>&1 || return 1
+  timeout 2 noctalia msg status >/dev/null 2>&1
+}
+
+noctalia_send() {
+  # A shell that vanished between the check and the call is not worth failing
+  # a mode transition over.
+  noctalia msg "$@" >/dev/null 2>&1 || true
+}
+
+# $1: config section (bar, dock). The merged dump of that section.
+noctalia_config() {
+  noctalia msg config-get "$1" 2>/dev/null
+}
+
+# "on", "off" or "smart" as configured for the section.
+# Uses tq (tomlq) for reliable TOML parsing when available, falls back to grep.
+noctalia_auto_hide() {
+  local dump
+  dump="$(noctalia_config "$1")" || return 1
+  [[ -n "$dump" ]] || return 1
+
+  if command -v tq >/dev/null 2>&1; then
+    local smart auto_hide
+    smart="$(printf '%s\n' "$dump" | tq -o json '.' 2>/dev/null | jq -r '.default?.smart_auto_hide // false')"
+    auto_hide="$(printf '%s\n' "$dump" | tq -o json '.' 2>/dev/null | jq -r '.default?.auto_hide // false')"
+    if [[ "$smart" == "true" ]]; then
+      printf 'smart'
+    elif [[ "$auto_hide" == "true" ]]; then
+      printf 'on'
+    else
+      printf 'off'
+    fi
+  else
+    # Fallback to grep for systems without tq
+    if grep -qE '^[[:space:]]*smart_auto_hide = true$' <<<"$dump"; then
+      printf 'smart'
+    elif grep -qE '^[[:space:]]*auto_hide = true$' <<<"$dump"; then
+      printf 'on'
+    else
+      printf 'off'
+    fi
+  fi
+}
+
+noctalia_dock_enabled() {
+  noctalia_config dock | grep -qE '^[[:space:]]*enabled = true$'
+}
+
+noctalia_bar_visible() {
+  noctalia msg status 2>/dev/null | tr -d ' \n' |
+    sed -n 's/.*"barVisible":\(true\|false\).*/\1/p'
+}
+
+# "visible, auto-hide on" — the same line for status and probe.
+noctalia_bar_state() {
+  printf '%s, auto-hide %s' \
+    "$([[ "$(noctalia_bar_visible)" == "false" ]] && printf hidden || printf visible)" \
+    "$(noctalia_auto_hide bar || printf '?')"
+}
+
+noctalia_enter() {
+  noctalia_running || return 0
+
+  local auto_hide visible
+  auto_hide="$(noctalia_auto_hide bar || true)"
+  visible="$(noctalia_bar_visible || true)"
+  [[ -n "$auto_hide" && -n "$visible" ]] || return 0
+
+  # "<auto-hide we override> <visible before we did>", so the exit restores
+  # exactly what this changed and nothing else.
+  if [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]; then
+    [[ "$visible" == "false" ]] && visible=hidden || visible=shown
+    write_session_value "$NOCTALIA_STATE" "$auto_hide $visible"
+  fi
+
+  # bar-show brings an auto-hidden (or given-up) bar back; turning auto-hide
+  # off is what keeps it there while the screen is touched instead of pointed.
+  [[ "$auto_hide" == "off" ]] || noctalia_send bar-auto-hide-set off
+  noctalia_send bar-show
+}
+
+noctalia_exit() {
+  local previous auto_hide visible
+  previous="$(session_value "$NOCTALIA_STATE" || true)"
+  [[ -n "$previous" ]] || return 0
+  rm -f "$NOCTALIA_STATE"
+
+  auto_hide="${previous%% *}"
+  visible="${previous#* }"
+  noctalia_running || return 0
+
+  [[ "$auto_hide" == "off" ]] || noctalia_send bar-auto-hide-set "$auto_hide"
+  case "$visible" in
+    hidden) noctalia_send bar-hide ;;
+    *) noctalia_send bar-show ;;
+  esac
+}
+
+# `is-enabled` is the only cheap way to tell "you disabled it" from "it is
+# masked in ~/.config", and the difference matters: a mask left over from
+# before this feature existed silently wins over the unit in the image, and the
+# only fix is one command in the user's own service directory.
+# is-enabled exits non-zero for every state but "enabled", so read its answer
+# instead of its exit code.
+wvkbd_unit_state() {
+  local state
+  state="$(systemctl --user is-enabled wvkbd.service 2>/dev/null)" || true
+  printf '%s' "${state:-absent}"
+}
+
+wvkbd_masked() {
+  [[ "$(wvkbd_unit_state)" == "masked" ]]
+}
+
+wvkbd_start() {
+  systemctl --user start wvkbd.service >/dev/null 2>&1 && return 0
+  if wvkbd_masked; then
+    log "wvkbd.service is masked; run: systemctl --user unmask wvkbd.service"
+  else
+    log "could not start wvkbd.service"
+  fi
+  return 1
+}
+
+enter_mode() {
+  local panel_transform
+  panel_transform="$(monitor_field transform)"
+
+  # Always write mode state and start services
+  write_session_value "$MODE_STATE" on
+  wvkbd_start || true
+
+  noctalia_enter
+
+  # Only apply rotation if panel is present
+  if [[ -z "$panel_transform" ]]; then
+    log "panel not present, deferring rotation"
+    return 0
+  fi
+
+  if is_locked; then
+    log "rotation locked, leaving the panel at $(state_rotation)"
+    return 0
+  fi
+
+  local orientation
+  if ! orientation="$(sensor_orientation)"; then
+    log "no accelerometer orientation, leaving the panel at $(state_rotation)"
+    return 0
+  fi
+  apply_rotation "$orientation" || true
+}
+
+exit_mode() {
+  write_session_value "$MODE_STATE" off
+  systemctl --user stop wvkbd.service >/dev/null 2>&1 || true
+
+  noctalia_exit
+
+  # The lock belongs to tablet mode: the base is back, so the panel stands up.
+  rm -f "$LOCK_STATE"
+  if [[ -f "$ROTATION_LUA" || "$(monitor_field transform)" != "0" ]]; then
+    apply_rotation normal || true
+  fi
+}
+
+# Locked so the daemon and a CLI call cannot transition twice at once. `force`
+# re-runs the transition even when mode already matches, which is how a manual
+# `mode on|off` repairs what a restart of Noctalia, wvkbd or Hyprland undid.
+apply_mode() {
+  (
+    mkdir -p "$STATE_DIR"
+    exec 9>"$MODE_LOCK"
+    flock 9
+
+    local desired current
+    desired="$(desired_mode)"
+    current="$(state_mode)"
+    if [[ "$desired" == "$current" && "${1:-}" != "force" ]]; then
+      exit 0
+    fi
+
+    if [[ "$desired" == "on" ]]; then
+      log "tablet mode on ($(mode_reason))"
+      enter_mode
+    else
+      log "tablet mode off ($(mode_reason))"
+      exit_mode
+    fi
+  )
+}
+
+# --- commands --------------------------------------------------------------
+
+# Rotation is driven by the accelerometer's own events: the daemon holds the
+# claim (see sensor_stream_start) and turns the panel when a line arrives. The
+# read doubles as the tick for mode and lock state, so a detach, a switch bind
+# or `krw-tablet mode` is noticed within a second even while nothing tilts.
+rotate_for_line() {
+  local line="$1" raw orientation
+
+  raw="$(sensor_line_orientation "$line")" || return 0
+  orientation="$(orientation_name "$raw")" || return 0
+  [[ "$(state_mode)" == "on" ]] || return 0
+  is_locked && return 0
+  [[ -n "$(monitor_field transform)" ]] || return 0
+  [[ "$orientation" != "$(state_rotation)" ]] || return 0
+
+  # Let a machine resting on an edge settle: one flap is not a rotation.
+  sleep 0.2
+  [[ "$(sensor_property_orientation || true)" == "$raw" ]] || return 0
+
+  log "rotating to $orientation (transform $(orientation_transform "$orientation"))"
+  apply_rotation "$orientation" || true
+}
+
+cmd_daemon() {
+  mkdir -p "$STATE_DIR"
+  exec 9>"$DAEMON_LOCK"
+  if ! flock -n 9; then
+    log "already running"
+    return 0
+  fi
+
+  sensor_stream_start || log "monitor-sensor not found; cannot follow the accelerometer"
+  trap 'sensor_stream_stop' EXIT
+
+  local noctalia_tries=0 line
+  while :; do
+    # The switch bind, the keyboard base coming and going and `krw-tablet
+    # mode` all just move the files this reads.
+    apply_mode
+
+    # Noctalia can come up after this daemon (a tablet booted with the base
+    # already off), so offer it the bar settings a few more times. The marker
+    # file stops this as soon as it has taken them, and the bound keeps a
+    # machine where the call never succeeds from running it forever.
+    if [[ "$noctalia_tries" -lt 30 && "$(state_mode)" == "on" ]] &&
+      ! session_value "$NOCTALIA_STATE" >/dev/null 2>&1; then
+      noctalia_tries=$((noctalia_tries + 1))
+      noctalia_enter
+    fi
+
+    if [[ -z "${SENSOR_FD:-}" ]]; then
+      sleep "$INTERVAL"
+      continue
+    fi
+
+    if IFS= read -r -t "$INTERVAL" -u "$SENSOR_FD" line; then
+      rotate_for_line "$line"
+    elif ! kill -0 "${SENSOR_PID:-0}" 2>/dev/null; then
+      # iio-sensor-proxy restarted, or the claim was dropped: taking it again
+      # re-prints the current orientation, so the panel catches up as well.
+      log "accelerometer stream ended, claiming it again"
+      sensor_stream_start || true
+    fi
+  done
+}
+
+cycle_orientation() {
+  local direction="$1" current index=0 i
+  local order=(normal right inverted left)
+  current="$(state_rotation)"
+  for i in "${!order[@]}"; do
+    [[ "${order[$i]}" == "$current" ]] && index="$i"
+  done
+  if [[ "$direction" == "next" ]]; then
+    index=$(((index + 1) % 4))
+  else
+    index=$(((index + 3) % 4))
+  fi
+  printf '%s' "${order[$index]}"
+}
+
+cmd_rotate() {
+  local action="${1:-}" orientation
+  case "$action" in
+    auto)
+      orientation="$(sensor_orientation)" ||
+        die "no accelerometer orientation; use a fixed rotation"
+      rm -f "$LOCK_STATE"
+      apply_rotation "$orientation" || exit 1
+      ;;
+    next | prev)
+      lock_now
+      orientation="$(cycle_orientation "$action")"
+      apply_rotation "$orientation" || exit 1
+      ;;
+    normal | right | inverted | left)
+      lock_now
+      apply_rotation "$action" || exit 1
+      ;;
+    *)
+      die "usage: krw-tablet rotate normal|right|inverted|left|next|prev|auto"
+      ;;
+  esac
+}
+
+cmd_lock() {
+  local action="${1:-}"
+  case "$action" in
+    on) lock_now ;;
+    off) rm -f "$LOCK_STATE" ;;
+    toggle)
+      if is_locked; then
+        rm -f "$LOCK_STATE"
+      else
+        lock_now
+      fi
+      ;;
+    *) die "usage: krw-tablet lock on|off|toggle" ;;
+  esac
+}
+
+cmd_mode() {
+  local action="${1:-}" final current
+  case "$action" in
+    on | off) write_session_value "$MANUAL_STATE" "$action" ;;
+    auto) rm -f "$MANUAL_STATE" ;;
+    toggle)
+      current="$(state_mode)"
+      if [[ "$current" == "on" ]]; then
+        write_session_value "$MANUAL_STATE" off
+      else
+        write_session_value "$MANUAL_STATE" on
+      fi
+      ;;
+    *) die "usage: krw-tablet mode on|off|auto|toggle" ;;
+  esac
+
+  apply_mode force
+
+  final="$(state_mode)"
+  [[ -n "$final" ]] || final="$(desired_mode)"
+  printf 'mode: %s (%s)\n' "$final" "$(mode_reason)"
+}
+
+cmd_switch() {
+  local action="${1:-}"
+  case "$action" in
+    on | off) write_session_value "$SWITCH_STATE" "$action" ;;
+    *) die "usage: krw-tablet switch on|off" ;;
+  esac
+  apply_mode
+}
+
+cmd_status() {
+  local rotation applied raw switch_state mode desired
+
+  desired="$(desired_mode)"
+  mode="$(state_mode)"
+
+  printf 'mode:     %s (%s)\n' "$desired" "$(mode_reason)"
+  if [[ -n "$mode" && "$mode" != "$desired" ]]; then
+    printf 'applied:  %s (daemon has not caught up)\n' "$mode"
+  fi
+  rotation="$(state_rotation)"
+  applied="$(monitor_field transform)"
+
+  printf 'rotation: %s (transform %s)\n' "$rotation" "$(orientation_transform "$rotation")"
+  printf 'panel:    transform %s on %s\n' "${applied:-<not present>}" "$OUTPUT"
+  if is_locked; then
+    printf 'locked:   yes\n'
+  else
+    printf 'locked:   no\n'
+  fi
+
+  if raw="$(sensor_raw_orientation)"; then
+    printf 'sensor:   %s%s\n' "$raw" "$(sensor_orientation >/dev/null 2>&1 && printf '' || printf ' (unmapped)')"
+  else
+    printf 'sensor:   unavailable\n'
+  fi
+
+  switch_state="$(session_value "$SWITCH_STATE" || true)"
+  printf 'switch:   %s\n' "${switch_state:-unknown}"
+  if base_attached; then
+    printf 'base:     attached\n'
+  else
+    printf 'base:     absent (tablet)\n'
+  fi
+
+  if noctalia_running; then
+    printf 'shell:    Noctalia, bar %s\n' "$(noctalia_bar_state)"
+  fi
+
+  printf 'output:   %s %s scale %s\n' "$OUTPUT" "$(monitor_mode)" "$(monitor_scale)"
+}
+
+cmd_probe() {
+  local name node n
+
+  printf '== sensors ==\n'
+  printf 'iio-sensor-proxy: %s\n' "$(systemctl is-active iio-sensor-proxy.service 2>/dev/null || true)"
+  printf 'HasAccelerometer: %s\n' "$(sensor_property HasAccelerometer 2>/dev/null || printf '<no answer>')"
+  printf 'AccelerometerOrientation: %s\n' "$(sensor_raw_orientation || printf '<unavailable>')"
+  printf 'monitor-sensor: %s (the claim that keeps the orientation live)\n' \
+    "$(command -v monitor-sensor || printf '<not found>')"
+  printf 'krw-tablet: %s\n' "$(systemctl --user is-active krw-tablet.service 2>/dev/null || printf 'inactive')"
+  printf 'iio devices: %s\n' "$(ls /sys/bus/iio/devices 2>/dev/null | tr '\n' ' ')"
+
+  printf '\n== session ==\n'
+  printf 'HYPRLAND_INSTANCE_SIGNATURE: %s\n' "${HYPRLAND_INSTANCE_SIGNATURE:-<unset>}"
+  printf 'hyprctl: %s\n' "$(command -v hyprctl || printf '<not found>')"
+
+  printf '\n== panel ==\n'
+  printf '%s: %s scale %s transform %s\n' "$OUTPUT" "$(monitor_mode)" \
+    "$(monitor_scale)" "$(monitor_field transform)"
+
+  printf '\n== digitizers ==\n'
+  while IFS= read -r name; do
+    [[ -n "$name" ]] && printf '%s\n' "$name"
+  done < <(tablet_devices)
+
+  printf '\n== tablet mode ==\n'
+  printf 'mode: %s (%s)\n' "$(desired_mode)" "$(mode_reason)"
+  printf 'switch: %s\n' "$(session_value "$SWITCH_STATE" || printf 'unknown')"
+
+  printf '\n== base ==\n'
+  printf 'keyboard nodes: '
+  node=""
+  for n in "$INPUT_DIR"/*-kbd; do
+    [[ -e "$n" ]] && node+=" ${n##*/}"
+  done
+  printf '%s\n' "${node:- <none>}"
+  printf 'usb keyboard: %s\n' "$(usb_keyboard_attached && printf yes || printf no)"
+  printf 'usb touchpad: %s\n' "$(usb_touchpad_attached && printf yes || printf no)"
+  if base_attached; then
+    printf 'base: attached\n'
+  else
+    printf 'base: detached (slate only, so tablet mode)\n'
+  fi
+  printf 'wvkbd: unit %s, %s\n' "$(wvkbd_unit_state)" \
+    "$(command -v wvkbd-mobintl || printf '<binary missing>')"
+
+  printf '\n== shell (Noctalia) ==\n'
+  printf 'noctalia: %s\n' "$(command -v noctalia || printf '<not found>')"
+  if noctalia_running; then
+    printf 'bar: %s (from the config; tablet mode overrides auto-hide while on)\n' \
+      "$(noctalia_bar_state)"
+    if noctalia_dock_enabled; then
+      printf 'dock: enabled, auto-hide %s\n' "$(noctalia_auto_hide dock || printf '?')"
+    else
+      printf 'dock: disabled\n'
+    fi
+  else
+    printf 'bar: <no running instance>\n'
+  fi
+}
+
+# --- self-check ------------------------------------------------------------
+# Internal consistency checks for debugging. Run with: krw-tablet --check
+
+self_check() {
+  local errors=0
+
+  # Check required commands
+  for cmd in bash jq; do
+    command -v "$cmd" >/dev/null 2>&1 || {
+      log "ERROR: required command '$cmd' not found"
+      ((errors++))
+    }
+  done
+
+  # Check optional commands
+  if command -v tq >/dev/null 2>&1; then
+    log "INFO: tq (tomlq) found - Noctalia config parsing will use it"
+  else
+    log "INFO: tq (tomlq) not found - using grep fallback for Noctalia config"
+  fi
+
+  # Check orientation mapping is valid
+  for dir in normal right inverted left; do
+    t="$(orientation_transform "$dir")" || {
+      log "ERROR: orientation_transform failed for $dir"
+      ((errors++))
+    }
+    [[ -n "$t" && "$t" =~ ^[0-3]$ ]] || {
+      log "ERROR: invalid transform '$t' for $dir"
+      ((errors++))
+    }
+  done
+
+  # Check monitor_field works (may fail if hyprctl not available)
+  if command -v hyprctl >/dev/null 2>&1; then
+    if ! monitor_field transform >/dev/null 2>&1; then
+      log "INFO: monitor_field returned empty (panel not present or hyprctl issue)"
+    fi
+  fi
+
+  if [[ $errors -eq 0 ]]; then
+    log "self-check: OK"
+    return 0
+  fi
+  log "self-check: $errors error(s) found"
+  return 1
+}
+
+case "${1:-}" in
+  daemon) cmd_daemon ;;
+  mode)
+    shift
+    cmd_mode "$@"
+    ;;
+  switch)
+    shift
+    cmd_switch "$@"
+    ;;
+  rotate)
+    shift
+    cmd_rotate "$@"
+    ;;
+  lock)
+    shift
+    cmd_lock "$@"
+    ;;
+  status) cmd_status ;;
+  probe) cmd_probe ;;
+  --check) self_check ;;
+  "" | -h | --help | help) usage ;;
+  *) die "unknown command: $1 (see krw-tablet --help)" ;;
+esac

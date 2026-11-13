@@ -3,5 +3,9 @@ local success, err = pcall(function()
 end)
 
 local success, err = pcall(function()
+    require("additionals/tablet")
+end)
+
+local success, err = pcall(function()
     require("additionals/voxtype")
 end)

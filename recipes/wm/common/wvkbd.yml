@@ -15,12 +15,10 @@ modules:
       - source: wm/common/wvkbd
         destination: /
 
+  # wvkbd.service is installed but not enabled: krw-tablet starts it when the
+  # tablet enters tablet mode and stops it on exit, so the on-screen keyboard
+  # only appears while there is no keyboard base.
   - type: script
     snippets:
       - "chmod +x /usr/bin/start-wvkbd"
-
-  - type: systemd
-    user:
-      enabled:
-        - wvkbd.service
 ...

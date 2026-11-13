@@ -10,6 +10,11 @@ hl.config({
 			output = "eDP-1",
 			transform = 0,
 		},
+
+		tablet = {
+			output = "eDP-1",
+			transform = 0,
+		},
 	},
 
 	scrolling = {
