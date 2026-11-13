@@ -243,18 +243,6 @@ function onQuery(query)
     local settings = getSettings()
     noctalia.log("Linkding: onQuery text=" .. text .. ", loaded=" .. tostring(loaded))
 
-    if text:lower() == "update" then
-        noctalia.log("Linkding: Update requested")
-        local q = currentQuery
-        updateBookmarks(settings.token, settings.serverUrl, function(success)
-            if not success then return end
-            launcher.setResults(q, {
-                { id = "", title = "Bookmarks updated", subtitle = "Database refreshed", glyph = "check-circle" }
-            })
-        end)
-        return
-    end
-
     if not loaded then
         local ok = loadDatabase()
         if not ok then
@@ -362,11 +350,24 @@ function onQuery(query)
         table.insert(results, { id = "", title = "No results", subtitle = "No bookmarks found", glyph = "mood-empty" })
     end
 
+    if text == "" or fuzzyField(text, "Update bookmarks") ~= 0 then
+        table.insert(results, 1, { id = "action:update", title = "Update bookmarks", subtitle = "Refresh from Linkding server", glyph = "refresh" })
+    end
+
     launcher.setResults(currentQuery, results)
 end
 
 function onActivate(id)
-    if id == "" and (noctalia.string.trim(currentQuery) or ""):lower() == "update" then return end
+    if id == "action:update" then
+        local s = getSettings()
+        updateBookmarks(s.token, s.serverUrl, function(success)
+            if not success then return end
+            launcher.setResults(currentQuery, {
+                { id = "", title = "Bookmarks updated", subtitle = "Database refreshed", glyph = "check-circle" }
+            })
+        end)
+        return
+    end
 
     local settings = getSettings()
     local entry = database[id]
