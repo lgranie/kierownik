@@ -6,7 +6,7 @@
 #USAGE flag "--allow-in-use-disk" help="Proceed even if the disk backs the running system"
 set -oue pipefail
 
-SWAP_GPT_GUID="0657FD6D-A4AB-43C4-84E5-0933C84B4F4F"
+SWAP_GPT_GUID="0657FD6D-A4AB-43C4-84E5-0933C8BF4F4F"
 
 # Unpartitioned sectors on a whole disk. Needs root to open the block device.
 free_sectors_of() {
@@ -51,10 +51,23 @@ fi
   exit 1
 }
 
+# Resolve disk to canonical path for consistent sfdisk/lshw matching
+# When disk is a symlink (e.g., /dev/disk/by-id/...), lsblk -o PATH resolves it
+# but sfdisk -d preserves the input path. Using resolved path ensures consistency.
+disk_resolved="$(readlink -f "${disk}")"
+
 if [[ "${usage_allow_in_use_disk:-false}" != "true" ]] &&
-  disk_hosts_system "$(readlink -f "${disk}")"; then
+  disk_hosts_system "${disk_resolved}"; then
   gum log -sl error "${disk} backs the running system (/, /var, /boot, ...). Refusing online repartition."
   gum log -sl info "Re-run from a live/rescue environment, or pass --allow-in-use-disk to override."
+  exit 1
+fi
+
+# Idempotency: refuse to create a duplicate swap partition on this disk.
+existing_swap="$(lsblk -ln -o PATH,FSTYPE "${disk_resolved}" | awk '$2=="swap"{print $1}' | head -1)"
+if [[ -n "${existing_swap}" ]]; then
+  gum log -sl error "A swap partition already exists on ${disk}: ${existing_swap}."
+  gum log -sl info "Remove/reuse it manually; refusing to create a duplicate."
   exit 1
 fi
 
@@ -83,8 +96,8 @@ if [[ "${need_bytes}" -lt $((mem_gb * 1024 * 1024 * 1024)) ]]; then
   gum log -sl warn "Swap (${size}) smaller than RAM (${mem_gb}G). Hibernation test will fail."
 fi
 
-sector_bytes="$(lsblk -dn -o LOG-SEC "${disk}")"
-free_sectors="$(free_sectors_of "${disk}")" || exit 1
+sector_bytes="$(lsblk -dn -o LOG-SEC "${disk_resolved}")"
+free_sectors="$(free_sectors_of "${disk_resolved}")" || exit 1
 free_bytes=$((free_sectors * sector_bytes))
 gum log -sl info "Unpartitioned free space on ${disk}: $((free_bytes / 1024 / 1024 / 1024))G."
 
@@ -93,8 +106,8 @@ if [[ "${free_bytes}" -lt "${need_bytes}" ]]; then
   short_mib=$(((short_bytes + 1048575) / 1048576))
   gum log -sl warn "Need ${short_mib}MiB more. Only the LAST partition can be shrunk, and only btrfs."
 
-  lastpart="$(lsblk -ln -o PATH "${disk}" | tail -1)"
-  [[ "${lastpart}" != "${disk}" ]] || {
+  lastpart="$(lsblk -ln -o PATH "${disk_resolved}" | tail -1)"
+  [[ "${lastpart}" != "${disk_resolved}" ]] || {
     gum log -sl error "No partitions on ${disk} to shrink."
     exit 1
   }
@@ -106,6 +119,7 @@ if [[ "${free_bytes}" -lt "${need_bytes}" ]]; then
   fi
   if [[ "${fstype}" != "btrfs" || -z "${mnt}" ]]; then
     gum log -sl error "${lastpart} is '${fstype}' mounted at '${mnt:-nowhere}'. Only mounted btrfs can shrink online."
+    gum log -sl info "The shrinkable (btrfs) partition must be the LAST partition on ${disk}."
     exit 1
   fi
 
@@ -127,7 +141,7 @@ if [[ "${free_bytes}" -lt "${need_bytes}" ]]; then
   shrink_sectors=$((shrink_mib * 1024 * 1024 / sector_bytes))
   align_sectors=$((1048576 / sector_bytes)) # align to 1 MiB
   shrink_sectors=$((shrink_sectors / align_sectors * align_sectors))
-  dump="$(run0 sfdisk -d "${disk}")"
+  dump="$(run0 sfdisk -d "${disk_resolved}")"
   old_size="$(printf "%s\n" "${dump}" | grep -E "^${lastpart}[[:space:]]*:" | grep -oP 'size=\s*\K[0-9]+' | head -1)"
   [[ -n "${old_size}" && "${old_size}" -gt "${shrink_sectors}" ]] || {
     gum log -sl error "Cannot parse partition size for ${lastpart}. Filesystem shrunk; fix table manually."
@@ -135,16 +149,16 @@ if [[ "${free_bytes}" -lt "${need_bytes}" ]]; then
   }
   new_size=$((old_size - shrink_sectors))
   newdump="$(printf "%s\n" "${dump}" | sed -E "s|^(${lastpart}[[:space:]]*:[[:space:]]*start=[[:space:]]*[0-9]+,[[:space:]]*size=[[:space:]]*)[0-9]+|\1${new_size}|")"
-  printf "%s\n" "${newdump}" | run0 sfdisk --force "${disk}" || {
+  printf "%s\n" "${newdump}" | run0 sfdisk --force "${disk_resolved}" || {
     gum log -sl error "Partition table rewrite failed. Filesystem shrunk; fix table manually."
     exit 1
   }
-  if ! run0 partx -u "${disk}" 2>/dev/null && ! run0 blockdev --rereadpt "${disk}" 2>/dev/null; then
+  if ! run0 partx -u "${disk_resolved}" 2>/dev/null && ! run0 blockdev --rereadpt "${disk_resolved}" 2>/dev/null; then
     gum log -sl error "Kernel did not re-read the partition table; aborting."
     exit 1
   fi
 
-  free_sectors="$(free_sectors_of "${disk}")" || exit 1
+  free_sectors="$(free_sectors_of "${disk_resolved}")" || exit 1
   free_bytes=$((free_sectors * sector_bytes))
   gum log -sl info "Free space now: $((free_bytes / 1024 / 1024 / 1024))G."
   [[ "${free_bytes}" -ge "${need_bytes}" ]] || {
@@ -153,7 +167,7 @@ if [[ "${free_bytes}" -lt "${need_bytes}" ]]; then
   }
 fi
 
-pttype="$(blkid -s PTTYPE -o value "${disk}" 2>/dev/null || true)"
+pttype="$(blkid -s PTTYPE -o value "${disk_resolved}" 2>/dev/null || true)"
 if [[ "${pttype}" == "gpt" ]]; then
   part_type="${SWAP_GPT_GUID}"
 elif [[ "${pttype}" == "dos" ]]; then
@@ -169,16 +183,16 @@ gum confirm "Create hibernation swap partition?" || {
   exit 0
 }
 
-before="$(lsblk -ln -o PATH "${disk}")"
-if ! run0 bash -c "echo ',${size},${part_type}' | sfdisk -a '${disk}' --force"; then
+before="$(lsblk -ln -o PATH "${disk_resolved}")"
+if ! run0 bash -c "echo ',${size},${part_type}' | sfdisk -a '${disk_resolved}' --force"; then
   gum log -sl error "Partition creation failed."
   exit 1
 fi
-if ! run0 partx -u "${disk}" 2>/dev/null && ! run0 blockdev --rereadpt "${disk}" 2>/dev/null; then
+if ! run0 partx -u "${disk_resolved}" 2>/dev/null && ! run0 blockdev --rereadpt "${disk_resolved}" 2>/dev/null; then
   gum log -sl error "Kernel did not re-read the partition table; aborting."
   exit 1
 fi
-after="$(lsblk -ln -o PATH "${disk}")"
+after="$(lsblk -ln -o PATH "${disk_resolved}")"
 newpart="$(comm -13 <(printf "%s\n" "${before}" | sort) <(printf "%s\n" "${after}" | sort) | head -1)"
 [[ -n "${newpart}" ]] || {
   gum log -sl error "Partition created but new device not found. Re-read table and check lsblk."
