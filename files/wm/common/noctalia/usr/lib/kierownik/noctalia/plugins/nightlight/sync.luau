@@ -1,32 +1,26 @@
 --!nonstrict
--- Night Light Sync service for Noctalia v5.
+-- Night Light Sync service for Noctalia v5.5+.
 -- While night light gamma is active: apply the configured night palette and
 -- set a wallpaper from the configured night directory.
 -- Otherwise: leave everything to the user's Noctalia settings, restoring the
 -- day palette and wallpapers saved before the night switch. Wallpaper rotation
 -- stays with Noctalia's own wallpaper automation.
--- Night state comes from the shell's live gamma log (sees manual force
--- toggles, which are runtime-only and never reach the config), with the
--- config enabled/force flags checked first. Gamma only logs when the target
--- temperature changes, so a stable day or night produces no log lines for
--- hours: the seed/freshness windows must span a full day/night cycle.
--- When no fresh gamma line exists the plugin stays on day, matching Noctalia
--- itself (no schedule = day temperature). Theme dark mode is deliberately NOT
--- used here: it tracks user theme preference, not the sun.
+-- Night state comes from the built-in nightlight watch callback (v5.5+), with
+-- the config enabled/force flags checked first. Theme dark mode is deliberately
+-- NOT used here: it tracks user theme preference, not the sun.
 -- Settings live in plugin.toml (night_palette_source, night_palette,
 -- night_wallpapers_dir).
 
 local STATE_FILE = "night-sync.json"
 local IMAGE_EXTS = { png = true, jpg = true, jpeg = true, webp = true, gif = true, svg = true, ico = true, jxl = true }
-local GAMMA_FRESH_MS = 86400000
 
 local state = { active = "day", day_scheme = nil, day_wallpapers = nil, index = 0, images_sig = "" }
-local gamma = { night = nil, at_ms = 0 }
 local busy = true
 local missing_logged = false
 local fail_notified = false
 local night_wallpaper_set = false
 local dataDir = nil
+local watch_id = nil
 
 local function getDataPath()
     if not dataDir then
@@ -79,66 +73,12 @@ local function nightConfig()
     }
 end
 
-local function parseGammaLine(line)
-    local target, day, night, force = string.match(line, "target (%d+)K %(day=(%d+)K night=(%d+)K force=(%l+)")
-    if not target then return nil end
-    target = tonumber(target)
-    local mid = (tonumber(day) + tonumber(night)) / 2
-    if force == "true" then return true end
-    return target <= mid
-end
-
-local function onGammaLine(line)
-    local is_night = parseGammaLine(line)
-    if is_night ~= nil then
-        gamma.night = is_night
-        gamma.at_ms = noctalia.nowMs()
-        sync()
-    end
-end
-
-local function startGammaTail()
-    local ok = noctalia.runStream("journalctl --user -u noctalia -o cat -n 0 -f --no-pager 2>/dev/null", onGammaLine)
-    if not ok then
-        noctalia.log("NightLight: gamma tail unavailable, config fallback only")
-    end
-end
-
-local function seedGamma(cb)
-    local done = false
-    local function finish()
-        if not done then
-            done = true
-            if cb then cb() end
-        end
-    end
-    local ok = noctalia.runAsync("journalctl --user -u noctalia -o cat --since '24 hours ago' --no-pager 2>/dev/null | grep '\\[gamma\\]' | tail -10", function(result)
-        if result.exitCode == 0 then
-            local count = 0
-            for line in string.gmatch(result.stdout or "", "[^\n]+") do
-                count = count + 1
-                local is_night = parseGammaLine(line)
-                if is_night ~= nil then
-                    gamma.night = is_night
-                    gamma.at_ms = noctalia.nowMs()
-                end
-            end
-            noctalia.log("NightLight: seed saw " .. count .. " gamma lines")
-        else
-            noctalia.log("NightLight: seed query failed: " .. tostring(result.stderr))
-        end
-        finish()
-    end)
-    if not ok then finish() end
-end
-
-local function nightState()
+local function nightState(nl)
+    -- config flags take precedence
     if noctalia.getSetting("nightlight.force") == true then return true, "force" end
     if noctalia.getSetting("nightlight.enabled") ~= true then return false, "disabled" end
-    if gamma.night ~= nil and (noctalia.nowMs() - gamma.at_ms) < GAMMA_FRESH_MS then
-        if gamma.night then return true, "gamma" end
-        return false, "gamma-day"
-    end
+    -- watch state
+    if nl and nl.active then return true, "watch" end
     return false, "day-default"
 end
 
@@ -353,10 +293,32 @@ local function enterDay()
     end)
 end
 
+local function onNightLightChange(nl)
+    local cfg = nightConfig()
+    local want, why = nightState(nl)
+    if want then
+        if state.active ~= "night" then
+            busy = true
+            noctalia.log("NightLight: night active (" .. why .. "), applying " .. cfg.source .. " " .. cfg.name)
+            enterNight(cfg)
+        else
+            local _, _, sig = nightDirImages(cfg)
+            if sig ~= "" and sig ~= state.images_sig then
+                ensureNightWallpaper(cfg, "directory changed")
+            end
+        end
+    elseif state.active ~= "day" then
+        busy = true
+        noctalia.log("NightLight: day active (" .. why .. "), restoring user settings")
+        enterDay()
+    end
+end
+
 function sync()
     if busy then return end
+    local nl = noctalia.nightlight.state()
     local cfg = nightConfig()
-    local want, why = nightState()
+    local want, why = nightState(nl)
     if want then
         if state.active ~= "night" then
             busy = true
@@ -411,9 +373,19 @@ function onExit(_signal, reason)
             noctalia.runAsync("noctalia msg color-scheme-set " .. day.source .. " " .. day.name)
         end
     end
+    if watch_id then
+        noctalia.nightlight.unwatch(watch_id)
+        watch_id = nil
+    end
 end
 
 noctalia.setUpdateInterval(5000)
 loadState()
-startGammaTail()
-seedGamma(reconcile)
+
+-- Register nightlight watch (v5.5+). The callback receives a table:
+-- { enabled, force, active, transitioning, currentTemperature, targetTemperature,
+--   dayTemperature, nightTemperature, calendarName }
+watch_id = noctalia.nightlight.watch(onNightLightChange)
+
+-- Initial reconcile in case state was already night before we started
+reconcile()
