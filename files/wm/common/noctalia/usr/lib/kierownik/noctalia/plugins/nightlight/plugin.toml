@@ -1,11 +1,11 @@
 id = "kierownik/nightlight"
 name = "Night Light Sync"
 version = "1.3.0"
-plugin_api = 27
-author = "lgranie"
+plugin_api = 43
+author = "kierownik"
 license = "MIT"
-dependencies = []
-tags = ["theme", "wallpaper", "nightlight"]
+dependencies = ["noctalia"]
+tags = ["service", "theming", "wallpaper"]
 icon = "moon"
 description = "Applies a dedicated palette and wallpapers while night light is active, restores user settings after"
 

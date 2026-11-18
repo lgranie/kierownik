@@ -1,11 +1,11 @@
 id = "kierownik/bookmarks"
 name = "Linkding Bookmarks"
 version = "1.2.0"
-plugin_api = 24
-author = "lgranie"
+plugin_api = 43
+author = "kierownik"
 license = "MIT"
 dependencies = []
-tags = ["launcher", "bookmarks"]
+tags = ["launcher", "productivity"]
 icon = "bookmark"
 description = "A Linkding bookmarks launcher provider"
 

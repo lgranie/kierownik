@@ -370,7 +370,7 @@ function onExit(_signal, reason)
     if (reason == "disable" or reason == "uninstall") and state.active == "night" then
         local day = state.day_scheme
         if type(day) == "table" then
-            noctalia.runAsync("noctalia msg color-scheme-set " .. day.source .. " " .. day.name)
+            noctalia.runAsync({ "noctalia", "msg", "color-scheme-set", day.source, day.name })
         end
     end
     if watch_id then
