@@ -6,6 +6,9 @@ modules:
       packages:
         - pass
         - pass-otp
+        # qtpass is a Qt6 build; without this plugin Qt falls through
+        # QT_QPA_PLATFORM's ";xcb" fallback to XWayland.
+        - qt6-qtwayland
         - qtpass
         - wtype
 
