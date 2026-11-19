@@ -65,6 +65,8 @@ mise run build:iso 5290
 
 ### USB installer (bootc-native)
 
+Requires `bcvk` on the host (used by `build:qcow2` and `build:raw`).
+
 ```bash
 mise run build:raw 5290
 # dd /tmp/output/krw-5290.raw to USB, boot it, then on the live system:

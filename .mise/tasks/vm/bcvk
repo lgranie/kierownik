@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+#MISE description="Run bootc image in ephemeral VM via bcvk"
+#USAGE arg "<target>" help="Target environment" { choices "5290" "8745" "vm" "x4cxl"}
+set -oue pipefail
+
+source "$(dirname "$0")/../build/_oci_ref"
+
+IMGREF="$(oci_ref "${usage_target}")"
+
+# Name the ephemeral container so it can be reliably stopped on exit.
+# bcvk's own cleanup can be skipped by SIGKILL/crashes; this trap is the
+# backstop that tears down the VM (podman container + QEMU) in that case.
+CONTAINER="krw-${usage_target}-$$"
+
+cleanup() {
+  gum log -sl info "Stopping ephemeral VM (${CONTAINER})"
+  podman rm -f "$CONTAINER" >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+bcvk ephemeral run-ssh --name "$CONTAINER" "$IMGREF"

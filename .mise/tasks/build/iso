@@ -7,8 +7,9 @@ source "$(dirname "$0")/_oci_ref"
 
 IMGREF="$(oci_ref "${usage_target}")"
 
-# Image must be visible in root container storage: root, pull, local, build.
-oci_ensure "$IMGREF" "${usage_target}"
+# bcvk/ISO tooling needs the image in local storage first; copy it to root next.
+oci_ensure_local "$IMGREF" "${usage_target}"
+oci_copy "$IMGREF"
 
 run0 bluebuild generate-iso --iso-name "krw-${usage_target}.iso" image "$IMGREF"
 

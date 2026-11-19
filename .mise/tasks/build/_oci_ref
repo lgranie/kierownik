@@ -19,26 +19,27 @@ oci_ref() {
   printf 'ghcr.io/lgranie/krw-%s:%s' "$1" "$(oci_tag)"
 }
 
-# Ensure a bootc image ref is visible in root container storage.
-# $1 = full image ref (ghcr.io/lgranie/krw-<target>:<tag>)
-# $2 = target profile (for the build:oci fallback)
-# Chain: root storage -> registry pull -> local storage -> build it.
-oci_ensure() {
+# Ensure a bootc image ref is available in the local (current-user) container storage.
+# bcvk to-disk mounts the local storage path into the install VM and references
+# the source image via containers-storage:, so the image must live in local storage.
+# Root storage is intentionally not consulted: builds are reproducible from the
+# registry or a local build, and avoiding root storage removes a hidden failure.
+oci_ensure_local() {
   local ref="$1" target="$2" base="${1%:*}"
-  run0 podman image exists "$ref" 2>/dev/null && return 0
-  run0 podman pull "$ref" 2>/dev/null && return 0
+  podman image exists "$ref" 2>/dev/null && return 0
+  podman pull "$ref" 2>/dev/null && return 0
   if ! podman image exists "$ref" 2>/dev/null; then
-    echo "Image missing everywhere; building $ref"
+    echo "Image missing in local storage; building $ref"
     mise run build:oci "$target"
     # build:oci only produces :latest; retag when a branch tag was requested
     if [ "$ref" != "${base}:latest" ]; then
       podman tag "${base}:latest" "$ref"
-      run0 podman tag "${base}:latest" "$ref"
-      return 0
     fi
   fi
-  echo "Copying local $ref to root storage"
-  podman save "$ref" | run0 --pipe podman load
+  podman image exists "$ref" 2>/dev/null || {
+    echo "ERROR: $ref not available in local storage" >&2
+    return 1
+  }
 }
 
 oci_copy() {

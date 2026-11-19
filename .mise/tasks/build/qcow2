@@ -9,25 +9,23 @@ mkdir -p /tmp/output
 
 IMGREF="$(oci_ref "${usage_target}")"
 
-# Image must be visible in root container storage: root, pull, local, build.
-oci_ensure "$IMGREF" "${usage_target}"
+# bcvk to-disk mounts the local container storage into the install VM and
+# references the source image via containers-storage:, so the image must be
+# present in local (current-user) storage, not just root storage.
+oci_ensure_local "$IMGREF" "${usage_target}"
 
-run0 podman run --rm --privileged --pull=newer \
-  --security-opt label=type:unconfined_t \
-  -v ./.mise/tasks_assets/image-builder/config/qcow2-blueprint.json:/blueprint.json:ro \
-  -v /tmp/output:/output \
-  -v /var/lib/containers/storage:/var/lib/containers/storage \
-  "${IMAGE_BUILDER}" \
-  build \
-  --output-dir /output \
-  --output-name "krw-${usage_target}" \
-  --blueprint /blueprint.json \
-  --arch x86_64 \
-  --bootc-ref "$IMGREF" \
-  --bootc-default-fs "${ROOTFS}" \
-  qcow2
+OUT="/tmp/output/krw-${usage_target}.qcow2"
+rm -f "$OUT"
+
+# bcvk to-disk boots an ephemeral VM from the source image, attaches the target
+# disk as virtio-blk, and runs `bootc install to-disk` inside it. Disk size is
+# auto-calculated (2x source image size, 4GB minimum).
+bcvk to-disk \
+  --format qcow2 \
+  --filesystem "${ROOTFS}" \
+  "$IMGREF" "$OUT"
 
 user_id=$(id -u)
 run0 bash -c "chown -R ${user_id} /tmp/output"
 
-echo "Done: /tmp/output/krw-${usage_target}.qcow2"
+echo "Done: ${OUT}"
