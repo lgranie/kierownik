@@ -10,11 +10,11 @@ if [[ ! -d /usr/etc ]]; then
   exit 1
 fi
 
-mapfile -t entries < <(run0 bash -c 'ostree admin config-diff' | awk '{$1=$1};1' || true)
+mapfile -t entries < <(run0 ostree admin config-diff | awk '{$1=$1};1' || true)
 
 modified=()
 added=()
-for entry in ${entries[@]+"${entries[@]}"}; do
+for entry in "${entries[@]}"; do
   [[ -z "${entry}" ]] && continue
   status="${entry%% *}"
   path="${entry#* }"
@@ -43,9 +43,9 @@ if [[ ${#modified[@]} -gt 0 ]]; then
       rel="${path#/etc/}"
       src="/usr/etc/${rel}"
       if [[ -d "${src}" && ! -L "${src}" ]]; then
-        run0 bash -c "cp -a '${src}/.' '${path}/'"
+        run0 cp -a -- "${src}/." "${path}/"
       else
-        run0 bash -c "cp -a '${src}' '${path}'"
+        run0 cp -a -- "${src}" "${path}"
       fi
       touched+=("${path}")
     done <<<"${selected}"
@@ -59,7 +59,14 @@ if [[ ${#added[@]} -gt 0 ]]; then
     selected=$(printf '%s\n' "${added[@]}" | gum choose --no-limit --header "Select files to delete")
     if [[ -n "${selected}" ]]; then
       while IFS= read -r path; do
-        run0 bash -c "rm -rf '${path}'"
+        [[ -n "${path}" ]] || continue
+        case "${path}" in
+          "/" | "/etc" | "/usr" | "/var" | "/boot")
+            gum log -sl error "Refusing to delete ${path}"
+            continue
+            ;;
+        esac
+        run0 rm -rf -- "${path}"
         touched+=("${path}")
       done <<<"${selected}"
       gum log -sl info "Deleted selected file(s)."
@@ -71,7 +78,7 @@ if [[ ${#added[@]} -gt 0 ]]; then
 fi
 
 if printf '%s\n' ${touched[@]+"${touched[@]}"} | grep -q "firewalld"; then
-  if run0 bash -c 'firewall-cmd --reload'; then
+  if run0 firewall-cmd --reload; then
     gum log -sl info "firewalld reloaded."
   else
     gum log -sl warn "firewalld reload failed. Reboot or start firewalld."
