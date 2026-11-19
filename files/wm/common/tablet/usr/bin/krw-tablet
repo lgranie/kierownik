@@ -396,7 +396,27 @@ usb_touchpad_attached() {
   return 1
 }
 
+# True when the input tree is one this script knows how to read. The 5290
+# slate keeps the EC keyboard controller (i8042) behind in the panel, so its
+# presence marks a machine where the USB-path heuristic means something. On a
+# VM, a foreign laptop, or anywhere /dev/input/by-path has no recognizable
+# nodes, the heuristic has no signal and guessing tablet mode would strand
+# the machine with no keyboard.
+topology_known() {
+  local node
+  for node in "$INPUT_DIR"/*-kbd "$INPUT_DIR"/*event-mouse; do
+    [[ -e "$node" ]] || continue
+    case "${node##*/}" in
+      platform-i8042-serio-*-event-kbd|*usb-*) return 0 ;;
+    esac
+  done
+  return 1
+}
+
 base_attached() {
+  # On a machine this script does not recognize, refuse to guess: assume the
+  # base is attached so the panel stays upright and the keyboard works.
+  topology_known || return 0
   usb_keyboard_attached || usb_touchpad_attached
 }
 
@@ -678,6 +698,10 @@ cmd_daemon() {
   if ! flock -n 9; then
     log "already running"
     return 0
+  fi
+
+  if ! topology_known; then
+    log "input tree does not look like the 5290; staying in laptop mode"
   fi
 
   sensor_stream_start || log "monitor-sensor not found; cannot follow the accelerometer"

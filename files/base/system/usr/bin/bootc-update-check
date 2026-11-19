@@ -6,10 +6,15 @@ check_bootc_updates() {
     local status
     status=$(bootc status --format json 2>/dev/null || echo '{}')
 
-    local staged=$(echo "$status" | jq -r '.status.staged.version // .status.staged.image // .staged.version // .staged.image // empty' 2>/dev/null || true)
-    local deployed=$(echo "$status" | jq -r '.status.booted.version // .status.booted.image // .booted.version // .booted.image // empty' 2>/dev/null || true)
+    # Only trust the staged comparison when both fields parse to a value.
+    # A bootc version that renames keys without leaving aliases makes one or
+    # both empty, and comparing an empty field against a real one is a false
+    # "reboot to apply" — so bail out to `bootc update --check` instead.
+    local staged deployed
+    staged=$(echo "$status" | jq -r '.status.staged.version // .status.staged.image // .staged.version // .staged.image // empty' 2>/dev/null || true)
+    deployed=$(echo "$status" | jq -r '.status.booted.version // .status.booted.image // .booted.version // .booted.image // empty' 2>/dev/null || true)
 
-    if [[ -n "$staged" ]]; then
+    if [[ -n "$staged" && -n "$deployed" ]]; then
         if [[ "$staged" != "$deployed" ]]; then
             notify_all "Bootc" "Update ready, reboot to apply." "Reboot=Reboot" "kierownik"
             return
