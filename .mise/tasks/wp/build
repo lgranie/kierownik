@@ -14,5 +14,5 @@ else
   gum log -sl warn "format: <name>: <value> per line, e.g. registry_password: example-password"
 fi
 
-# runs all matrix permutations (krw-5290, krw-8745, krw-N100)
+# runs all matrix permutations (krw-5290, krw-8745, krw-x4cxl)
 mise x "aqua:woodpecker-ci/woodpecker/woodpecker-cli" -- woodpecker-cli exec "${args[@]}" .woodpecker/build.yml

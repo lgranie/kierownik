@@ -17,7 +17,7 @@ matrix:
   RECIPE:
     - krw-5290.yml
     - krw-8745.yml
-    # - krw-N100.yml
+    # - krw-x4cxl.yml
 
 steps:
   - name: validate
@@ -40,7 +40,7 @@ steps:
     privileged: true
     environment:
       # !! EDIT THESE for your self-hosted registry
-      REGISTRY_HOST: registry.example.com
+      REGISTRY_HOST: deblab.lan:3100
       REGISTRY_NAMESPACE: lgranie
       REGISTRY_USER:
         from_secret: registry_user

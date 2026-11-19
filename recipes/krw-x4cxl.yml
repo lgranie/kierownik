@@ -3,7 +3,7 @@
 # image will be published to ghcr.io/<user>/<name>
 name: krw-x4cxl
 # description will be included in the image's metadata
-description: This is my personal OS image. Headless server Intel N100
+description: This is my personal OS image. Headless server Intel x4cxl
 
 # the base image to build on top of (FROM) and the version tag to use
 base-image: quay.io/fedora/fedora-bootc
