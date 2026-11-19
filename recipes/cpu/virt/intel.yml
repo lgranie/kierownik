@@ -2,7 +2,7 @@
 ---
 # Intel virtualization host.
 modules:
-  - from-file: virt/common/qemu.yml
+  - from-file: cpu/virt/common/qemu.yml
 
   - type: kargs
     arch: x86_64
