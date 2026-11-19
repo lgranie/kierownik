@@ -4,7 +4,8 @@
 #USAGE arg "<branch>" help="Kierownik branch" default="latest"
 set -euo pipefail
 
-image=$(run0 bash -c "bootc status --format json | jq -r '.spec.image.image'")
+image=$(run0 bootc status --format json | jq -r '.spec.image.image')
 image_base="${image%%:*}"
 
-run0 bash -c "bootc switch ${image_base}:${usage_branch:-latest} --apply"
+[[ -n "${image_base}" ]] || { gum log -sl error "Could not read current image."; exit 1; }
+run0 bootc switch "${image_base}:${usage_branch:-latest}" --apply
