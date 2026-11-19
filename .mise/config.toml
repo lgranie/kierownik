@@ -18,5 +18,5 @@ binstall_quickinstall = true
 [env]
 BASE_IMAGE = 'quay.io/fedora/fedora-bootc:45'
 IMAGE_BUILDER = 'ghcr.io/osbuild/image-builder:latest'
-ROOTFS     = 'btrfs'
+ROOTFS = 'btrfs'
 BB_REGISTRY = 'ghcr.io/lgranie'
