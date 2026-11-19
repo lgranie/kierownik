@@ -9,8 +9,17 @@ if [[ -z "${usage_url:-}" ]]; then
 fi
 
 server="${usage_url#*://}"
+server="${server%%/*}"
 server_name="${server%%:*}"
 
-echo quit | openssl s_client -showcerts -servername $server_name -connect ${server} 2>/dev/null | sed -ne '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/p' >/tmp/${server_name}
-run0 bash -c "mv /tmp/${server_name} /etc/pki/ca-trust/source/anchors/"
-run0 bash -c 'update-ca-trust extract'
+[[ -n "${server_name}" ]] || { gum log -sl error "Could not parse host from URL."; exit 1; }
+case "${server_name}" in
+  *"/"* | *".."*) gum log -sl error "Unsafe host name: ${server_name}"; exit 1 ;;
+esac
+
+cert="/tmp/${server_name}.crt"
+echo quit | openssl s_client -showcerts -servername "${server_name}" -connect "${server}" 2>/dev/null |
+  sed -ne '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/p' >"${cert}"
+run0 install -m 0644 "${cert}" "/etc/pki/ca-trust/source/anchors/${server_name}.crt"
+rm -f "${cert}"
+run0 update-ca-trust extract
