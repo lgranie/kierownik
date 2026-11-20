@@ -26,6 +26,12 @@ oci_ref() {
 # registry or a local build, and avoiding root storage removes a hidden failure.
 oci_ensure_local() {
   local ref="$1" target="$2" base="${1%:*}"
+  # bcvk needs a single-arch image, not a manifest list; retag the _linux_amd64
+  # variant over the manifest list when it is available.
+  if podman image exists "${base}:latest_linux_amd64" 2>/dev/null; then
+    podman tag "${base}:latest_linux_amd64" "$ref"
+    return 0
+  fi
   podman image exists "$ref" 2>/dev/null && return 0
   podman pull "$ref" 2>/dev/null && return 0
   if ! podman image exists "$ref" 2>/dev/null; then
@@ -34,6 +40,9 @@ oci_ensure_local() {
     # build:oci only produces :latest; retag when a branch tag was requested
     if [ "$ref" != "${base}:latest" ]; then
       podman tag "${base}:latest" "$ref"
+    fi
+    if podman image exists "${base}:latest_linux_amd64" 2>/dev/null; then
+      podman tag "${base}:latest_linux_amd64" "$ref"
     fi
   fi
   podman image exists "$ref" 2>/dev/null || {

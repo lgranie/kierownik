@@ -1,6 +1,7 @@
 [Unit]
 Description=Kier Setup
 ConditionPathExists=!/var/lib/firstboot.done
+ConditionVirtualization=!vm
 Before=greetd.service getty@tty1.service
 After=home.mount systemd-homed.service
 
