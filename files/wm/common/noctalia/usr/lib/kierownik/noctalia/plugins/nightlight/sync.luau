@@ -148,6 +148,11 @@ local function restoreDayWallpapers()
     end
 end
 
+local function normalizeDir(dir)
+    local expanded = noctalia.expandPath(dir)
+    return string.gsub(expanded, "/+$", "")
+end
+
 local function listImages(dir)
     local names = noctalia.listDir(dir)
     if not names then return nil end
@@ -164,7 +169,7 @@ local function listImages(dir)
 end
 
 local function setNightWallpaper(cfg)
-    local dir = noctalia.expandPath(cfg.dir)
+    local dir = normalizeDir(cfg.dir)
     noctalia.mkdirAll(dir)
     local images = listImages(dir)
     if not images or #images == 0 then
@@ -182,20 +187,20 @@ local function setNightWallpaper(cfg)
 end
 
 local function nightDirImages(cfg)
-    local dir = noctalia.expandPath(cfg.dir)
+    local dir = normalizeDir(cfg.dir)
     local images = listImages(dir) or {}
     return dir, images, table.concat(images, "\n")
 end
 
 local function underNightDir(cfg)
-    local dir = noctalia.expandPath(cfg.dir)
+    local dir = normalizeDir(cfg.dir)
     local prefix = dir .. "/"
     local outputs = noctalia.outputs()
     if type(outputs) ~= "table" then return true end
     for _, out in ipairs(outputs) do
         if type(out) == "table" and type(out.name) == "string" then
             local path = noctalia.wallpaperPath(out.name)
-            if type(path) == "string" and path ~= "" and string.sub(path, 1, #prefix) ~= prefix then
+            if type(path) ~= "string" or path == "" or string.sub(path, 1, #prefix) ~= prefix then
                 return false
             end
         end
@@ -238,9 +243,9 @@ local function enterNight(cfg)
             else
                 applyScheme(night, function(ok, setErr)
                     busy = false
+                    state.active = "night"
+                    saveState()
                     if ok then
-                        state.active = "night"
-                        saveState()
                         fail_notified = false
                     else
                         fail("night palette '" .. night.source .. " " .. night.name .. "' failed: " .. setErr)
@@ -276,9 +281,9 @@ local function enterDay()
         if current.source ~= day.source or current.name ~= day.name then
             applyScheme(day, function(ok, setErr)
                 busy = false
+                state.active = "day"
+                saveState()
                 if ok then
-                    state.active = "day"
-                    saveState()
                     fail_notified = false
                 else
                     fail("day palette restore failed: " .. setErr)
@@ -294,6 +299,8 @@ local function enterDay()
 end
 
 local function onNightLightChange(nl)
+    if busy then return end
+    nl = nl or noctalia.nightlight.state()
     local cfg = nightConfig()
     local want, why = nightState(nl)
     if want then
@@ -315,26 +322,7 @@ local function onNightLightChange(nl)
 end
 
 function sync()
-    if busy then return end
-    local nl = noctalia.nightlight.state()
-    local cfg = nightConfig()
-    local want, why = nightState(nl)
-    if want then
-        if state.active ~= "night" then
-            busy = true
-            noctalia.log("NightLight: night active (" .. why .. "), applying " .. cfg.source .. " " .. cfg.name)
-            enterNight(cfg)
-        else
-            local _, _, sig = nightDirImages(cfg)
-            if sig ~= "" and sig ~= state.images_sig then
-                ensureNightWallpaper(cfg, "directory changed")
-            end
-        end
-    elseif state.active ~= "day" then
-        busy = true
-        noctalia.log("NightLight: day active (" .. why .. "), restoring user settings")
-        enterDay()
-    end
+    onNightLightChange(nil)
 end
 
 local function reconcile()
@@ -368,6 +356,7 @@ end
 
 function onExit(_signal, reason)
     if (reason == "disable" or reason == "uninstall") and state.active == "night" then
+        restoreDayWallpapers()
         local day = state.day_scheme
         if type(day) == "table" then
             noctalia.runAsync({ "noctalia", "msg", "color-scheme-set", day.source, day.name })

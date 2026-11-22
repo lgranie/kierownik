@@ -6,6 +6,7 @@ rust = "latest"
 node = "lts"
 opencode = "latest"
 pi = "latest"
+luau = "latest"
 
 [settings]
 # windows_default_inline_shell_args = "pwsh -c"
