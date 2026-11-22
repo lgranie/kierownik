@@ -4,7 +4,6 @@
 -- Settings are configured via plugin.toml (browser, token, serverUrl).
 
 local database = {}
-local usage = {}
 local loaded = false
 local loading = false
 local categories = { "all" }
@@ -76,23 +75,6 @@ local function updateCategories()
     end
 end
 
-local function loadUsage()
-    local data, err = noctalia.readFile(getDataPath("usage.json"))
-    if data and data ~= "" then
-        local parsed = noctalia.json.decode(data)
-        if type(parsed) == "table" then
-            for k, _ in pairs(parsed) do
-                if tonumber(k) == nil then
-                    noctalia.log("Linkding: usage.json uses old url keys, resetting")
-                    usage = {}
-                    return
-                end
-            end
-            usage = parsed
-        end
-    end
-end
-
 local function loadDatabase()
     local data, err = noctalia.readFile(getDataPath("database.json"))
     if not data then
@@ -106,7 +88,6 @@ local function loadDatabase()
             loaded = true
             loading = false
             updateCategories()
-            loadUsage()
             local count = 0
             for _ in pairs(database) do count = count + 1 end
             noctalia.log("Linkding: Database loaded (" .. count .. " entries)")
@@ -121,21 +102,25 @@ end
 local function parseBookmarks(items)
     noctalia.log("Linkding: parseBookmarks called, items: " .. #items)
     local db = {}
+    local count = 0
     for i = 1, #items do
         local b = items[i]
         if type(b) ~= "table" then
             noctalia.log("Linkding: parseBookmarks: skipping non-table item at index " .. i)
         else
-            local title = b.title
-            if title then
-                db[title] = {
-                    id = b.id,
+            local id = tostring(b.id)
+            local title = b.title or ""
+            if id ~= "" then
+                db[id] = {
+                    id = id,
+                    title = title,
                     url = b.url or "",
                     tags = b.tag_names or {},
                     description = b.description or "",
                     favicon_url = b.favicon_url or "",
                     date_added = b.date_added or ""
                 }
+                count = count + 1
             end
         end
     end
@@ -143,10 +128,9 @@ local function parseBookmarks(items)
     loaded = true
     loading = false
     updateCategories()
-    loadUsage()
     writeData("database.json", database)
-    noctalia.log("Linkding: Parsed " .. tostring(#items) .. " bookmarks")
-    return #items
+    noctalia.log("Linkding: Parsed " .. count .. " bookmarks")
+    return count
 end
 
 local function fetchPage(tk, apiUrl, acc, onDone)
@@ -209,10 +193,10 @@ local function updateBookmarks(tk, url, onDone)
     end)
 end
 
-local function formatBookmark(title, entry, score)
+local function formatBookmark(id, entry, score)
     return {
-        id = title,
-        title = title,
+        id = id,
+        title = entry.title or "",
         subtitle = entry.description or "",
         glyph = "link",
         score = score,
@@ -226,15 +210,17 @@ local function fuzzyField(query, text)
         or 0
 end
 
-local function scoreBookmark(title, entry, query)
+local function scoreBookmark(id, entry, query)
     if not query or query == "" then
         return 0
     end
-
-    local baseScore = fuzzyField(query, title)
-    if baseScore == 0 then return nil end
-
-    return baseScore
+    local score = fuzzyField(query, entry.title)
+    if score == 0 then return nil end
+    if entry.description then
+        local descScore = fuzzyField(query, entry.description)
+        if descScore > score then score = descScore end
+    end
+    return score
 end
 
 function onQuery(query)
@@ -260,13 +246,13 @@ function onQuery(query)
         return
     end
 
-    if text == "" then
-        selectedCategory = "all"
-    end
-
-    -- Resolve category filter: explicit drill-in selection, or query matching a tag.
+    -- Resolve category filter
     local activeCategory = selectedCategory
-    if activeCategory == "all" then
+    if text == "" then
+        -- Empty query: use current selectedCategory (category browse mode)
+        -- Don't auto-reset - user must clear explicitly
+    elseif activeCategory == "all" then
+        -- No category selected yet: check if query matches a category name
         for _, c in ipairs(categories) do
             if c ~= "all" and text:lower() == c:lower() then
                 activeCategory = c
@@ -275,19 +261,15 @@ function onQuery(query)
         end
     end
 
-    local keys
+    local keys = {}
     if activeCategory == "all" then
-        keys = {}
-        for k, _ in pairs(database) do table.insert(keys, k) end
+        for k in pairs(database) do table.insert(keys, k) end
     else
-        keys = {}
-        for title, entry in pairs(database) do
-            if entry.tags then
-                for _, tag in ipairs(entry.tags) do
-                    if tag == activeCategory then
-                        table.insert(keys, title)
-                        break
-                    end
+        for id, entry in pairs(database) do
+            for _, tag in ipairs(entry.tags or {}) do
+                if tag == activeCategory then
+                    table.insert(keys, id)
+                    break
                 end
             end
         end
@@ -296,6 +278,7 @@ function onQuery(query)
     local scoredList = {}
     local results = {}
     if text == "" then
+        -- Category browse mode: show categories and all bookmarks in activeCategory
         for _, c in ipairs(categories) do
             if c ~= "all" then
                 table.insert(scoredList, {
@@ -306,44 +289,47 @@ function onQuery(query)
             end
         end
         for i = 1, #keys do
-            local title = keys[i]
-            local entry = database[title]
-            local sc = scoreBookmark(title, entry, "")
-            table.insert(scoredList, {
-                isCat = false,
-                title = title,
-                score = sc,
-                result = formatBookmark(title, entry, sc)
-            })
+            local id = keys[i]
+            local entry = database[id]
+            if entry then
+                table.insert(scoredList, {
+                    isCat = false,
+                    title = entry.title or "",
+                    score = 0,
+                    result = formatBookmark(id, entry, 0)
+                })
+            end
         end
         table.sort(scoredList, function(a, b)
             if a.isCat ~= b.isCat then return a.isCat end
-            if a.score ~= b.score then return a.score > b.score end
             return a.title < b.title
         end)
         for i = 1, math.min(#scoredList, 100) do
             table.insert(results, scoredList[i].result)
         end
     else
-    for i = 1, #keys do
-        local title = keys[i]
-        local entry = database[title]
-        local sc = scoreBookmark(title, entry, text)
-        if sc then
-            table.insert(scoredList, {
-                title = title,
-                score = sc,
-                result = formatBookmark(title, entry, sc)
-            })
+        -- Search mode: fuzzy search within activeCategory
+        for i = 1, #keys do
+            local id = keys[i]
+            local entry = database[id]
+            if entry then
+                local sc = scoreBookmark(id, entry, text)
+                if sc then
+                    table.insert(scoredList, {
+                        title = entry.title or "",
+                        score = sc,
+                        result = formatBookmark(id, entry, sc)
+                    })
+                end
+            end
         end
-    end
-    table.sort(scoredList, function(a, b)
-        if a.score ~= b.score then return a.score > b.score end
-        return a.title < b.title
-    end)
-    for i = 1, math.min(#scoredList, 50) do
-        table.insert(results, scoredList[i].result)
-    end
+        table.sort(scoredList, function(a, b)
+            if a.score ~= b.score then return a.score > b.score end
+            return a.title < b.title
+        end)
+        for i = 1, math.min(#scoredList, 50) do
+            table.insert(results, scoredList[i].result)
+        end
     end
 
     if #results == 0 then
@@ -372,13 +358,6 @@ function onActivate(id)
     local settings = getSettings()
     local entry = database[id]
     if entry then
-        local uKey = tostring(entry.id)
-        local uInfo = usage[uKey] or { count = 0, last = 0 }
-        uInfo.count = uInfo.count + 1
-        uInfo.last = os.time()
-        usage[uKey] = uInfo
-        writeData("usage.json", usage)
-
         local url = entry.url or ""
         local cmd = { settings.browser }
         if entry.tags then
@@ -394,7 +373,8 @@ function onActivate(id)
     local category = id:match("^category:(.+)$")
     if category then
         selectedCategory = category
-        launcher.setQuery(category .. " ")
+        currentQuery = ""  -- Clear query to show category contents, not search
+        launcher.setQuery("")  -- Trigger onQuery with empty text
         return
     end
 end
