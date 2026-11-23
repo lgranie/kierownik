@@ -94,3 +94,23 @@ hl.window_rule({
 	center = true,
 	workspace = "special:media",
 })
+
+-- Floating dialogs from XDG portals (file picker, password dialogs from vaultwarden, gopass, etc.)
+hl.window_rule({
+	name = "portal-dialogs",
+	match = {
+		class = "^.*(Dialog|FileChooser|gtk-dialog).*$",
+	},
+	float = true,
+	center = true,
+})
+
+-- oo7-portal secret dialogs (used by vaultwarden, gopass, etc.)
+hl.window_rule({
+	name = "oo7-dialogs",
+	match = {
+		class = "^.*(oo7|secret).*$",
+	},
+	float = true,
+	center = true,
+})

@@ -9,3 +9,7 @@ end)
 local success, err = pcall(function()
     require("additionals/voxtype")
 end)
+
+local success, err = pcall(function()
+    require("additionals/brave")
+end)
