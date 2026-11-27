@@ -10,8 +10,11 @@ modules:
         # oo7-daemon ships oo7-daemon.service + D-Bus activation
         # (dbus-org.freedesktop.secrets.service, no socket unit);
         # oo7-portal is the xdg-desktop-portal Secret backend.
+        # pam_oo7 is the PAM module greetd's stack expects; without it the
+        # login keyring stays locked and libsecret clients block on it.
         - oo7-daemon
         - oo7-portal
+        - pam_oo7
         - xdg-desktop-portal-gnome
         - xdg-desktop-portal-gtk
         - xdg-utils
