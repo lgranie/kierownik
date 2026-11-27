@@ -2,3 +2,6 @@
 [theme.templates]
 builtin_ids = ["btop", "foot", "gtk3", "gtk4", "hyprland", "qt"]
 community_ids = ["opencode", "brave", "zed", "bat", "fzf", "herdr", "lazygit", "yazi"]
+
+[wallpaper.automation]
+enabled = true

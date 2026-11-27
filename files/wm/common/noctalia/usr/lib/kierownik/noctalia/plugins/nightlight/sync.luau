@@ -14,7 +14,7 @@
 local STATE_FILE = "night-sync.json"
 local IMAGE_EXTS = { png = true, jpg = true, jpeg = true, webp = true, gif = true, svg = true, ico = true, jxl = true }
 
-local state = { active = "day", day_scheme = nil, day_wallpapers = nil, index = 0, images_sig = "" }
+local state = { active = "day", day_scheme = nil, day_wallpapers = nil, day_wallpaper_dir = nil, index = 0, images_sig = "" }
 local busy = true
 local missing_logged = false
 local fail_notified = false
@@ -47,6 +47,7 @@ local function loadState()
         if type(parsed.index) == "number" then state.index = parsed.index end
         if type(parsed.images_sig) == "string" then state.images_sig = parsed.images_sig end
         if type(parsed.day_default) == "string" then state.day_default = parsed.day_default end
+        if type(parsed.day_wallpaper_dir) == "string" then state.day_wallpaper_dir = parsed.day_wallpaper_dir end
     end
 end
 
@@ -55,6 +56,16 @@ local function saveState()
     if not path then return end
     local encoded = noctalia.json.encode(state)
     if encoded then noctalia.writeFile(path, encoded) end
+end
+
+local function setWallpaperDir(dir)
+    -- Wrap in double quotes for TOML config-set argument
+    local escaped = string.gsub(dir, '"', '\\"')
+    noctalia.runAsync({ "noctalia", "msg", "config-set", "wallpaper.directory", '"' .. escaped .. '"' }, function(result)
+        if result.exitCode ~= 0 then
+            noctalia.log("NightLight: failed to set wallpaper.directory: " .. tostring(result.stderr))
+        end
+    end)
 end
 
 local function fail(msg)
@@ -217,45 +228,56 @@ end
 
 local function enterNight(cfg)
     missing_logged = false
-    getCurrentScheme(function(current, err)
-        if not current then
-            busy = false
-            fail(err or "could not read current palette")
-            return
-        end
-        local night = { source = cfg.source, name = cfg.name }
-        local already = current.source == night.source and current.name == night.name
-        if not already then
-            state.day_scheme = current
-            state.day_wallpapers = saveDayWallpapers()
+    noctalia.runAsync({ "noctalia", "msg", "config-get", "wallpaper.directory" }, function(result)
+        if result.exitCode == 0 then
+            state.day_wallpaper_dir = noctalia.string.trim(result.stdout or "")
             saveState()
+        else
+            noctalia.log("NightLight: failed to get day wallpaper.directory: " .. tostring(result.stderr))
         end
-        getDefaultWallpaper(function(def)
-            if def and not already then
-                state.day_default = def
+        
+        setWallpaperDir(normalizeDir(cfg.dir))
+        
+        getCurrentScheme(function(current, err)
+            if not current then
+                busy = false
+                fail(err or "could not read current palette")
+                return
+            end
+            local night = { source = cfg.source, name = cfg.name }
+            local already = current.source == night.source and current.name == night.name
+            if not already then
+                state.day_scheme = current
+                state.day_wallpapers = saveDayWallpapers()
                 saveState()
             end
-            if already then
-                busy = false
-                state.active = "night"
-                saveState()
-                fail_notified = false
-            else
-                applyScheme(night, function(ok, setErr)
+            getDefaultWallpaper(function(def)
+                if def and not already then
+                    state.day_default = def
+                    saveState()
+                end
+                if already then
                     busy = false
                     state.active = "night"
                     saveState()
-                    if ok then
-                        fail_notified = false
-                    else
-                        fail("night palette '" .. night.source .. " " .. night.name .. "' failed: " .. setErr)
-                    end
-                end)
-            end
-            if not night_wallpaper_set then
-                night_wallpaper_set = true
-                setNightWallpaper(cfg)
-            end
+                    fail_notified = false
+                else
+                    applyScheme(night, function(ok, setErr)
+                        busy = false
+                        state.active = "night"
+                        saveState()
+                        if ok then
+                            fail_notified = false
+                        else
+                            fail("night palette '" .. night.source .. " " .. night.name .. "' failed: " .. setErr)
+                        end
+                    end)
+                end
+                if not night_wallpaper_set then
+                    night_wallpaper_set = true
+                    setNightWallpaper(cfg)
+                end
+            end)
         end)
     end)
 end
@@ -263,6 +285,9 @@ end
 local function enterDay()
     missing_logged = false
     night_wallpaper_set = false
+    if type(state.day_wallpaper_dir) == "string" and state.day_wallpaper_dir ~= "" then
+        setWallpaperDir(state.day_wallpaper_dir)
+    end
     local day = state.day_scheme
     restoreDayWallpapers()
     if type(day) ~= "table" then
@@ -357,6 +382,9 @@ end
 function onExit(_signal, reason)
     if (reason == "disable" or reason == "uninstall") and state.active == "night" then
         restoreDayWallpapers()
+        if type(state.day_wallpaper_dir) == "string" and state.day_wallpaper_dir ~= "" then
+            setWallpaperDir(state.day_wallpaper_dir)
+        end
         local day = state.day_scheme
         if type(day) == "table" then
             noctalia.runAsync({ "noctalia", "msg", "color-scheme-set", day.source, day.name })
